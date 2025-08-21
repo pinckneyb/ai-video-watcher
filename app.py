@@ -217,8 +217,51 @@ def main():
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
-        max_concurrent_batches = st.slider("Max concurrent batches", 1, 10, 3, 1, 
-                                         help="Higher values = faster processing (requires OpenAI Tier 4+)")
+        
+        # Concurrency presets
+        col_preset1, col_preset2, col_preset3 = st.columns(3)
+        
+        with col_preset1:
+            if st.button("🐌 Conservative (3)", help="Safe, reliable processing"):
+                st.session_state.max_concurrent_batches = 3
+                st.rerun()
+        
+        with col_preset2:
+            if st.button("⚡ Balanced (8)", help="Good speed/risk balance"):
+                st.session_state.max_concurrent_batches = 8
+                st.rerun()
+        
+        with col_preset3:
+            if st.button("🚀 Aggressive (15)", help="Maximum speed (monitor carefully)"):
+                st.session_state.max_concurrent_batches = 15
+                st.rerun()
+        
+        # Smart preset recommendation
+        if 'concurrency_performance_history' in st.session_state and st.session_state.concurrency_performance_history:
+            recommended = get_recommended_concurrency()
+            if recommended:
+                st.info(f"💡 **Smart Recommendation**: Based on your performance history, try {recommended} concurrent batches")
+        
+        # Manual concurrency control
+        max_concurrent_batches = st.slider(
+            "Max concurrent batches", 
+            1, 20, 
+            value=st.session_state.get('max_concurrent_batches', 3), 
+            step=1,
+            help="Higher values = faster processing (requires OpenAI Tier 4+)"
+        )
+        
+        # Store the selected value
+        st.session_state.max_concurrent_batches = max_concurrent_batches
+        
+        # Concurrency safety indicator
+        safety_level = get_concurrency_safety_level(max_concurrent_batches)
+        if safety_level == "safe":
+            st.success(f"✅ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches")
+        elif safety_level == "caution":
+            st.warning(f"⚠️ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - monitor closely")
+        else:
+            st.error(f"🚨 **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - high risk of failures")
         
         # Rescan settings
         st.subheader("🔍 Rescan Settings")
@@ -421,6 +464,64 @@ def main():
             st.metric("Speed Boost", f"~{max_concurrent_batches}x faster")
         else:
             st.info("🐌 Sequential processing")
+        
+        # Performance monitoring dashboard
+        if 'concurrency_performance_history' in st.session_state and st.session_state.concurrency_performance_history:
+            with st.expander("📊 Performance Dashboard", expanded=False):
+                history = st.session_state.concurrency_performance_history
+                
+                # Recent performance summary
+                if history:
+                    latest = history[-1]
+                    col_perf1, col_perf2, col_perf3 = st.columns(3)
+                    
+                    with col_perf1:
+                        st.metric("Last Success Rate", f"{latest['success_rate']:.1f}%")
+                    
+                    with col_perf2:
+                        st.metric("Last Concurrency", latest['concurrent_level'])
+                    
+                    with col_perf3:
+                        st.metric("Last Duration", f"{latest['total_time']:.1f}s")
+                    
+                    # Performance trend
+                    if len(history) > 1:
+                        st.subheader("📈 Performance Trends")
+                        
+                        # Success rate trend
+                        success_rates = [run['success_rate'] for run in history]
+                        concurrent_levels = [run['concurrent_level'] for run in history]
+                        
+                        # Create a simple trend analysis
+                        if len(success_rates) >= 3:
+                            recent_avg = sum(success_rates[-3:]) / 3
+                            overall_avg = sum(success_rates) / len(success_rates)
+                            
+                            if recent_avg > overall_avg + 2:
+                                st.success("📈 **Improving**: Recent performance is better than average")
+                            elif recent_avg < overall_avg - 2:
+                                st.warning("📉 **Declining**: Recent performance is worse than average")
+                            else:
+                                st.info("➡️ **Stable**: Performance is consistent")
+                        
+                        # Show performance history table
+                        st.subheader("📋 Performance History")
+                        perf_data = []
+                        for i, run in enumerate(history[-5:]):  # Show last 5 runs
+                            perf_data.append({
+                                "Run": i + 1,
+                                "Concurrency": run['concurrent_level'],
+                                "Success Rate": f"{run['success_rate']:.1f}%",
+                                "Duration": f"{run['total_time']:.1f}s",
+                                "Batches": run['total_batches']
+                            })
+                        
+                        st.table(perf_data)
+                        
+                        # Clear history button
+                        if st.button("🗑️ Clear Performance History"):
+                            st.session_state.concurrency_performance_history = []
+                            st.rerun()
     
     # Analysis section
     if st.session_state.video_processor and st.session_state.gpt4o_client:
@@ -613,12 +714,44 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
         
         if max_concurrent_batches > 1:
             st.info(f"⚡ Using concurrent processing: {max_concurrent_batches} batches simultaneously")
+            
+            # Real-time monitoring container
+            monitoring_container = st.container()
+            
             start_time = time.time()
             # Use concurrent processing
-            process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches)
+            performance_metrics = process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches)
             end_time = time.time()
             processing_time = end_time - start_time
-            st.success(f"⚡ Concurrent processing completed in {processing_time:.2f} seconds")
+            
+            # Display detailed performance results
+            with monitoring_container:
+                st.success(f"⚡ Concurrent processing completed in {processing_time:.2f} seconds")
+                
+                # Performance analysis
+                col_analysis1, col_analysis2 = st.columns(2)
+                
+                with col_analysis1:
+                    st.metric("Success Rate", f"{performance_metrics['success_rate']:.1f}%")
+                    st.metric("Failed Batches", performance_metrics['failed_batches'])
+                
+                with col_analysis2:
+                    st.metric("Avg Batch Time", f"{performance_metrics['avg_batch_time']:.2f}s")
+                    st.metric("Speed vs Sequential", f"~{processing_time/(total_batches * 12):.1f}x faster")
+                
+                # Safety assessment
+                if performance_metrics['success_rate'] >= 95:
+                    st.success("🎯 **Excellent Performance**: This concurrency level is working well for you")
+                elif performance_metrics['success_rate'] >= 90:
+                    st.warning("⚠️ **Good Performance**: Consider this your upper limit for now")
+                else:
+                    st.error("🚨 **Poor Performance**: Reduce concurrency level for better reliability")
+                
+                # Auto-recommendation for next run
+                if performance_metrics['success_rate'] >= 98:
+                    st.info(f"💡 **Recommendation**: You can safely try {min(max_concurrent_batches + 2, 20)} concurrent batches next time")
+                elif performance_metrics['success_rate'] < 90:
+                    st.info(f"💡 **Recommendation**: Try {max(1, max_concurrent_batches - 2)} concurrent batches for better reliability")
         else:
             st.info("🐌 Using sequential processing")
             start_time = time.time()
@@ -680,16 +813,30 @@ def process_batches_sequentially(batches, gpt4o_client, profile, progress_bar, s
         # Small delay to show progress
         time.sleep(0.1)
 
-def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches):
-    """Process batches concurrently using ThreadPoolExecutor."""
+def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches):
+    """Process batches concurrently using ThreadPoolExecutor with monitoring."""
     import concurrent.futures
     import threading
+    import time
     
     # Use a lock to protect context updates
     context_lock = threading.Lock()
     
+    # Initialize monitoring
+    start_time = time.time()
+    successful_batches = 0
+    failed_batches = 0
+    error_log = []
+    performance_metrics = {
+        'total_batches': total_batches,
+        'concurrent_level': max_concurrent_batches,
+        'start_time': start_time,
+        'batch_times': [],
+        'errors': []
+    }
+    
     # Create a thread pool for concurrent API calls
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_batches) as executor:
         # Submit all batch processing tasks
         future_to_batch = {}
         for i, batch in enumerate(batches):
@@ -703,6 +850,8 @@ def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, s
         completed_batches = 0
         for future in concurrent.futures.as_completed(future_to_batch):
             batch_index = future_to_batch[future]
+            batch_start_time = time.time()
+            
             try:
                 narrative, events = future.result()
                 
@@ -710,16 +859,58 @@ def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, s
                 with context_lock:
                     gpt4o_client.update_context(narrative, events)
                 
-                completed_batches += 1
-                progress = completed_batches / total_batches
-                progress_bar.progress(progress)
-                status_text.text(f"Completed {completed_batches}/{total_batches} batches...")
+                # Record successful batch
+                successful_batches += 1
+                batch_time = time.time() - batch_start_time
+                performance_metrics['batch_times'].append(batch_time)
                 
             except Exception as e:
+                # Record failed batch
+                failed_batches += 1
+                error_info = {
+                    'batch_index': batch_index + 1,
+                    'error': str(e),
+                    'timestamp': time.time()
+                }
+                error_log.append(error_info)
+                performance_metrics['errors'].append(error_info)
+                
                 st.error(f"❌ Batch {batch_index + 1} failed: {e}")
-                completed_batches += 1
-                progress = completed_batches / total_batches
-                progress_bar.progress(progress)
+            
+            completed_batches += 1
+            progress = completed_batches / total_batches
+            progress_bar.progress(progress)
+            
+            # Update status with monitoring info
+            success_rate = (successful_batches / completed_batches) * 100
+            status_text.text(f"Completed {completed_batches}/{total_batches} batches... Success: {success_rate:.1f}%")
+    
+    # Calculate final performance metrics
+    total_time = time.time() - start_time
+    avg_batch_time = sum(performance_metrics['batch_times']) / len(performance_metrics['batch_times']) if performance_metrics['batch_times'] else 0
+    
+    performance_metrics.update({
+        'total_time': total_time,
+        'successful_batches': successful_batches,
+        'failed_batches': failed_batches,
+        'success_rate': (successful_batches / total_batches) * 100,
+        'avg_batch_time': avg_batch_time,
+        'error_log': error_log
+    })
+    
+    # Store performance data for preset learning
+    if 'concurrency_performance_history' not in st.session_state:
+        st.session_state.concurrency_performance_history = []
+    
+    st.session_state.concurrency_performance_history.append(performance_metrics)
+    
+    # Display performance summary
+    st.info(f"📊 **Performance Summary**: {successful_batches}/{total_batches} successful ({performance_metrics['success_rate']:.1f}%) in {total_time:.2f}s")
+    
+    if failed_batches > 0:
+        st.warning(f"⚠️ **Failed Batches**: {failed_batches} batches failed. Consider reducing concurrency.")
+    
+    return performance_metrics
 
 def process_single_batch_concurrent(batch, gpt4o_client, profile, batch_index, total_batches, context_lock):
     """Process a single batch for concurrent execution."""
@@ -818,6 +1009,43 @@ Create a tight, continuous story that flows naturally without time constraints, 
     except Exception as e:
         st.error(f"❌ Error creating enhanced narrative: {e}")
         return ""
+
+def get_concurrency_safety_level(concurrent_batches: int) -> str:
+    """Determine safety level for concurrency setting."""
+    if concurrent_batches <= 3:
+        return "safe"
+    elif concurrent_batches <= 8:
+        return "caution"
+    else:
+        return "danger"
+
+def get_recommended_concurrency() -> int:
+    """Get smart concurrency recommendation based on performance history."""
+    if 'concurrency_performance_history' not in st.session_state:
+        return None
+    
+    history = st.session_state.concurrency_performance_history
+    
+    # Find the best performing concurrency level
+    best_performance = None
+    best_success_rate = 0
+    
+    for run in history:
+        success_rate = run.get('success_rate', 0)
+        concurrent_level = run.get('concurrent_level', 0)
+        
+        if success_rate > best_success_rate and success_rate >= 95:
+            best_success_rate = success_rate
+            best_performance = concurrent_level
+    
+    if best_performance:
+        # Suggest slightly higher if previous run was very successful
+        if best_success_rate >= 98:
+            return min(best_performance + 2, 20)
+        else:
+            return best_performance
+    
+    return None
 
 def rescan_segment(start_time: str, end_time: str, rescan_fps: float):
     """Rescan a specific video segment at higher detail."""
