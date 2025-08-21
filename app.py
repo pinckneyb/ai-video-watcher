@@ -178,6 +178,10 @@ def main():
         st.session_state.enhanced_narrative = ""
     if 'audio_transcript' not in st.session_state:
         st.session_state.audio_transcript = ""
+    if 'enhancement_requested' not in st.session_state:
+        st.session_state.enhancement_requested = False
+    if 'regeneration_requested' not in st.session_state:
+        st.session_state.regeneration_requested = False
     
     # Sidebar configuration
     with st.sidebar:
@@ -719,7 +723,13 @@ def main():
                     )
                 
                 # Regenerate button
-                if st.button("🔄 Regenerate Enhanced Narrative"):
+                if st.button("🔄 Regenerate Enhanced Narrative", key="regenerate_enhanced"):
+                    # Set a flag to indicate regeneration is requested
+                    st.session_state.regeneration_requested = True
+                    st.rerun()
+                
+                # Handle regeneration if requested
+                if st.session_state.get('regeneration_requested', False):
                     with st.spinner("Regenerating enhanced narrative..."):
                         audio_transcript = st.session_state.get('audio_transcript', '')
                         enhanced_narrative = create_coherent_narrative(
@@ -731,12 +741,21 @@ def main():
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
                             st.success("✨ Enhanced narrative regenerated!")
-                            st.rerun()
+                            # Clear the flag
+                            st.session_state.regeneration_requested = False
                         else:
                             st.error("❌ Failed to regenerate enhanced narrative")
+                            # Clear the flag on failure too
+                            st.session_state.regeneration_requested = False
             else:
                 # Manual trigger button if no enhanced narrative exists
-                if st.button("✨ Create Enhanced Narrative with GPT-5"):
+                if st.button("✨ Create Enhanced Narrative with GPT-5", key="create_enhanced_manual"):
+                    # Set a flag to indicate enhancement is requested
+                    st.session_state.enhancement_requested = True
+                    st.rerun()
+                
+                # Handle enhancement if requested
+                if st.session_state.get('enhancement_requested', False):
                     with st.spinner("Creating enhanced narrative..."):
                         audio_transcript = st.session_state.get('audio_transcript', '')
                         enhanced_narrative = create_coherent_narrative(
@@ -748,9 +767,12 @@ def main():
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
                             st.success("✨ Enhanced narrative created!")
-                            st.rerun()
+                            # Clear the flag
+                            st.session_state.enhancement_requested = False
                         else:
                             st.error("❌ Failed to create enhanced narrative")
+                            # Clear the flag on failure too
+                            st.session_state.enhancement_requested = False
             
             # Download options
             st.subheader("💾 Download Results")
@@ -911,7 +933,13 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
         st.success("🎉 Video analysis completed successfully!")
         
         # Post-process with GPT-5 for coherent narrative
-        if st.button("🔄 Enhance Narrative with GPT-5", type="secondary"):
+        if st.button("🔄 Enhance Narrative with GPT-5", type="secondary", key="enhance_after_analysis"):
+            # Set a flag to indicate enhancement is requested
+            st.session_state.enhancement_requested = True
+            st.rerun()
+        
+        # Handle enhancement if requested
+        if st.session_state.get('enhancement_requested', False):
             with st.spinner("Creating coherent narrative with GPT-5..."):
                 # Debug: show what we're passing
                 audio_transcript = st.session_state.get('audio_transcript', '')
@@ -929,8 +957,12 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
                 if enhanced_narrative:
                     st.session_state.enhanced_narrative = enhanced_narrative
                     st.success("✨ Enhanced narrative created!")
+                    # Clear the flag
+                    st.session_state.enhancement_requested = False
                 else:
                     st.error("❌ Failed to create enhanced narrative")
+                    # Clear the flag on failure too
+                    st.session_state.enhancement_requested = False
         
     except Exception as e:
         st.error(f"❌ Analysis failed: {e}")
