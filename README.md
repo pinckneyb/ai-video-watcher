@@ -1,43 +1,48 @@
 # 🎥 AI Video Watcher
 
-A powerful video analysis application that uses GPT-4o to intelligently watch and narrate video content. Built with Streamlit, OpenCV, and OpenAI's GPT-4o model, this app provides human-like narrative descriptions of video content with temporal awareness and detailed event tracking.
+A powerful video analysis application that uses GPT-4o to "watch" and narrate video content, with GPT-5 enhancement for coherent storytelling. Built with Streamlit, OpenCV, and OpenAI's latest models.
 
 ## ✨ Features
 
-### 🧠 Intelligent Video Analysis
-- **Frame-by-frame analysis** using GPT-4o vision capabilities
-- **Temporal awareness** with precise timestamp anchoring
-- **Context continuity** across video segments
-- **Batch processing** for efficient API usage
+### 🧠 **Core Video Analysis**
+- **Frame-by-frame analysis** using GPT-4o at configurable FPS (0.5-5.0)
+- **Intelligent batching** with customizable batch sizes (3-15 frames)
+- **Concurrent processing** for faster analysis (1-10 concurrent batches)
+- **Context awareness** with rolling narrative continuity
 
-### 📊 Multiple Analysis Profiles
-- **Generic**: Human-like narrative description
-- **Surgical**: Rubric-aware surgical assessment
-- **Sports**: Play-by-play sports commentary style
+### 🎭 **Profile System**
+- **Generic Profile**: Human-like narrative description
+- **Surgical Profile**: Medical assessment with rubric awareness
+- **Sports Profile**: Play-by-play sports commentary
+- **Customizable prompts** for different use cases
 
-### 🔍 Advanced Rescan Capabilities
-- **Segment rescanning** at higher FPS for detail
-- **Time range selection** (HH:MM:SS format)
-- **Enhanced analysis** of specific video segments
+### 🔍 **Advanced Features**
+- **Rescan segments** at higher FPS (5-20) for detailed analysis
+- **GPT-5 enhancement** for coherent, continuous narrative
+- **Absolute specificity** - no generic terms, concrete visual details
+- **Text transcription** of overlaid or scene text
+- **Event timeline** with structured JSON output
 
-### 💾 Comprehensive Output
-- **Markdown transcripts** with full narrative
-- **JSON event timelines** with structured data
-- **Downloadable results** in multiple formats
+### ⚡ **Performance & UX**
+- **Concurrent processing** leveraging OpenAI Tier 4+ limits
+- **API key persistence** across sessions
+- **Real-time progress** tracking and status updates
+- **Download options** for transcripts and timelines
+- **Streamlined workflow** - video upload to analysis in one click
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- OpenAI API key with GPT-4o access
+- OpenAI API key (GPT-4o and GPT-5 access)
 - FFmpeg installed on your system
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd AI_video_watcher
+   git clone https://github.com/pinckneyb/ai-video-watcher.git
+   cd ai-video-watcher
    ```
 
 2. **Install dependencies**
@@ -45,171 +50,118 @@ A powerful video analysis application that uses GPT-4o to intelligently watch an
    pip install -r requirements.txt
    ```
 
-3. **Set up your OpenAI API key**
-   ```bash
-   export OPENAI_API_KEY="your-api-key-here"
-   ```
-   Or create a `.env` file:
-   ```
-   OPENAI_API_KEY=your-api-key-here
-   ```
+3. **Configure API key**
+   - Copy `config.example` to `config.json`
+   - Add your OpenAI API key
+   - Or enter it directly in the app
 
-4. **Launch the application**
+4. **Run the application**
    ```bash
    streamlit run app.py
    ```
 
-## 📖 Usage Guide
+5. **Open your browser** at `http://localhost:8501`
 
-### 1. Video Input
-- **Upload**: Drag and drop video files (MP4, AVI, MOV, MKV, WMV)
-- **URL**: Provide direct links to video files
-- **Supported formats**: Most common video formats
+## 📖 Usage
 
-### 2. Configuration
-- **Profile Selection**: Choose analysis style (Generic, Surgical, Sports)
-- **FPS Settings**: Adjust frame extraction rate (0.5 - 5.0 fps)
-- **Batch Size**: Configure frames per API call (3-15 frames)
+### 1. **Video Input**
+- Upload video files (MP4, AVI, MOV, MKV, WMV)
+- Or provide direct video URLs
+- Supported formats: MP4, AVI, MOV, MKV, WMV
 
-### 3. Analysis Process
-1. Load your video
-2. Select analysis profile
-3. Click "Start Analysis"
-4. Monitor progress in real-time
-5. Review results and download outputs
+### 2. **Configuration**
+- **Select Profile**: Choose analysis style (Generic, Surgical, Sports)
+- **Video Settings**: Adjust FPS (0.5-5.0) and batch size (3-15)
+- **Concurrency**: Set concurrent batches (1-10) for speed
+- **Rescan Settings**: Configure high-FPS rescan (5-20 FPS)
 
-### 4. Rescan Segments
-- Select time range (e.g., 00:01:30 to 00:02:00)
-- Choose higher FPS for detailed analysis
-- Get enhanced narrative of specific segments
+### 3. **Analysis**
+- **Load Video**: Upload/URL → automatic analysis start
+- **Watch Progress**: Real-time batch processing updates
+- **View Results**: Transcript, events timeline, enhanced narrative
+
+### 4. **Enhanced Narrative**
+- **GPT-5 Processing**: Transform raw analysis into coherent story
+- **Specificity**: Concrete details, no generic terms
+- **Continuity**: Smooth narrative flow with logical connections
+- **Download**: Save enhanced narrative as Markdown
+
+### 5. **Rescan Segments**
+- **Select Time Range**: Choose specific video segments
+- **Higher Detail**: Extract frames at 5-20 FPS
+- **Deep Analysis**: Detailed examination of critical moments
 
 ## 🏗️ Architecture
 
-### Core Modules
+### **Core Modules**
+- **`app.py`**: Main Streamlit application and UI
+- **`video_processor.py`**: Video loading and frame extraction
+- **`gpt4o_client.py`**: OpenAI API integration and context management
+- **`profiles.py`**: Configurable analysis profiles and prompts
+- **`utils.py`**: Utility functions and file operations
 
-#### `video_processor.py`
-- Video loading and frame extraction
-- Frame metadata management
-- Batch processing utilities
+### **Key Components**
+- **VideoProcessor**: Handles video loading, properties, frame extraction
+- **FrameBatchProcessor**: Creates and manages frame batches
+- **GPT4oClient**: Manages API calls, context, and narrative building
+- **ProfileManager**: Provides different analysis styles and prompts
 
-#### `gpt4o_client.py`
-- OpenAI API integration
-- Context management and condensation
-- Response parsing and event extraction
-
-#### `profiles.py`
-- Profile system for different narration styles
-- Customizable prompting templates
-- Domain-specific analysis modes
-
-#### `utils.py`
-- Utility functions for file operations
-- Timestamp parsing and validation
-- Output formatting and saving
-
-#### `app.py`
-- Streamlit web interface
-- User interaction and state management
-- Real-time progress tracking
-
-### Data Flow
-
-```
-Video Input → Frame Extraction → Batch Processing → GPT-4o Analysis → Context Condensation → Output Generation
-```
+### **Data Flow**
+1. **Video Input** → Frame extraction at specified FPS
+2. **Batch Creation** → Group frames for efficient processing
+3. **GPT-4o Analysis** → Narrative generation with context
+4. **Context Update** → Rolling summary for continuity
+5. **GPT-5 Enhancement** → Coherent story creation
+6. **Output Generation** → Transcript, timeline, enhanced narrative
 
 ## ⚙️ Configuration
 
-### Environment Variables
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
-
-### Custom Profiles
-Add new analysis profiles by extending the `ProfileManager` class in `profiles.py`:
-
-```python
-def _get_custom_profile(self) -> Dict[str, Any]:
-    return {
-        "name": "Custom",
-        "description": "Custom analysis profile",
-        "base_prompt": "Your custom prompt here...",
-        "rescan_prompt": "Your custom rescan prompt...",
-        "context_condensation_prompt": "Your custom condensation prompt..."
-    }
+### **Environment Variables**
+```bash
+OPENAI_API_KEY=your_api_key_here
 ```
+
+### **App Settings**
+- **FPS Range**: 0.5 - 5.0 frames per second
+- **Batch Size**: 3 - 15 frames per batch
+- **Concurrency**: 1 - 10 concurrent batches
+- **Rescan FPS**: 5.0 - 20.0 for detailed analysis
+
+### **Profile Customization**
+Each profile provides:
+- **Base Prompt**: Main analysis instructions
+- **Rescan Prompt**: Detailed segment analysis
+- **Context Condensation**: Rolling summary generation
 
 ## 📊 Output Formats
 
-### Transcript (Markdown)
-```markdown
-At 00:00:10, a person enters the room holding a box.
+### **Transcript (Markdown)**
+- Chronological narrative with timestamps
+- Rich visual descriptions and actions
+- Context-aware continuity
 
-At 00:00:15, they set the box on the table and open the lid.
+### **Events Timeline (JSON)**
+- Structured event data
+- Timestamps and confidence scores
+- Profile-specific metadata
 
-At 00:00:22, another person appears in the doorway.
-```
+### **Enhanced Narrative (Markdown)**
+- GPT-5 processed coherent story
+- No time markers, natural flow
+- Absolute specificity and detail
 
-### Event Timeline (JSON)
-```json
-[
-  {
-    "timestamp": "00:00:10",
-    "event": "Person enters room with box",
-    "confidence": 0.85
-  },
-  {
-    "timestamp": "00:00:15",
-    "event": "Person places box on table",
-    "confidence": 0.9
-  }
-]
-```
+## 🔧 Troubleshooting
 
-## 🔧 Advanced Features
+### **Common Issues**
+- **FFmpeg not found**: Install FFmpeg and add to PATH
+- **API key errors**: Verify OpenAI API key and model access
+- **Memory issues**: Reduce batch size or FPS
+- **Encoding errors**: Check video format compatibility
 
-### Context Condensation
-The app automatically maintains a rolling context summary to ensure narrative continuity across video segments without exhausting API context limits.
-
-### Batch Processing
-Frames are processed in configurable batches to optimize API usage and maintain context across video segments.
-
-### Error Handling
-Comprehensive error handling for:
-- Video loading failures
-- API rate limits
-- Invalid time ranges
-- Network connectivity issues
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **FFmpeg not found**
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install ffmpeg
-   
-   # macOS
-   brew install ffmpeg
-   
-   # Windows
-   # Download from https://ffmpeg.org/download.html
-   ```
-
-2. **OpenAI API errors**
-   - Verify API key is correct
-   - Check API quota and billing
-   - Ensure GPT-4o access is enabled
-
-3. **Video loading issues**
-   - Check video format compatibility
-   - Verify file integrity
-   - Ensure sufficient disk space
-
-### Performance Tips
-
-- **Lower FPS** for longer videos to reduce processing time
-- **Smaller batch sizes** for more frequent context updates
-- **Use rescan** for detailed analysis of specific segments only
+### **Performance Tips**
+- **Concurrent processing**: Use 3-5 batches for optimal speed
+- **Batch size**: Balance between detail and processing time
+- **FPS selection**: Lower FPS for longer videos, higher for detail
 
 ## 🤝 Contributing
 
@@ -219,24 +171,30 @@ Comprehensive error handling for:
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+### **Development Setup**
+```bash
+git clone https://github.com/pinckneyb/ai-video-watcher.git
+cd ai-video-watcher
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- **OpenAI** for GPT-4o API access
+- **OpenAI** for GPT-4o and GPT-5 models
 - **Streamlit** for the web framework
-- **OpenCV** for video processing capabilities
-- **FFmpeg** for video format support
+- **OpenCV** for video processing
+- **FFmpeg** for robust video handling
 
 ## 📞 Support
 
-For issues, questions, or contributions:
-- Open an issue on GitHub
-- Check the troubleshooting section
-- Review the documentation
+- **Issues**: [GitHub Issues](https://github.com/pinckneyb/ai-video-watcher/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/pinckneyb/ai-video-watcher/discussions)
 
 ---
 
-**Built with ❤️ using Streamlit, OpenCV, and OpenAI GPT-4o**
+**AI Video Watcher** - Transform your videos into intelligent, coherent narratives with the power of GPT-4o and GPT-5.
