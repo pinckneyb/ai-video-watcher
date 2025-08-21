@@ -196,13 +196,37 @@ def extract_audio_from_video(video_path: str, audio_path: str = None) -> str:
     try:
         import ffmpeg
         
+        # Check if video file exists
+        if not os.path.exists(video_path):
+            print(f"Error: Video file {video_path} does not exist")
+            return None
+        
+        # Check if video has audio stream
+        probe = ffmpeg.probe(video_path)
+        audio_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'audio']
+        
+        if not audio_streams:
+            print(f"Warning: No audio stream found in {video_path}")
+            return None
+        
+        print(f"Found {len(audio_streams)} audio stream(s) in {video_path}")
+        
         # Extract audio using FFmpeg
         stream = ffmpeg.input(video_path)
         stream = ffmpeg.output(stream, audio_path, acodec='pcm_s16le', ac=1, ar='16000')
         ffmpeg.run(stream, overwrite_output=True, quiet=True)
         
-        return audio_path
+        # Verify audio file was created and has content
+        if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
+            print(f"Audio extracted successfully to {audio_path} ({os.path.getsize(audio_path)} bytes)")
+            return audio_path
+        else:
+            print(f"Error: Audio file {audio_path} was not created or is empty")
+            return None
         
+    except ImportError:
+        print("Error: ffmpeg-python not installed. Install with: pip install ffmpeg-python")
+        return None
     except Exception as e:
         print(f"Error extracting audio: {e}")
         return None
@@ -219,6 +243,17 @@ def transcribe_audio_with_whisper(audio_path: str, api_key: str) -> str:
         str: Transcribed text
     """
     try:
+        # Check if audio file exists and has content
+        if not os.path.exists(audio_path):
+            print(f"Error: Audio file {audio_path} does not exist")
+            return None
+        
+        if os.path.getsize(audio_path) == 0:
+            print(f"Error: Audio file {audio_path} is empty")
+            return None
+        
+        print(f"Transcribing {audio_path} ({os.path.getsize(audio_path)} bytes) with Whisper...")
+        
         from openai import OpenAI
         
         client = OpenAI(api_key=api_key)
@@ -230,8 +265,16 @@ def transcribe_audio_with_whisper(audio_path: str, api_key: str) -> str:
                 response_format="text"
             )
         
-        return transcript
+        if transcript and len(transcript.strip()) > 0:
+            print(f"Whisper transcription successful: {len(transcript)} characters")
+            return transcript
+        else:
+            print("Warning: Whisper returned empty transcript")
+            return None
         
+    except ImportError:
+        print("Error: openai library not installed. Install with: pip install openai")
+        return None
     except Exception as e:
         print(f"Error transcribing audio: {e}")
         return None
