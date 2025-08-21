@@ -182,6 +182,20 @@ def main():
         st.session_state.enhancement_requested = False
     if 'regeneration_requested' not in st.session_state:
         st.session_state.regeneration_requested = False
+    if 'show_search' not in st.session_state:
+        st.session_state.show_search = False
+    if 'show_full_transcript' not in st.session_state:
+        st.session_state.show_full_transcript = False
+    if 'show_fps_guide' not in st.session_state:
+        st.session_state.show_fps_guide = False
+    if 'rescan_start' not in st.session_state:
+        st.session_state.rescan_start = ""
+    if 'rescan_end' not in st.session_state:
+        st.session_state.rescan_end = ""
+    if 'rescan_fps' not in st.session_state:
+        st.session_state.rescan_fps = 10.0
+    if 'show_full_enhanced' not in st.session_state:
+        st.session_state.show_full_enhanced = False
     
     # Sidebar configuration
     with st.sidebar:
@@ -253,6 +267,61 @@ def main():
             st.info(f"🎬 **Medium FPS ({fps})**: Balanced concurrency recommended. Try 5-12 concurrent batches.")
         else:
             st.info(f"🎬 **Low FPS ({fps})**: Conservative concurrency recommended. Try 3-8 concurrent batches.")
+        
+        # FPS/Concurrency Guide Button
+        if st.button("📚 FPS & Concurrency Guide", help="Learn about optimal settings"):
+            st.session_state.show_fps_guide = True
+            st.rerun()
+        
+        # Show FPS Guide if requested
+        if st.session_state.get('show_fps_guide', False):
+            with st.expander("📚 FPS & Concurrency Optimization Guide", expanded=True):
+                st.markdown("""
+                ## 🎯 **Optimal Settings by Use Case**
+                
+                ### **Initial Scan (1-2 FPS)**
+                - **Conservative**: 3-5 concurrent batches
+                - **Balanced**: 5-8 concurrent batches  
+                - **Aggressive**: 8-12 concurrent batches
+                - **Best for**: Getting overview, identifying key moments
+                
+                ### **Detail Scan (6-10 FPS)**
+                - **Conservative**: 2-4 concurrent batches
+                - **Balanced**: 4-6 concurrent batches
+                - **Aggressive**: 6-8 concurrent batches
+                - **Best for**: Analyzing specific techniques, knot tying, suturing
+                
+                ### **High Detail (10-15 FPS)**
+                - **Conservative**: 1-3 concurrent batches
+                - **Balanced**: 3-5 concurrent batches
+                - **Aggressive**: 5-7 concurrent batches
+                - **Best for**: Frame-by-frame analysis, precise timing
+                
+                ## ⚡ **Speed vs Quality Trade-offs**
+                
+                | FPS | Batch Size | Concurrency | Speed | Quality | Use Case |
+                |-----|------------|-------------|-------|---------|----------|
+                | 1   | 5-8        | 8-15        | ⚡⚡⚡ | ⭐⭐     | Overview |
+                | 2   | 5-8        | 6-12        | ⚡⚡   | ⭐⭐⭐    | General |
+                | 5   | 3-6        | 4-8         | ⚡    | ⭐⭐⭐⭐   | Detail |
+                | 10  | 2-4        | 2-6         | 🐌   | ⭐⭐⭐⭐⭐  | Precision |
+                
+                ## 🔍 **Recommended Workflow**
+                
+                1. **Start with 1 FPS, 5 batch size, 8 concurrency** for overview
+                2. **Search transcript** for keywords like "knot", "suture"
+                3. **Rescan key moments** at 10 FPS with 2-4 concurrency
+                4. **Adjust based on performance** - reduce concurrency if you see failures
+                
+                ## ⚠️ **Warning Signs**
+                - **High failure rate**: Reduce concurrency by 2-3
+                - **Slow processing**: Increase concurrency by 1-2
+                - **API errors**: Check your OpenAI tier limits
+                """)
+                
+                if st.button("📚 Close Guide"):
+                    st.session_state.show_fps_guide = False
+                    st.rerun()
         
         # Manual concurrency control
         max_concurrent_batches = st.slider(
@@ -349,7 +418,7 @@ def main():
             uploaded_file = st.file_uploader(
                 "Upload a video file",
                 type=['mp4', 'avi', 'mov', 'mkv', 'wmv'],
-                help="Supported formats: MP4, AVI, MOV, MKV, WMV"
+                help="Supported formats: MP4, AVI, MOV, MKV, WMV (No size limit)"
             )
             
             if uploaded_file is not None:
@@ -571,15 +640,130 @@ def main():
         if st.session_state.transcript:
             st.subheader("📝 Analysis Results")
             
-            # Display transcript
-            with st.expander("📖 Full Transcript", expanded=True):
-                st.markdown(st.session_state.transcript)
+            # Create two columns: left for summary, right for searchable transcript
+            col_summary, col_transcript = st.columns([1, 2])
             
-            # Display events timeline
+            with col_summary:
+                st.subheader("📊 Summary")
+                st.success("✅ **Analysis Complete**")
+                
+                # Show key metrics
+                if st.session_state.events:
+                    event_count = len(st.session_state.events)
+                    st.metric("Events Detected", event_count)
+                    
+                    # Show main action summary
+                    if event_count > 0:
+                        st.info("🎯 **Main Actions Detected**")
+                        # Extract key action words from events
+                        action_words = []
+                        for event in st.session_state.events[:5]:  # Show first 5 events
+                            if 'description' in event:
+                                action_words.append(event['description'][:50] + "...")
+                        
+                        for i, action in enumerate(action_words, 1):
+                            st.write(f"{i}. {action}")
+                
+                # Quick actions
+                st.subheader("⚡ Quick Actions")
+                if st.button("🔍 Search Transcript", type="secondary"):
+                    st.session_state.show_search = True
+                    st.rerun()
+                
+                if st.button("📖 View Full Transcript", type="secondary"):
+                    st.session_state.show_full_transcript = True
+                    st.rerun()
+            
+            with col_transcript:
+                st.subheader("🔍 Searchable Transcript")
+                
+                # Search functionality
+                search_term = st.text_input("🔍 Search for keywords (e.g., 'knot', 'suture', 'incision')", 
+                                         placeholder="Enter search term...")
+                
+                if search_term:
+                    # Search in transcript
+                    transcript_lower = st.session_state.transcript.lower()
+                    search_lower = search_term.lower()
+                    
+                    if search_lower in transcript_lower:
+                        # Find all occurrences
+                        occurrences = []
+                        lines = st.session_state.transcript.split('\n')
+                        
+                        for i, line in enumerate(lines):
+                            if search_lower in line.lower():
+                                # Find the approximate timestamp
+                                timestamp = "Unknown"
+                                for event in st.session_state.events:
+                                    if event.get('description', '').lower() in line.lower():
+                                        timestamp = event.get('timestamp', 'Unknown')
+                                        break
+                                
+                                occurrences.append({
+                                    'line': i + 1,
+                                    'timestamp': timestamp,
+                                    'content': line.strip(),
+                                    'context': '...' + ' '.join(lines[max(0, i-1):min(len(lines), i+2)]) + '...'
+                                })
+                        
+                        if occurrences:
+                            st.success(f"✅ Found {len(occurrences)} occurrences of '{search_term}'")
+                            
+                            # Show occurrences with timestamps
+                            for occ in occurrences:
+                                with st.expander(f"📍 Line {occ['line']} - {occ['timestamp']}", expanded=False):
+                                    st.write("**Context:**")
+                                    st.write(occ['context'])
+                                    st.write("**Exact Match:**")
+                                    st.write(f"**{occ['content']}**")
+                                    
+                                    # Add rescan button for this timestamp
+                                    if occ['timestamp'] != 'Unknown':
+                                        if st.button(f"🔍 Rescan around {occ['timestamp']}", key=f"rescan_{occ['line']}"):
+                                            # Calculate time range around this timestamp
+                                            try:
+                                                time_sec = parse_timestamp(occ['timestamp'])
+                                                start_time = max(0, time_sec - 5)  # 5 seconds before
+                                                end_time = min(st.session_state.video_processor.duration, time_sec + 5)  # 5 seconds after
+                                                
+                                                # Trigger rescan
+                                                st.session_state.rescan_start = format_timestamp(start_time)
+                                                st.session_state.rescan_end = format_timestamp(end_time)
+                                                st.session_state.rescan_fps = 10.0  # High FPS for detail
+                                                st.rerun()
+                                            except:
+                                                st.error("Could not parse timestamp for rescan")
+                        else:
+                            st.warning(f"⚠️ No occurrences found for '{search_term}'")
+                    else:
+                        st.warning(f"⚠️ No occurrences found for '{search_term}'")
+                
+                # Show transcript preview (first 500 chars)
+                st.subheader("📖 Transcript Preview")
+                preview = st.session_state.transcript[:500] + "..." if len(st.session_state.transcript) > 500 else st.session_state.transcript
+                st.text_area("Preview", preview, height=150, disabled=True)
+                
+                # Show full transcript if requested
+                if st.session_state.get('show_full_transcript', False):
+                    st.subheader("📖 Full Transcript")
+                    st.text_area("Complete Transcript", st.session_state.transcript, height=400, disabled=True)
+                    if st.button("📖 Hide Full Transcript"):
+                        st.session_state.show_full_transcript = False
+                        st.rerun()
+            
+            # Display events timeline in a compact format
             if st.session_state.events:
-                with st.expander("📅 Events Timeline"):
+                with st.expander("📅 Events Timeline", expanded=False):
+                    # Create a more compact timeline view
+                    timeline_data = []
                     for event in st.session_state.events:
-                        st.json(event)
+                        timeline_data.append({
+                            "Time": event.get('timestamp', 'Unknown'),
+                            "Event": event.get('description', 'No description')[:100] + "..." if len(event.get('description', '')) > 100 else event.get('description', 'No description')
+                        })
+                    
+                    st.table(timeline_data)
             
             # Display audio transcription if available
             if st.session_state.audio_transcript:
@@ -708,25 +892,45 @@ def main():
             # Enhanced narrative section
             if st.session_state.enhanced_narrative:
                 st.subheader("✨ Enhanced Narrative (GPT-5)")
-                with st.expander("📖 Coherent Story", expanded=True):
-                    st.markdown(st.session_state.enhanced_narrative)
                 
-                # Download enhanced narrative
-                if st.button("📄 Download Enhanced Narrative (MD)"):
-                    filename = save_transcript(st.session_state.enhanced_narrative, prefix="enhanced_")
-                    st.success(f"✅ Enhanced narrative saved as {filename}")
-                    st.download_button(
-                        label="📥 Download Enhanced Narrative",
-                        data=st.session_state.enhanced_narrative,
-                        file_name=filename,
-                        mime="text/markdown"
-                    )
+                # Show summary instead of full content
+                preview_length = 300
+                preview = st.session_state.enhanced_narrative[:preview_length] + "..." if len(st.session_state.enhanced_narrative) > preview_length else st.session_state.enhanced_narrative
                 
-                # Regenerate button
-                if st.button("🔄 Regenerate Enhanced Narrative", key="regenerate_enhanced"):
-                    # Set a flag to indicate regeneration is requested
-                    st.session_state.regeneration_requested = True
-                    st.rerun()
+                st.info(f"📖 **Enhanced narrative complete** ({len(st.session_state.enhanced_narrative):,} characters)")
+                st.text_area("Preview", preview, height=100, disabled=True)
+                
+                # Action buttons in columns
+                col_enh1, col_enh2, col_enh3 = st.columns(3)
+                
+                with col_enh1:
+                    if st.button("📖 View Full", key="view_enhanced"):
+                        st.session_state.show_full_enhanced = True
+                        st.rerun()
+                
+                with col_enh2:
+                    if st.button("📄 Download", key="download_enhanced"):
+                        filename = save_transcript(st.session_state.enhanced_narrative, prefix="enhanced_")
+                        st.success(f"✅ Enhanced narrative saved as {filename}")
+                        st.download_button(
+                            label="📥 Download Enhanced Narrative",
+                            data=st.session_state.enhanced_narrative,
+                            file_name=filename,
+                            mime="text/markdown"
+                        )
+                
+                with col_enh3:
+                    if st.button("🔄 Regenerate", key="regenerate_enhanced"):
+                        st.session_state.regeneration_requested = True
+                        st.rerun()
+                
+                # Show full enhanced narrative if requested
+                if st.session_state.get('show_full_enhanced', False):
+                    with st.expander("📖 Full Enhanced Narrative", expanded=True):
+                        st.markdown(st.session_state.enhanced_narrative)
+                    if st.button("📖 Hide Full Narrative"):
+                        st.session_state.show_full_enhanced = False
+                        st.rerun()
                 
                 # Handle regeneration if requested
                 if st.session_state.get('regeneration_requested', False):
@@ -741,16 +945,13 @@ def main():
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
                             st.success("✨ Enhanced narrative regenerated!")
-                            # Clear the flag
                             st.session_state.regeneration_requested = False
                         else:
                             st.error("❌ Failed to regenerate enhanced narrative")
-                            # Clear the flag on failure too
                             st.session_state.regeneration_requested = False
             else:
                 # Manual trigger button if no enhanced narrative exists
                 if st.button("✨ Create Enhanced Narrative with GPT-5", key="create_enhanced_manual"):
-                    # Set a flag to indicate enhancement is requested
                     st.session_state.enhancement_requested = True
                     st.rerun()
                 
@@ -767,11 +968,9 @@ def main():
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
                             st.success("✨ Enhanced narrative created!")
-                            # Clear the flag
                             st.session_state.enhancement_requested = False
                         else:
                             st.error("❌ Failed to create enhanced narrative")
-                            # Clear the flag on failure too
                             st.session_state.enhancement_requested = False
             
             # Download options
@@ -804,11 +1003,34 @@ def main():
     if st.session_state.video_processor and st.session_state.gpt4o_client and st.session_state.analysis_complete:
         st.header("🔍 Rescan Segment")
         
-        col_rescan1, col_rescan2 = st.columns(2)
+        # Check if we have rescan parameters from search
+        if st.session_state.rescan_start and st.session_state.rescan_end:
+            st.success(f"🎯 **Auto-rescan ready**: {st.session_state.rescan_start} to {st.session_state.rescan_end} at {st.session_state.rescan_fps} FPS")
+            
+            col_auto1, col_auto2 = st.columns([1, 1])
+            with col_auto1:
+                if st.button("🚀 Start Auto-Rescan", type="primary"):
+                    rescan_segment(st.session_state.rescan_start, st.session_state.rescan_end, st.session_state.rescan_fps)
+                    # Clear the auto-rescan parameters
+                    st.session_state.rescan_start = ""
+                    st.session_state.rescan_end = ""
+                    st.rerun()
+            
+            with col_auto2:
+                if st.button("❌ Cancel Auto-Rescan"):
+                    st.session_state.rescan_start = ""
+                    st.session_state.rescan_end = ""
+                    st.rerun()
+        
+        # Manual rescan section
+        st.subheader("📝 Manual Rescan")
+        
+        col_rescan1, col_rescan2, col_rescan3 = st.columns(3)
         
         with col_rescan1:
             start_time = st.text_input(
                 "Start time (HH:MM:SS)",
+                value=st.session_state.rescan_start,
                 placeholder="00:01:30",
                 help="Start time for rescan segment"
             )
@@ -816,18 +1038,61 @@ def main():
         with col_rescan2:
             end_time = st.text_input(
                 "End time (HH:MM:SS)",
+                value=st.session_state.rescan_end,
                 placeholder="00:02:00",
                 help="End time for rescan segment"
+            )
+        
+        with col_rescan3:
+            rescan_fps_manual = st.slider(
+                "Rescan FPS",
+                5.0, 20.0, 
+                value=st.session_state.rescan_fps,
+                step=1.0,
+                help="Higher FPS = more detail but slower processing"
             )
         
         if start_time and end_time:
             if validate_time_range(start_time, end_time, st.session_state.video_processor.duration):
                 st.success("✅ Valid time range")
                 
-                if st.button("🔍 Rescan Segment", type="primary"):
-                    rescan_segment(start_time, end_time, rescan_fps)
+                # Show estimated processing info
+                duration = parse_timestamp(end_time) - parse_timestamp(start_time)
+                estimated_frames = int(duration * rescan_fps_manual)
+                st.info(f"📊 **Rescan Info**: {duration:.1f}s segment, ~{estimated_frames} frames at {rescan_fps_manual} FPS")
+                
+                if st.button("🔍 Start Manual Rescan", type="primary"):
+                    rescan_segment(start_time, end_time, rescan_fps_manual)
             else:
                 st.error("❌ Invalid time range")
+        
+        # Quick rescan presets
+        st.subheader("⚡ Quick Rescan Presets")
+        col_preset1, col_preset2, col_preset3 = st.columns(3)
+        
+        with col_preset1:
+            if st.button("🔍 5s Detail (10 FPS)", help="Rescan 5 seconds at 10 FPS for detailed analysis"):
+                if st.session_state.video_processor.duration:
+                    mid_point = st.session_state.video_processor.duration / 2
+                    start = max(0, mid_point - 2.5)
+                    end = min(st.session_state.video_processor.duration, mid_point + 2.5)
+                    rescan_segment(format_timestamp(start), format_timestamp(end), 10.0)
+        
+        with col_preset2:
+            if st.button("🔍 10s Detail (8 FPS)", help="Rescan 10 seconds at 8 FPS for technique analysis"):
+                if st.session_state.video_processor.duration:
+                    mid_point = st.session_state.video_processor.duration / 2
+                    start = max(0, mid_point - 5)
+                    end = min(st.session_state.video_processor.duration, mid_point + 5)
+                    rescan_segment(format_timestamp(start), format_timestamp(end), 8.0)
+        
+        with col_preset3:
+            if st.button("🔍 15s Overview (6 FPS)", help="Rescan 15 seconds at 6 FPS for sequence overview"):
+                if st.session_state.video_processor.duration:
+                    mid_point = st.session_state.video_processor.duration / 2
+                    start = max(0, mid_point - 7.5)
+                    end = min(st.session_state.video_processor.duration, mid_point + 7.5)
+                    rescan_segment(format_timestamp(start), format_timestamp(end), 6.0)
     
     # Footer
     st.markdown("---")
@@ -1163,28 +1428,54 @@ NO POETIC LANGUAGE: Avoid phrases like "as if he's measuring the space" or "like
 
 Create a tight, continuous story that flows naturally without time constraints, seamlessly coordinating visual actions with spoken dialogue. When audio is available, weave the spoken words naturally into the narrative, creating a rich, multi-sensory experience that captures both what is seen and what is heard. Focus on what happens visually and how events connect logically, with every detail rendered in concrete, specific terms."""
 
-        # Make API call to GPT-5
-        response = gpt5_client.client.chat.completions.create(
-            model="gpt-5",  # Use GPT-5 for enhanced narrative
-            messages=[
-                {
-                    "role": "user",
-                    "content": enhancement_prompt
-                }
-            ],
-            max_completion_tokens=4000
-        )
+        # Check input lengths and provide warnings
+        transcript_length = len(raw_transcript)
+        events_length = len(json.dumps(events, indent=2))
+        audio_length = len(audio_transcript) if audio_transcript else 0
         
-        enhanced_narrative = response.choices[0].message.content
+        st.info(f"📊 **Input Analysis**: Transcript: {transcript_length:,} chars, Events: {events_length:,} chars, Audio: {audio_length:,} chars")
         
-        # Ensure proper encoding
-        if isinstance(enhanced_narrative, str):
-            enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+        # If content is very long, suggest chunking
+        total_input = transcript_length + events_length + audio_length
+        if total_input > 100000:  # 100K character limit
+            st.warning(f"⚠️ **Content Very Long**: Total input is {total_input:,} characters. Consider reducing FPS or batch size for better results.")
         
-        return enhanced_narrative
+        # Make API call to GPT-5 with better error handling
+        try:
+            response = gpt5_client.client.chat.completions.create(
+                model="gpt-5",  # Use GPT-5 for enhanced narrative
+                messages=[
+                    {
+                        "role": "user",
+                        "content": enhancement_prompt
+                    }
+                ],
+                max_completion_tokens=4000
+            )
+            
+            enhanced_narrative = response.choices[0].message.content
+            
+            # Ensure proper encoding
+            if isinstance(enhanced_narrative, str):
+                enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+            
+            st.success(f"✅ **Enhanced narrative created successfully**: {len(enhanced_narrative):,} characters")
+            return enhanced_narrative
+            
+        except Exception as api_error:
+            st.error(f"❌ **GPT-5 API Error**: {api_error}")
+            if "context_length_exceeded" in str(api_error).lower():
+                st.warning("💡 **Solution**: Try reducing FPS or batch size to create shorter input content")
+            elif "rate_limit" in str(api_error).lower():
+                st.warning("💡 **Solution**: Wait a moment and try again, or reduce concurrency")
+            elif "quota_exceeded" in str(api_error).lower():
+                st.error("💡 **Solution**: Check your OpenAI API quota and billing")
+            return ""
         
     except Exception as e:
-        st.error(f"❌ Error creating enhanced narrative: {e}")
+        st.error(f"❌ **Unexpected Error**: {e}")
+        st.info("🔍 **Debug Info**: Check console for detailed error messages")
+        print(f"Enhanced narrative creation error: {e}")
         return ""
 
 def get_concurrency_safety_level(concurrent_batches: int, fps: float = 1.0) -> str:
