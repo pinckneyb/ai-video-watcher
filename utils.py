@@ -236,6 +236,59 @@ def transcribe_audio_with_whisper(audio_path: str, api_key: str) -> str:
         print(f"Error transcribing audio: {e}")
         return None
 
+def transcribe_audio_with_diarization(audio_path: str, api_key: str) -> str:
+    """
+    Transcribe audio with speaker diarization using OpenAI Whisper + Pyannote.
+    
+    Args:
+        audio_path: Path to audio file
+        api_key: OpenAI API key
+        
+    Returns:
+        str: Transcribed text with speaker labels
+    """
+    try:
+        # First, get the basic transcript
+        basic_transcript = transcribe_audio_with_whisper(audio_path, api_key)
+        if not basic_transcript:
+            return None
+        
+        # Then add diarization
+        try:
+            from pyannote.audio import Pipeline
+            from pyannote.audio.pipelines.utils.hook import ProgressHook
+            
+            # Initialize diarization pipeline
+            pipeline = Pipeline.from_pretrained(
+                "pyannote/speaker-diarization-3.1",
+                use_auth_token="YOUR_HF_TOKEN"  # User needs to provide this
+            )
+            
+            # Perform diarization
+            diarization = pipeline(audio_path)
+            
+            # Format the output with speaker labels
+            # This is a simplified version - in practice, you'd want more sophisticated
+            # alignment between transcript and diarization timestamps
+            
+            formatted_transcript = f"TRANSCRIPT WITH SPEAKER IDENTIFICATION:\n{basic_transcript}\n\nSPEAKER SEGMENTS:\n"
+            
+            for turn, _, speaker in diarization.itertracks(yield_label=True):
+                formatted_transcript += f"Speaker {speaker}: {turn.start:.1f}s - {turn.end:.1f}s\n"
+            
+            return formatted_transcript
+            
+        except ImportError:
+            # Fallback to basic transcript if diarization not available
+            return f"TRANSCRIPT:\n{basic_transcript}\n\nNote: Speaker diarization not available. Install pyannote.audio for speaker identification."
+        except Exception as e:
+            # Fallback to basic transcript if diarization fails
+            return f"TRANSCRIPT:\n{basic_transcript}\n\nNote: Speaker diarization failed: {e}"
+        
+    except Exception as e:
+        print(f"Error in diarization transcription: {e}")
+        return None
+
 def estimate_processing_time(video_duration: float, fps: float, batch_size: int) -> str:
     """
     Estimate processing time for video analysis.

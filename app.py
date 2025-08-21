@@ -18,7 +18,7 @@ from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, save_timeline_json, estimate_processing_time,
     extract_video_info, sanitize_filename, extract_audio_from_video,
-    transcribe_audio_with_whisper
+    transcribe_audio_with_whisper, transcribe_audio_with_diarization
 )
 
 # API key management
@@ -209,6 +209,12 @@ def main():
             help="Extract and transcribe audio track (if present) using Whisper API"
         )
         
+        if enable_whisper:
+            enable_diarization = st.checkbox(
+                "Enable speaker diarization",
+                help="Identify different speakers in the audio (requires pyannote.audio)"
+            )
+        
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
         max_concurrent_batches = st.slider("Max concurrent batches", 1, 10, 3, 1, 
@@ -354,10 +360,16 @@ def main():
                                     # Extract and transcribe audio
                                     audio_path = extract_audio_from_video(temp_video_path)
                                     if audio_path and os.path.exists(audio_path):
-                                        audio_transcript = transcribe_audio_with_whisper(
-                                            audio_path, 
-                                            st.session_state.gpt4o_client.api_key
-                                        )
+                                        if enable_diarization:
+                                            audio_transcript = transcribe_audio_with_diarization(
+                                                audio_path, 
+                                                st.session_state.gpt4o_client.api_key
+                                            )
+                                        else:
+                                            audio_transcript = transcribe_audio_with_whisper(
+                                                audio_path, 
+                                                st.session_state.gpt4o_client.api_key
+                                            )
                                         if audio_transcript:
                                             st.session_state.audio_transcript = audio_transcript
                                             st.success("✅ Audio transcription completed!")
@@ -475,7 +487,8 @@ def main():
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
-                            st.session_state.gpt4o_client.api_key
+                            st.session_state.gpt4o_client.api_key,
+                            st.session_state.get('audio_transcript', '')
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -490,7 +503,8 @@ def main():
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
-                            st.session_state.gpt4o_client.api_key
+                            st.session_state.gpt4o_client.api_key,
+                            st.session_state.get('audio_transcript', '')
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -631,7 +645,8 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
                 enhanced_narrative = create_coherent_narrative(
                     st.session_state.transcript, 
                     st.session_state.events,
-                    gpt4o_client.api_key
+                    gpt4o_client.api_key,
+                    st.session_state.get('audio_transcript', '')
                 )
                 if enhanced_narrative:
                     st.session_state.enhanced_narrative = enhanced_narrative
@@ -729,14 +744,14 @@ def process_single_batch_concurrent(batch, gpt4o_client, profile, batch_index, t
         st.error(f"❌ Error in concurrent batch {batch_index + 1}: {e}")
         return f"Error in batch {batch_index + 1}: {e}", []
 
-def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str) -> str:
+def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "") -> str:
     """Create a coherent, continuous narrative using GPT-5."""
     try:
         # Create a GPT-5 client for narrative enhancement
         gpt5_client = GPT4oClient(api_key=api_key)
         
         # Prepare the enhancement prompt
-        enhancement_prompt = f"""You are a master storyteller and video analyst. Your task is to transform raw, batch-by-batch video analysis into a coherent, continuous narrative that reads like a polished story.
+        enhancement_prompt = f"""You are a master storyteller and video analyst. Your task is to transform raw, batch-by-batch video analysis and audio transcription into a coherent, continuous narrative that reads like a polished story.
 
 RAW TRANSCRIPT:
 {raw_transcript}
@@ -744,19 +759,25 @@ RAW TRANSCRIPT:
 EVENTS TIMELINE:
 {json.dumps(events, indent=2)}
 
+AUDIO TRANSCRIPT:
+{audio_transcript if audio_transcript else "No audio transcription available."}
+
 INSTRUCTIONS:
 1. **Chronological Flow**: Maintain strict chronological order from start to finish
 2. **Character Continuity**: Track characters/objects across scenes, noting when they appear/disappear
 3. **Setting Continuity**: Maintain awareness of locations and spatial relationships
 4. **Cause and Effect**: Connect events logically, explaining why things happen
 5. **Narrative Coherence**: Fill gaps, resolve contradictions, and create smooth transitions
-6. **Absolute Specificity**: Describe EVERYTHING with concrete, specific details
-7. **No Generic Language**: Eliminate phrases like "a figure," "someone," "a person"
-8. **Physical Description**: Specify gender, age, body type, clothing, expressions, posture
-9. **Direct Observation**: If someone is obese, beautiful, ugly, old, young - say so directly
-10. **No Political Correctness**: Describe what you see without filtering or softening
-11. **Condensation**: Condense elements within chunks or across chunks to tighten the narrative
-12. **Imputation**: Impute what happens between actions to create smooth flow
+6. **Audio-Visual Coordination**: Seamlessly weave together visual actions and spoken dialogue
+7. **Temporal Synchronization**: Align visual events with corresponding audio when possible
+8. **Dialogue Integration**: Naturally incorporate spoken words into the narrative flow
+9. **Absolute Specificity**: Describe EVERYTHING with concrete, specific details
+10. **No Generic Language**: Eliminate phrases like "a figure," "someone," "a person"
+11. **Physical Description**: Specify gender, age, body type, clothing, expressions, posture
+12. **Direct Observation**: If someone is obese, beautiful, ugly, old, young - say so directly
+13. **No Political Correctness**: Describe what you see without filtering or softening
+14. **Condensation**: Condense elements within chunks or across chunks to tighten the narrative
+15. **Imputation**: Impute what happens between actions to create smooth flow
 
 OUTPUT FORMAT:
 - Write in third-person narrative style
@@ -772,7 +793,7 @@ CRITICAL: Every person, object, or action must be described with absolute specif
 
 NO POETIC LANGUAGE: Avoid phrases like "as if he's measuring the space" or "like he's hitting a beat." Stick to rich, full detailing of what we can actually see. If there is text (overlaid or in scene), transcribe it exactly. Focus on concrete visual details - the scene itself playing out in prose, richly described, will be enough.
 
-Create a tight, continuous story that flows naturally without time constraints, focusing on what happens visually and how events connect logically, with every detail rendered in concrete, specific terms."""
+Create a tight, continuous story that flows naturally without time constraints, seamlessly coordinating visual actions with spoken dialogue. When audio is available, weave the spoken words naturally into the narrative, creating a rich, multi-sensory experience that captures both what is seen and what is heard. Focus on what happens visually and how events connect logically, with every detail rendered in concrete, specific terms."""
 
         # Make API call to GPT-5
         response = gpt5_client.client.chat.completions.create(
