@@ -242,6 +242,14 @@ def main():
             if recommended:
                 st.info(f"💡 **Smart Recommendation**: Based on your performance history, try {recommended} concurrent batches")
         
+        # FPS-aware concurrency guidance
+        if fps > 5.0:
+            st.info(f"🎬 **High FPS ({fps})**: You can safely use higher concurrency. Try 8-15 concurrent batches for optimal speed.")
+        elif fps > 2.0:
+            st.info(f"🎬 **Medium FPS ({fps})**: Balanced concurrency recommended. Try 5-12 concurrent batches.")
+        else:
+            st.info(f"🎬 **Low FPS ({fps})**: Conservative concurrency recommended. Try 3-8 concurrent batches.")
+        
         # Manual concurrency control
         max_concurrent_batches = st.slider(
             "Max concurrent batches", 
@@ -255,7 +263,7 @@ def main():
         st.session_state.max_concurrent_batches = max_concurrent_batches
         
         # Concurrency safety indicator
-        safety_level = get_concurrency_safety_level(max_concurrent_batches)
+        safety_level = get_concurrency_safety_level(max_concurrent_batches, fps)
         if safety_level == "safe":
             st.success(f"✅ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches")
         elif safety_level == "caution":
@@ -564,6 +572,8 @@ def main():
                             file_name=filename,
                             mime="text/markdown"
                         )
+            else:
+                st.info("🎵 No audio transcript available. Enable Whisper in sidebar to transcribe audio.")
             
             # Enhanced narrative section
             if st.session_state.enhanced_narrative:
@@ -585,11 +595,12 @@ def main():
                 # Regenerate button
                 if st.button("🔄 Regenerate Enhanced Narrative"):
                     with st.spinner("Regenerating enhanced narrative..."):
+                        audio_transcript = st.session_state.get('audio_transcript', '')
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt4o_client.api_key,
-                            st.session_state.get('audio_transcript', '')
+                            audio_transcript
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -601,11 +612,12 @@ def main():
                 # Manual trigger button if no enhanced narrative exists
                 if st.button("✨ Create Enhanced Narrative with GPT-5"):
                     with st.spinner("Creating enhanced narrative..."):
+                        audio_transcript = st.session_state.get('audio_transcript', '')
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt4o_client.api_key,
-                            st.session_state.get('audio_transcript', '')
+                            audio_transcript
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -775,11 +787,18 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
         # Post-process with GPT-5 for coherent narrative
         if st.button("🔄 Enhance Narrative with GPT-5", type="secondary"):
             with st.spinner("Creating coherent narrative with GPT-5..."):
+                # Debug: show what we're passing
+                audio_transcript = st.session_state.get('audio_transcript', '')
+                if audio_transcript:
+                    st.info(f"🎵 Including audio transcript ({len(audio_transcript)} characters)")
+                else:
+                    st.warning("⚠️ No audio transcript found - check Whisper settings")
+                
                 enhanced_narrative = create_coherent_narrative(
                     st.session_state.transcript, 
                     st.session_state.events,
                     gpt4o_client.api_key,
-                    st.session_state.get('audio_transcript', '')
+                    audio_transcript
                 )
                 if enhanced_narrative:
                     st.session_state.enhanced_narrative = enhanced_narrative
@@ -1010,14 +1029,33 @@ Create a tight, continuous story that flows naturally without time constraints, 
         st.error(f"❌ Error creating enhanced narrative: {e}")
         return ""
 
-def get_concurrency_safety_level(concurrent_batches: int) -> str:
-    """Determine safety level for concurrency setting."""
-    if concurrent_batches <= 3:
-        return "safe"
-    elif concurrent_batches <= 8:
-        return "caution"
+def get_concurrency_safety_level(concurrent_batches: int, fps: float = 1.0) -> str:
+    """Determine safety level for concurrency setting, accounting for FPS."""
+    # Higher FPS allows for higher concurrency safely
+    if fps <= 2.0:
+        # Low FPS: conservative limits
+        if concurrent_batches <= 3:
+            return "safe"
+        elif concurrent_batches <= 8:
+            return "caution"
+        else:
+            return "danger"
+    elif fps <= 5.0:
+        # Medium FPS: balanced limits
+        if concurrent_batches <= 5:
+            return "safe"
+        elif concurrent_batches <= 12:
+            return "caution"
+        else:
+            return "danger"
     else:
-        return "danger"
+        # High FPS: aggressive limits
+        if concurrent_batches <= 8:
+            return "safe"
+        elif concurrent_batches <= 15:
+            return "caution"
+        else:
+            return "danger"
 
 def get_recommended_concurrency() -> int:
     """Get smart concurrency recommendation based on performance history."""
