@@ -42,6 +42,8 @@ Thumbs.db
 # Project specific
 config.json
 temp_*
+temp_video_*
+*_audio.wav
 *.log
 transcript_*.md
 enhanced_*.md

@@ -177,6 +177,65 @@ def sanitize_filename(filename: str) -> str:
     
     return filename
 
+def extract_audio_from_video(video_path: str, audio_path: str = None) -> str:
+    """
+    Extract audio from video file using FFmpeg.
+    
+    Args:
+        video_path: Path to video file
+        audio_path: Optional path for output audio file
+        
+    Returns:
+        str: Path to extracted audio file
+    """
+    if not audio_path:
+        # Generate audio filename
+        base_name = os.path.splitext(os.path.basename(video_path))[0]
+        audio_path = f"{base_name}_audio.wav"
+    
+    try:
+        import ffmpeg
+        
+        # Extract audio using FFmpeg
+        stream = ffmpeg.input(video_path)
+        stream = ffmpeg.output(stream, audio_path, acodec='pcm_s16le', ac=1, ar='16000')
+        ffmpeg.run(stream, overwrite_output=True, quiet=True)
+        
+        return audio_path
+        
+    except Exception as e:
+        print(f"Error extracting audio: {e}")
+        return None
+
+def transcribe_audio_with_whisper(audio_path: str, api_key: str) -> str:
+    """
+    Transcribe audio using OpenAI Whisper API.
+    
+    Args:
+        audio_path: Path to audio file
+        api_key: OpenAI API key
+        
+    Returns:
+        str: Transcribed text
+    """
+    try:
+        from openai import OpenAI
+        
+        client = OpenAI(api_key=api_key)
+        
+        with open(audio_path, "rb") as audio_file:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                response_format="text"
+            )
+        
+        return transcript
+        
+    except Exception as e:
+        print(f"Error transcribing audio: {e}")
+        return None
+
 def estimate_processing_time(video_duration: float, fps: float, batch_size: int) -> str:
     """
     Estimate processing time for video analysis.

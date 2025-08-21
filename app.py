@@ -17,7 +17,8 @@ from profiles import ProfileManager
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, save_timeline_json, estimate_processing_time,
-    extract_video_info, sanitize_filename
+    extract_video_info, sanitize_filename, extract_audio_from_video,
+    transcribe_audio_with_whisper
 )
 
 # API key management
@@ -175,6 +176,8 @@ def main():
         st.session_state.saved_api_key = load_api_key()
     if 'enhanced_narrative' not in st.session_state:
         st.session_state.enhanced_narrative = ""
+    if 'audio_transcript' not in st.session_state:
+        st.session_state.audio_transcript = ""
     
     # Sidebar configuration
     with st.sidebar:
@@ -198,6 +201,13 @@ def main():
         st.subheader("📹 Video Settings")
         fps = st.slider("Frames per second", 0.5, 5.0, 1.0, 0.1)
         batch_size = st.slider("Batch size", 3, 15, 5, 1)
+        
+        # Audio transcription settings
+        st.subheader("🎵 Audio Transcription")
+        enable_whisper = st.checkbox(
+            "Enable OpenAI Whisper transcription",
+            help="Extract and transcribe audio track (if present) using Whisper API"
+        )
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
@@ -328,13 +338,44 @@ def main():
                             st.session_state.transcript = ""
                             st.session_state.events = []
                             
-                            # Reset GPT-4o client context
-                            if st.session_state.gpt4o_client:
-                                st.session_state.gpt4o_client.reset_context()
-                            
-                            # Auto-start analysis if profile is selected
-                            if st.session_state.current_profile:
-                                st.rerun()
+                                                    # Reset GPT-4o client context
+                        if st.session_state.gpt4o_client:
+                            st.session_state.gpt4o_client.reset_context()
+                        
+                        # Handle audio transcription if enabled
+                        if enable_whisper and st.session_state.gpt4o_client:
+                            with st.spinner("Transcribing audio with Whisper..."):
+                                try:
+                                    # Save video temporarily for audio extraction
+                                    temp_video_path = f"temp_video_{uploaded_file.name}"
+                                    with open(temp_video_path, "wb") as f:
+                                        f.write(video_source)
+                                    
+                                    # Extract and transcribe audio
+                                    audio_path = extract_audio_from_video(temp_video_path)
+                                    if audio_path and os.path.exists(audio_path):
+                                        audio_transcript = transcribe_audio_with_whisper(
+                                            audio_path, 
+                                            st.session_state.gpt4o_client.api_key
+                                        )
+                                        if audio_transcript:
+                                            st.session_state.audio_transcript = audio_transcript
+                                            st.success("✅ Audio transcription completed!")
+                                        else:
+                                            st.warning("⚠️ Audio transcription failed")
+                                    
+                                    # Clean up temp files
+                                    if os.path.exists(temp_video_path):
+                                        os.remove(temp_video_path)
+                                    if audio_path and os.path.exists(audio_path):
+                                        os.remove(audio_path)
+                                        
+                                except Exception as e:
+                                    st.warning(f"⚠️ Audio transcription error: {e}")
+                        
+                        # Auto-start analysis if profile is selected
+                        if st.session_state.current_profile:
+                            st.rerun()
                         else:
                             st.error("❌ Video loaded but duration is invalid")
                             st.session_state.video_processor = None
@@ -393,6 +434,23 @@ def main():
                 with st.expander("📅 Events Timeline"):
                     for event in st.session_state.events:
                         st.json(event)
+            
+            # Display audio transcription if available
+            if st.session_state.audio_transcript:
+                st.subheader("🎵 Audio Transcription (Whisper)")
+                with st.expander("📝 Spoken Content", expanded=True):
+                    st.markdown(st.session_state.audio_transcript)
+                    
+                    # Download audio transcript
+                    if st.button("📄 Download Audio Transcript (MD)"):
+                        filename = save_transcript(st.session_state.audio_transcript, prefix="audio_")
+                        st.success(f"✅ Audio transcript saved as {filename}")
+                        st.download_button(
+                            label="📥 Download Audio Transcript",
+                            data=st.session_state.audio_transcript,
+                            file_name=filename,
+                            mime="text/markdown"
+                        )
             
             # Enhanced narrative section
             if st.session_state.enhanced_narrative:
