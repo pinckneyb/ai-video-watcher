@@ -655,13 +655,36 @@ def main():
                     # Show main action summary
                     if event_count > 0:
                         st.info("🎯 **Main Actions Detected**")
-                        # Extract key action words from events
-                        action_words = []
+                        # Extract key action words from events with timestamps
+                        action_summaries = []
                         for event in st.session_state.events[:5]:  # Show first 5 events
                             if 'description' in event:
-                                action_words.append(event['description'][:50] + "...")
+                                description = event['description']
+                                timestamp = event.get('timestamp', 'Unknown')
+                                
+                                # Create a clean action summary
+                                action_text = description
+                                
+                                # Remove redundant phrases for cleaner display
+                                redundant_phrases = [
+                                    "The scene shows", "We can see", "The video shows", "The frame shows",
+                                    "At this moment", "At this time", "During this segment"
+                                ]
+                                
+                                for phrase in redundant_phrases:
+                                    if action_text.lower().startswith(phrase.lower()):
+                                        action_text = action_text[len(phrase):].strip()
+                                        if action_text:
+                                            action_text = action_text[0].upper() + action_text[1:]
+                                        break
+                                
+                                # Truncate if too long
+                                if len(action_text) > 60:
+                                    action_text = action_text[:60].rsplit(' ', 1)[0] + "..."
+                                
+                                action_summaries.append(f"[{timestamp}] {action_text}")
                         
-                        for i, action in enumerate(action_words, 1):
+                        for i, action in enumerate(action_summaries, 1):
                             st.write(f"{i}. {action}")
                 
                 # Quick actions
@@ -797,15 +820,49 @@ def main():
                     else:
                         st.warning(f"⚠️ No occurrences found for '{search_term}' in any content")
                 
-                # Show transcript preview (first 500 chars)
-                st.subheader("📖 Transcript Preview")
-                preview = st.session_state.transcript[:500] + "..." if len(st.session_state.transcript) > 500 else st.session_state.transcript
+                # Show transcript preview with timestamps
+                st.subheader("📖 Transcript Preview (with timestamps)")
+                
+                # Create a timestamped preview by combining transcript with events
+                if st.session_state.events:
+                    # Create a timestamped version of the transcript
+                    timestamped_preview = ""
+                    lines = st.session_state.transcript.split('\n')
+                    
+                    for i, line in enumerate(lines):
+                        if line.strip():  # Skip empty lines
+                            # Find matching event for this line
+                            timestamp = "Unknown"
+                            for event in st.session_state.events:
+                                if event.get('description', '').lower() in line.lower():
+                                    timestamp = event.get('timestamp', 'Unknown')
+                                    break
+                            
+                            if timestamp != "Unknown":
+                                timestamped_preview += f"[{timestamp}] {line}\n"
+                            else:
+                                timestamped_preview += f"{line}\n"
+                    
+                    # Show first 800 chars of timestamped version
+                    preview_length = 800
+                    preview = timestamped_preview[:preview_length] + "..." if len(timestamped_preview) > preview_length else timestamped_preview
+                else:
+                    # Fallback to original transcript if no events
+                    preview = st.session_state.transcript[:500] + "..." if len(st.session_state.transcript) > 500 else st.session_state.transcript
+                
                 st.text_area("Preview", preview, height=150, disabled=True)
                 
                 # Show full transcript if requested
                 if st.session_state.get('show_full_transcript', False):
-                    st.subheader("📖 Full Transcript")
-                    st.text_area("Complete Transcript", st.session_state.transcript, height=400, disabled=True)
+                    st.subheader("📖 Full Transcript (with timestamps)")
+                    
+                    # Show timestamped version if available
+                    if st.session_state.events:
+                        st.info("📅 **Timestamped Transcript** - Events aligned with timestamps")
+                        st.text_area("Complete Timestamped Transcript", timestamped_preview, height=400, disabled=True)
+                    else:
+                        st.text_area("Complete Transcript", st.session_state.transcript, height=400, disabled=True)
+                    
                     if st.button("📖 Hide Full Transcript"):
                         st.session_state.show_full_transcript = False
                         st.rerun()
@@ -813,15 +870,50 @@ def main():
             # Display events timeline in a compact format
             if st.session_state.events:
                 with st.expander("📅 Events Timeline", expanded=False):
-                    # Create a more compact timeline view
+                    # Create a more compact timeline view with better formatting
                     timeline_data = []
                     for event in st.session_state.events:
+                        description = event.get('description', 'No description')
+                        
+                        # Create a clean synopsis by removing redundant phrases and formatting
+                        synopsis = description
+                        
+                        # Remove common redundant phrases
+                        redundant_phrases = [
+                            "The scene shows", "We can see", "The video shows", "The frame shows",
+                            "At this moment", "At this time", "During this segment",
+                            "The image depicts", "The frame depicts", "The scene depicts"
+                        ]
+                        
+                        for phrase in redundant_phrases:
+                            if synopsis.lower().startswith(phrase.lower()):
+                                synopsis = synopsis[len(phrase):].strip()
+                                # Capitalize first letter
+                                if synopsis:
+                                    synopsis = synopsis[0].upper() + synopsis[1:]
+                                break
+                        
+                        # Truncate if too long and add ellipsis
+                        if len(synopsis) > 120:
+                            synopsis = synopsis[:120].rsplit(' ', 1)[0] + "..."
+                        
                         timeline_data.append({
                             "Time": event.get('timestamp', 'Unknown'),
-                            "Event": event.get('description', 'No description')[:100] + "..." if len(event.get('description', '')) > 100 else event.get('description', 'No description')
+                            "Synopsis": synopsis,
+                            "Duration": f"{event.get('duration', 'N/A')}s" if event.get('duration') else "N/A"
                         })
                     
                     st.table(timeline_data)
+                    
+                    # Add a summary of key events
+                    if len(timeline_data) > 0:
+                        st.subheader("🎯 **Key Events Summary**")
+                        key_events = timeline_data[:5]  # Show first 5 events
+                        for i, event in enumerate(key_events, 1):
+                            st.write(f"**{i}.** [{event['Time']}] {event['Synopsis']}")
+                        
+                        if len(timeline_data) > 5:
+                            st.info(f"📋 Showing first 5 of {len(timeline_data)} total events. Expand timeline for complete list.")
             
             # Display audio transcription if available
             if st.session_state.audio_transcript:
