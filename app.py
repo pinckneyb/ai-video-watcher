@@ -1090,7 +1090,8 @@ def main():
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt4o_client.api_key,
-                            audio_transcript
+                            audio_transcript,
+                            st.session_state.current_profile
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -1113,7 +1114,8 @@ def main():
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt4o_client.api_key,
-                            audio_transcript
+                            audio_transcript,
+                            st.session_state.current_profile
                         )
                         if enhanced_narrative:
                             st.session_state.enhanced_narrative = enhanced_narrative
@@ -1367,7 +1369,8 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
                     st.session_state.transcript, 
                     st.session_state.events,
                     gpt4o_client.api_key,
-                    audio_transcript
+                    audio_transcript,
+                    st.session_state.current_profile
                 )
                 if enhanced_narrative:
                     st.session_state.enhanced_narrative = enhanced_narrative
@@ -1527,14 +1530,32 @@ def process_single_batch_concurrent(batch, gpt4o_client, profile, batch_index, t
         st.error(f"❌ Error in concurrent batch {batch_index + 1}: {e}")
         return f"Error in batch {batch_index + 1}: {e}", []
 
-def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "") -> str:
+def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "", profile: Dict[str, Any] = None) -> str:
     """Create a coherent, continuous narrative using GPT-5."""
     try:
         # Create a GPT-5 client for narrative enhancement
         gpt5_client = GPT4oClient(api_key=api_key)
         
-        # Prepare the enhancement prompt
+        # Prepare the enhancement prompt with profile personality
+        if profile:
+            profile_name = profile.get("name", "Generic")
+            profile_description = profile.get("description", "Standard video analysis")
+            
+            # Get profile-specific personality instructions
+            if profile_name.lower() == "surgical":
+                personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
+            elif profile_name.lower() == "social media":
+                personality_instructions = """PERSONALITY: You are writing as an AI Social Media Video Reviewer - thoughtful critic who respects the medium. Use language of art and craft. Highlight emotional authenticity and creative choices. Be reflective rather than judgmental, balancing critique and appreciation."""
+            else:
+                personality_instructions = """PERSONALITY: You are writing as a master storyteller and video analyst, maintaining the analytical and narrative style established in the original analysis."""
+        else:
+            personality_instructions = """PERSONALITY: You are writing as a master storyteller and video analyst, maintaining the analytical and narrative style established in the original analysis."""
+        
         enhancement_prompt = f"""You are a master storyteller and video analyst. Your task is to transform raw, batch-by-batch video analysis and audio transcription into a coherent, continuous narrative that reads like a polished story.
+
+{personality_instructions}
+
+PROFILE: {profile.get("name", "Generic") if profile else "Generic"} - {profile.get("description", "Standard video analysis") if profile else "Standard video analysis"}
 
 RAW TRANSCRIPT:
 {raw_transcript}
@@ -1561,6 +1582,7 @@ INSTRUCTIONS:
 13. **No Political Correctness**: Describe what you see without filtering or softening
 14. **Condensation**: Condense elements within chunks or across chunks to tighten the narrative
 15. **Imputation**: Impute what happens between actions to create smooth flow
+16. **Profile Consistency**: Maintain the personality and analytical style of the {profile.get("name", "Generic") if profile else "Generic"} profile throughout your narrative
 
 OUTPUT FORMAT:
 - Write in third-person narrative style
@@ -1571,12 +1593,15 @@ OUTPUT FORMAT:
 - Focus on visual description and action
 - Avoid color commentary, purple prose, or excessive adjectives
 - End with a conclusion that ties everything together
+- **Maintain Profile Voice**: Write in the voice and style of the {profile.get("name", "Generic") if profile else "Generic"} profile
 
 CRITICAL: Every person, object, or action must be described with absolute specificity. No generalizations, no generic terms, no vague descriptions. If you see a "middle-aged obese man in a stained blue t-shirt with a scowl on his face," write exactly that. If you see a "young beautiful woman with long blonde hair wearing a red dress," write exactly that. Be direct, specific, and unfiltered in your descriptions.
 
 NO POETIC LANGUAGE: Avoid phrases like "as if he's measuring the space" or "like he's hitting a beat." Stick to rich, full detailing of what we can actually see. If there is text (overlaid or in scene), transcribe it exactly. Focus on concrete visual details - the scene itself playing out in prose, richly described, will be enough.
 
-Create a tight, continuous story that flows naturally without time constraints, seamlessly coordinating visual actions with spoken dialogue. When audio is available, weave the spoken words naturally into the narrative, creating a rich, multi-sensory experience that captures both what is seen and what is heard. Focus on what happens visually and how events connect logically, with every detail rendered in concrete, specific terms."""
+Create a tight, continuous story that flows naturally without time constraints, seamlessly coordinating visual actions with spoken dialogue. When audio is available, weave the spoken words naturally into the narrative, creating a rich, multi-sensory experience that captures both what is seen and what is heard. Focus on what happens visually and how events connect logically, with every detail rendered in concrete, specific terms.
+
+**CRITICAL**: Maintain the personality, tone, and analytical style of the {profile.get("name", "Generic") if profile else "Generic"} profile throughout your entire narrative. Your enhanced narrative should read as if it was written by the same AI personality that conducted the initial analysis."""
 
         # Check input lengths and provide warnings
         transcript_length = len(raw_transcript)
