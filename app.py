@@ -677,50 +677,106 @@ def main():
             with col_transcript:
                 st.subheader("🔍 Searchable Transcript")
                 
+                # Info about searchable content
+                st.info("🔍 **Search covers**: Video analysis transcript, frame-by-frame events, and enhanced narrative (if created)")
+                
                 # Search functionality
-                search_term = st.text_input("🔍 Search for keywords (e.g., 'knot', 'suture', 'incision')", 
-                                         placeholder="Enter search term...")
+                search_term = st.text_input("🔍 Search across ALL content (transcript, events, enhanced narrative)", 
+                                         placeholder="Enter search term (e.g., 'knot', 'suture', 'incision')...")
                 
                 if search_term:
-                    # Search in transcript
-                    transcript_lower = st.session_state.transcript.lower()
+                    # Search in both transcript and events
                     search_lower = search_term.lower()
+                    all_occurrences = []
                     
-                    if search_lower in transcript_lower:
-                        # Find all occurrences
-                        occurrences = []
-                        lines = st.session_state.transcript.split('\n')
-                        
-                        for i, line in enumerate(lines):
-                            if search_lower in line.lower():
-                                # Find the approximate timestamp
-                                timestamp = "Unknown"
-                                for event in st.session_state.events:
-                                    if event.get('description', '').lower() in line.lower():
-                                        timestamp = event.get('timestamp', 'Unknown')
-                                        break
-                                
-                                occurrences.append({
-                                    'line': i + 1,
-                                    'timestamp': timestamp,
-                                    'content': line.strip(),
-                                    'context': '...' + ' '.join(lines[max(0, i-1):min(len(lines), i+2)]) + '...'
-                                })
-                        
-                        if occurrences:
-                            st.success(f"✅ Found {len(occurrences)} occurrences of '{search_term}'")
+                    # Search in transcript
+                    if st.session_state.transcript:
+                        transcript_lower = st.session_state.transcript.lower()
+                        if search_lower in transcript_lower:
+                            lines = st.session_state.transcript.split('\n')
                             
-                            # Show occurrences with timestamps
+                            for i, line in enumerate(lines):
+                                if search_lower in line.lower():
+                                    # Find the approximate timestamp
+                                    timestamp = "Unknown"
+                                    for event in st.session_state.events:
+                                        if event.get('description', '').lower() in line.lower():
+                                            timestamp = event.get('timestamp', 'Unknown')
+                                            break
+                                    
+                                    all_occurrences.append({
+                                        'type': 'Transcript',
+                                        'line': i + 1,
+                                        'timestamp': timestamp,
+                                        'content': line.strip(),
+                                        'context': '...' + ' '.join(lines[max(0, i-1):min(len(lines), i+2)]) + '...',
+                                        'source': 'Video Analysis'
+                                    })
+                    
+                    # Search in events/descriptions
+                    if st.session_state.events:
+                        for i, event in enumerate(st.session_state.events):
+                            event_desc = event.get('description', '')
+                            if search_lower in event_desc.lower():
+                                all_occurrences.append({
+                                    'type': 'Event',
+                                    'line': i + 1,
+                                    'timestamp': event.get('timestamp', 'Unknown'),
+                                    'content': event_desc,
+                                    'context': f"Event at {event.get('timestamp', 'Unknown')}",
+                                    'source': 'Frame Analysis'
+                                })
+                    
+                    # Search in enhanced narrative if available
+                    if st.session_state.enhanced_narrative:
+                        enhanced_lower = st.session_state.enhanced_narrative.lower()
+                        if search_lower in enhanced_lower:
+                            lines = st.session_state.enhanced_narrative.split('\n')
+                            
+                            for i, line in enumerate(lines):
+                                if search_lower in line.lower():
+                                    all_occurrences.append({
+                                        'type': 'Enhanced',
+                                        'line': i + 1,
+                                        'timestamp': 'Enhanced Narrative',
+                                        'content': line.strip(),
+                                        'context': '...' + ' '.join(lines[max(0, i-1):min(len(lines), i+2)]) + '...',
+                                        'source': 'GPT-5 Enhanced'
+                                    })
+                    
+                    # Display search results
+                    if all_occurrences:
+                        st.success(f"✅ Found {len(all_occurrences)} occurrences of '{search_term}' across all content")
+                        
+                        # Group by source for better organization
+                        sources = {}
+                        for occ in all_occurrences:
+                            source = occ['source']
+                            if source not in sources:
+                                sources[source] = []
+                            sources[source].append(occ)
+                        
+                        # Display results grouped by source
+                        for source, occurrences in sources.items():
+                            st.subheader(f"📖 {source} ({len(occurrences)} matches)")
+                            
                             for occ in occurrences:
-                                with st.expander(f"📍 Line {occ['line']} - {occ['timestamp']}", expanded=False):
+                                # Create a more descriptive title
+                                title = f"📍 {occ['type']} {occ['line']}"
+                                if occ['timestamp'] != 'Unknown':
+                                    title += f" - {occ['timestamp']}"
+                                
+                                with st.expander(title, expanded=False):
+                                    st.write(f"**Source:** {occ['source']}")
+                                    st.write(f"**Type:** {occ['type']}")
                                     st.write("**Context:**")
                                     st.write(occ['context'])
                                     st.write("**Exact Match:**")
                                     st.write(f"**{occ['content']}**")
                                     
-                                    # Add rescan button for this timestamp
-                                    if occ['timestamp'] != 'Unknown':
-                                        if st.button(f"🔍 Rescan around {occ['timestamp']}", key=f"rescan_{occ['line']}"):
+                                    # Add rescan button for timestamps from video analysis
+                                    if occ['timestamp'] != 'Unknown' and occ['timestamp'] != 'Enhanced Narrative':
+                                        if st.button(f"🔍 Rescan around {occ['timestamp']}", key=f"rescan_{occ['type']}_{occ['line']}"):
                                             # Calculate time range around this timestamp
                                             try:
                                                 time_sec = parse_timestamp(occ['timestamp'])
@@ -734,10 +790,12 @@ def main():
                                                 st.rerun()
                                             except:
                                                 st.error("Could not parse timestamp for rescan")
-                        else:
-                            st.warning(f"⚠️ No occurrences found for '{search_term}'")
+                        
+                        # Summary of search results
+                        st.info(f"🔍 **Search Summary**: Found '{search_term}' in {len(sources)} different content sources")
+                        
                     else:
-                        st.warning(f"⚠️ No occurrences found for '{search_term}'")
+                        st.warning(f"⚠️ No occurrences found for '{search_term}' in any content")
                 
                 # Show transcript preview (first 500 chars)
                 st.subheader("📖 Transcript Preview")
