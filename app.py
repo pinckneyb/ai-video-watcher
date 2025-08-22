@@ -240,17 +240,17 @@ def main():
         col_preset1, col_preset2, col_preset3 = st.columns(3)
         
         with col_preset1:
-            if st.button("🐌 Conservative (3)", help="Safe, reliable processing"):
-                st.session_state.max_concurrent_batches = 3
+            if st.button("✅ Proven Safe (10)", help="100% safe - tested and reliable"):
+                st.session_state.max_concurrent_batches = 10
                 st.rerun()
         
         with col_preset2:
-            if st.button("⚡ Balanced (8)", help="Good speed/risk balance"):
-                st.session_state.max_concurrent_batches = 8
+            if st.button("🧪 Testing (12)", help="Next level to test - monitor closely"):
+                st.session_state.max_concurrent_batches = 12
                 st.rerun()
         
         with col_preset3:
-            if st.button("🚀 Aggressive (15)", help="Maximum speed (monitor carefully)"):
+            if st.button("🚀 Future Test (15)", help="Future testing level"):
                 st.session_state.max_concurrent_batches = 15
                 st.rerun()
         
@@ -260,13 +260,10 @@ def main():
             if recommended:
                 st.info(f"💡 **Smart Recommendation**: Based on your performance history, try {recommended} concurrent batches")
         
-        # FPS-aware concurrency guidance
-        if fps > 5.0:
-            st.info(f"🎬 **High FPS ({fps})**: You can safely use higher concurrency. Try 8-15 concurrent batches for optimal speed.")
-        elif fps > 2.0:
-            st.info(f"🎬 **Medium FPS ({fps})**: Balanced concurrency recommended. Try 5-12 concurrent batches.")
-        else:
-            st.info(f"🎬 **Low FPS ({fps})**: Conservative concurrency recommended. Try 3-8 concurrent batches.")
+        # Real-world concurrency guidance
+        st.info(f"🎯 **Proven Safe**: 10 concurrent batches is 100% reliable")
+        st.info(f"🧪 **Testing Next**: 12 concurrent batches - monitor closely")
+        st.info(f"📊 **Current FPS**: {fps} - adjust based on performance history")
         
         # FPS/Concurrency Guide Button
         if st.button("📚 FPS & Concurrency Guide", help="Learn about optimal settings"):
@@ -327,7 +324,7 @@ def main():
         max_concurrent_batches = st.slider(
             "Max concurrent batches", 
             1, 20, 
-            value=st.session_state.get('max_concurrent_batches', 3), 
+            value=st.session_state.get('max_concurrent_batches', 10), 
             step=1,
             help="Higher values = faster processing (requires OpenAI Tier 4+)"
         )
@@ -340,9 +337,7 @@ def main():
         if safety_level == "safe":
             st.success(f"✅ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches")
         elif safety_level == "caution":
-            st.warning(f"⚠️ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - monitor closely")
-        else:
-            st.error(f"🚨 **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - high risk of failures")
+            st.info(f"💡 **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - monitor closely")
         
         # Rescan settings
         st.subheader("🔍 Rescan Settings")
@@ -1546,6 +1541,8 @@ def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: 
                 personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
             elif profile_name.lower() == "social media":
                 personality_instructions = """PERSONALITY: You are writing as an AI Social Media Video Reviewer - thoughtful critic who respects the medium. Use language of art and craft. Highlight emotional authenticity and creative choices. Be reflective rather than judgmental, balancing critique and appreciation."""
+            elif profile_name.lower() == "movie lover":
+                personality_instructions = """PERSONALITY: You are writing as an AI Cinephile - enthusiastic but disciplined film critic and historian. Use cinematic terminology and reference film history. Connect to cinematic movements, genres, and techniques. Be erudite but accessible, balancing admiration with sharp critique. Frame everything within the broader cinematic landscape."""
             else:
                 personality_instructions = """PERSONALITY: You are writing as a master storyteller and video analyst, maintaining the analytical and narrative style established in the original analysis."""
         else:
@@ -1654,32 +1651,14 @@ Create a tight, continuous story that flows naturally without time constraints, 
         return ""
 
 def get_concurrency_safety_level(concurrent_batches: int, fps: float = 1.0) -> str:
-    """Determine safety level for concurrency setting, accounting for FPS."""
-    # Higher FPS allows for higher concurrency safely
-    if fps <= 2.0:
-        # Low FPS: conservative limits
-        if concurrent_batches <= 3:
-            return "safe"
-        elif concurrent_batches <= 8:
-            return "caution"
-        else:
-            return "danger"
-    elif fps <= 5.0:
-        # Medium FPS: balanced limits
-        if concurrent_batches <= 5:
-            return "safe"
-        elif concurrent_batches <= 12:
-            return "caution"
-        else:
-            return "danger"
+    """Determine safety level for concurrency setting based on real-world testing."""
+    # Based on user experience: 10 concurrent batches is 100% safe
+    if concurrent_batches <= 10:
+        return "safe"
+    elif concurrent_batches <= 12:
+        return "caution"  # Testing 12 next
     else:
-        # High FPS: aggressive limits
-        if concurrent_batches <= 8:
-            return "safe"
-        elif concurrent_batches <= 15:
-            return "caution"
-        else:
-            return "danger"
+        return "caution"  # Unknown territory
 
 def get_recommended_concurrency() -> int:
     """Get smart concurrency recommendation based on performance history."""

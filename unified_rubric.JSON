@@ -1,0 +1,205 @@
+{
+  "rubric_version": "1.0",
+  "updated_utc": "2025-08-19T00:00:00Z",
+  "global_policies": {
+    "scale": [1,2,3,4,5],
+    "baseline_score_if_unclear": 3,
+    "final_pass_rule": "PASS if (all point_scores >= 3) AND (no CRITICAL point <= 2); else FAIL",
+    "assumptions": [
+      "Assume square knots unless clear, definitive evidence to the contrary in stills.",
+      "Assume proper edge position unless clearly inverted/malpositioned from above view.",
+      "Do not penalize brief out-of-frame events if surrounding frames support adequate performance."
+    ]
+  },
+  "patterns": [
+    {
+      "id": "simple_interrupted",
+      "display_name": "Simple Interrupted",
+      "gold_standard_image": "Simple_Interrupted_Suture_example.png",
+      "points": [
+        {
+          "pid": 1,
+          "title": "Perpendicular needle passes",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Entry/exit ~90° to skin, symmetric bites.",
+          "ideal_result": "Right-angle passes both sides; minimal shear."
+        },
+        {
+          "pid": 2,
+          "title": "Gentle tissue handling",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Avoids multiple forceps grasps.",
+          "ideal_result": "Single precise grasp per edge; no crushing."
+        },
+        {
+          "pid": 3,
+          "title": "Square, secure knots",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Knot security/type from still; benefit of doubt if unclear.",
+          "ideal_result": "Square, flat, appropriately tightened."
+        },
+        {
+          "pid": 4,
+          "title": "Appropriate approximation/tension",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Edges meet without blanching/gapping.",
+          "ideal_result": "Edges just touch; no puckering or gaps."
+        },
+        {
+          "pid": 5,
+          "title": "Even spacing (0.5–1.0 cm)",
+          "type": "still",
+          "critical": false,
+          "what_you_assess": "Uniform spacing along the line.",
+          "ideal_result": "All intervals within 0.5–1.0 cm."
+        },
+        {
+          "pid": 6,
+          "title": "Edge eversion (flat/slight acceptable)",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Flat or slight eversion; flag inversion only if clear.",
+          "ideal_result": "Flat or slightly everted; no inversion."
+        },
+        {
+          "pid": 7,
+          "title": "Economy of time and motion",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Smooth, organized workflow.",
+          "ideal_result": "Minimal regripping; efficient sequence."
+        }
+      ]
+    },
+    {
+      "id": "vertical_mattress",
+      "display_name": "Vertical Mattress",
+      "gold_standard_image": "Vertical_Mattress_Suture_example.png",
+      "points": [
+        {
+          "pid": 1,
+          "title": "Correct deep (far-far) and superficial (near-near) passes",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Proper layers and perpendicularity.",
+          "ideal_result": "Deep supports, superficial closes epidermis."
+        },
+        {
+          "pid": 2,
+          "title": "Gentle tissue handling",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Avoids multiple forceps grasps.",
+          "ideal_result": "Single precise grasp per edge."
+        },
+        {
+          "pid": 3,
+          "title": "Square, secure knots",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Knot security/type from still; benefit of doubt if unclear.",
+          "ideal_result": "Square, secure, appropriate tension."
+        },
+        {
+          "pid": 4,
+          "title": "Balanced tension deep vs superficial",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Deep provides support; superficial not over-tight.",
+          "ideal_result": "Firm deep support with gentle epidermal closure."
+        },
+        {
+          "pid": 5,
+          "title": "Even spacing (0.5–1.0 cm)",
+          "type": "still",
+          "critical": false,
+          "what_you_assess": "Uniform spacing.",
+          "ideal_result": "All intervals within 0.5–1.0 cm."
+        },
+        {
+          "pid": 6,
+          "title": "Proper eversion",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Raised ridge; no inversion.",
+          "ideal_result": "Visible eversion along closure."
+        },
+        {
+          "pid": 7,
+          "title": "Economy of time and motion",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Efficient deep→superficial sequence.",
+          "ideal_result": "Minimal regripping; organized flow."
+        }
+      ]
+    },
+    {
+      "id": "subcuticular",
+      "display_name": "Subcuticular",
+      "gold_standard_image": "Subcuticular_Suture_example.png",
+      "points": [
+        {
+          "pid": 1,
+          "title": "Consistent dermal bites (running path)",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Advances smoothly in dermis; consistent bite size.",
+          "ideal_result": "Smooth subdermal track with equal bites."
+        },
+        {
+          "pid": 2,
+          "title": "Opposing entry/exit symmetry",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Each entry mirrors prior exit.",
+          "ideal_result": "Straight, symmetric path."
+        },
+        {
+          "pid": 3,
+          "title": "No unintended surface breaches",
+          "type": "motion",
+          "critical": true,
+          "what_you_assess": "Avoids extra punctures through epidermis.",
+          "ideal_result": "Passes stay subcuticular."
+        },
+        {
+          "pid": 4,
+          "title": "Gentle tissue handling",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Avoids multiple forceps grasps.",
+          "ideal_result": "Single light grasp per bite."
+        },
+        {
+          "pid": 5,
+          "title": "Square, secure knots",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Knot security/type from still; benefit of doubt if unclear.",
+          "ideal_result": "Secure, appropriate finish."
+        },
+        {
+          "pid": 6,
+          "title": "Flat, well-approximated skin",
+          "type": "still",
+          "critical": true,
+          "what_you_assess": "Flat closure without ridging/gapping.",
+          "ideal_result": "Smooth, flat line with correct tension."
+        },
+        {
+          "pid": 7,
+          "title": "Economy of time and motion",
+          "type": "motion",
+          "critical": false,
+          "what_you_assess": "Continuous, efficient progression.",
+          "ideal_result": "Steady run; minimal instrument changes."
+        }
+      ]
+    }
+  ]
+}
