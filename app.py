@@ -412,8 +412,8 @@ def main():
         if input_method == "Upload Video File":
             uploaded_file = st.file_uploader(
                 "Upload a video file",
-                type=['mp4', 'avi', 'mov', 'mkv', 'wmv'],
-                help="Supported formats: MP4, AVI, MOV, MKV, WMV (No size limit)"
+                type=['mp4', 'avi', 'mov', 'mkv', 'wmv', 'm4v'],
+                help="Supported formats: MP4, AVI, MOV, MKV, WMV, M4V (No size limit)"
             )
             
             if uploaded_file is not None:

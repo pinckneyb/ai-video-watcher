@@ -346,7 +346,7 @@ def main():
         
         uploaded_file = st.file_uploader(
             "Upload Surgical Video",
-            type=['mp4', 'avi', 'mov', 'mkv'],
+            type=['mp4', 'avi', 'mov', 'mkv', 'm4v'],
             help="Upload a video of suturing technique for assessment (up to 1GB)"
         )
         

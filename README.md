@@ -65,9 +65,9 @@ A powerful video analysis application that uses GPT-4o to "watch" and narrate vi
 ## 📖 Usage
 
 ### 1. **Video Input**
-- Upload video files (MP4, AVI, MOV, MKV, WMV)
+- Upload video files (MP4, AVI, MOV, MKV, WMV, M4V)
 - Or provide direct video URLs
-- Supported formats: MP4, AVI, MOV, MKV, WMV
+- Supported formats: MP4, AVI, MOV, MKV, WMV, M4V
 
 ### 2. **Configuration**
 - **Select Profile**: Choose analysis style (Generic, Surgical, Sports)
