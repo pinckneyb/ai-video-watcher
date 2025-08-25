@@ -170,6 +170,31 @@ You are given frames in chronological order with timestamps. Analyze systematica
 
         return prompt
 
+def save_api_key(api_key: str):
+    """Save API key to config file."""
+    config_file = "surgical_config.json"
+    
+    try:
+        config = {"openai_api_key": api_key}
+        with open(config_file, "w") as f:
+            json.dump(config, f)
+    except Exception as e:
+        print(f"Could not save API key: {e}")
+
+def load_api_key() -> str:
+    """Load API key from config file."""
+    config_file = "surgical_config.json"
+    
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, "r") as f:
+                config = json.load(f)
+                return config.get("openai_api_key", "")
+        except Exception as e:
+            print(f"Error loading config: {e}")
+    
+    return ""
+
 def initialize_session_state():
     """Initialize Streamlit session state variables."""
     if 'vop_analysis_complete' not in st.session_state:
@@ -180,6 +205,8 @@ def initialize_session_state():
         st.session_state.rubric_scores = {}
     if 'assessment_results' not in st.session_state:
         st.session_state.assessment_results = None
+    if 'saved_api_key' not in st.session_state:
+        st.session_state.saved_api_key = load_api_key()
 
 def detect_pattern_from_upload(uploaded_file) -> Optional[str]:
     """Detect pattern from uploaded file name."""
@@ -254,7 +281,28 @@ def main():
         
         # API Key
         st.subheader("🔑 OpenAI API Key")
-        api_key = st.text_input("API Key", type="password")
+        
+        # Show saved API key status
+        if st.session_state.saved_api_key:
+            st.info("🔑 API key found from previous session")
+            if st.button("🗑️ Clear saved API key"):
+                st.session_state.saved_api_key = ""
+                save_api_key("")  # Clear saved key
+                st.rerun()
+        
+        # API key input field
+        api_key = st.text_input(
+            "Enter your OpenAI API Key",
+            value=st.session_state.saved_api_key,
+            type="password",
+            help="Get your API key from https://platform.openai.com/api-keys"
+        )
+        
+        # Save API key if it's new
+        if api_key and api_key != st.session_state.saved_api_key:
+            st.session_state.saved_api_key = api_key
+            save_api_key(api_key)
+            st.success("✅ API key saved for future assessments!")
     
     # Main content area
     if uploaded_file and st.session_state.selected_pattern and api_key:
@@ -321,8 +369,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         prompt = assessment_profile.create_assessment_prompt(st.session_state.selected_pattern)
         
         # Create batches
-        batch_processor = FrameBatchProcessor(frames, batch_size)
-        batches = batch_processor.create_batches()
+        batch_processor = FrameBatchProcessor(batch_size)
+        batches = batch_processor.create_batches(frames)
         
         # Progress tracking
         progress_bar = st.progress(0)
