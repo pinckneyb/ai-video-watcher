@@ -206,6 +206,77 @@ Guidelines:
 
 Output format: [Condensed Surgical Assessment State]"""
 
+def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_key: str, pattern_id: str, rubric_engine: RubricEngine) -> str:
+    """Create enhanced surgical VOP narrative using GPT-5."""
+    try:
+        # Get pattern and rubric information
+        pattern_data = rubric_engine.get_pattern_rubric(pattern_id)
+        assessment_points = rubric_engine.get_assessment_criteria(pattern_id)
+        
+        # Build rubric criteria for reference
+        rubric_criteria = "\n".join([
+            f"{p['pid']}. {p['title']}: {p['what_you_assess']} (Ideal: {p['ideal_result']})"
+            for p in assessment_points
+        ])
+        
+        # Create GPT-5 client
+        gpt5_client = GPT4oClient(api_key=api_key)
+        
+        enhancement_prompt = f"""You are a senior attending surgeon conducting a final Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique.
+
+Your task is to synthesize the raw frame-by-frame analysis into a comprehensive, coherent surgical assessment that follows VOP standards.
+
+SUTURE PATTERN: {pattern_data['display_name']}
+
+ASSESSMENT RUBRIC CRITERIA:
+{rubric_criteria}
+
+RAW ANALYSIS:
+{raw_transcript}
+
+TECHNICAL EVENTS:
+{json.dumps(events, indent=2) if events else "No specific events logged"}
+
+INSTRUCTIONS:
+1. **Create a comprehensive surgical narrative** that flows chronologically through the procedure
+2. **Evaluate each rubric point systematically** based on the visual evidence
+3. **Use surgical terminology** and clinical language throughout
+4. **Be matter-of-fact and critical** - no encouragement or sugar-coating
+5. **Reference specific timestamps** for all observations
+6. **Identify technical errors and deviations** from proper technique
+7. **Provide actionable feedback** for improvement
+8. **End with summative assessment** covering overall technique quality
+
+PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation.
+
+OUTPUT FORMAT:
+- **Procedural Overview**: Brief description of what was attempted
+- **Technical Analysis**: Systematic evaluation of each major technical element
+- **Critical Observations**: Specific errors, deviations, or excellent technique moments
+- **Rubric Assessment**: How the performance relates to each assessment criterion
+- **Summative Comments**: Overall technique quality and specific recommendations
+
+Write as a continuous, professional surgical assessment narrative without section headers."""
+
+        # Make GPT-5 API call
+        response = gpt5_client.client.chat.completions.create(
+            model="gpt-5",
+            messages=[{"role": "user", "content": enhancement_prompt}],
+            max_completion_tokens=4000
+        )
+        
+        enhanced_narrative = response.choices[0].message.content
+        
+        # Ensure proper encoding
+        if isinstance(enhanced_narrative, str):
+            enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+        
+        return enhanced_narrative
+        
+    except Exception as e:
+        st.error(f"Error creating enhanced narrative: {e}")
+        return "Enhanced narrative generation failed. Please review the raw analysis above."
+
 def save_api_key(api_key: str):
     """Save API key to config file."""
     config_file = "surgical_config.json"
@@ -489,9 +560,20 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         full_transcript = gpt4o_client.get_full_transcript()
         event_timeline = gpt4o_client.get_event_timeline()
         
+        # Create enhanced narrative using GPT-5
+        status_text.text("Creating final surgical assessment with GPT-5...")
+        enhanced_narrative = create_surgical_vop_narrative(
+            full_transcript, 
+            event_timeline, 
+            api_key,
+            st.session_state.selected_pattern,
+            rubric_engine
+        )
+        
         # Store results in the proven format
         st.session_state.assessment_results = {
-            "full_transcript": full_transcript,
+            "full_transcript": full_transcript,  # Keep for debugging if needed
+            "enhanced_narrative": enhanced_narrative,  # This is what we'll display
             "event_timeline": event_timeline,
             "video_info": {
                 "filename": os.path.basename(video_path),
@@ -531,17 +613,26 @@ def display_assessment_results(rubric_engine: RubricEngine):
         success_rate = (metrics.get('successful_batches', 0) / metrics.get('total_batches', 1)) * 100
         st.success(f"📊 Processing: {success_rate:.1f}% success rate")
     
-    # Display continuous narrative
-    st.subheader("📖 Continuous Motion Analysis")
-    with st.expander("Full Surgical Assessment Narrative", expanded=True):
-        st.markdown(results.get("full_transcript", "No analysis available"))
+    # Display GPT-5 enhanced narrative (primary assessment)
+    st.subheader("🏥 Final Surgical Assessment")
+    if results.get("enhanced_narrative"):
+        with st.expander("GPT-5 Enhanced VOP Assessment", expanded=True):
+            st.markdown(results["enhanced_narrative"])
+    else:
+        st.warning("Enhanced narrative not available - showing raw analysis")
+        with st.expander("Raw Frame Analysis", expanded=False):
+            st.markdown(results.get("full_transcript", "No analysis available"))
     
-    # Display event timeline
-    if results.get("event_timeline"):
-        st.subheader("📅 Technical Events Timeline")
-        with st.expander("Surgical Events", expanded=False):
+    # Technical details (collapsed by default)
+    with st.expander("🔍 Technical Details & Events", expanded=False):
+        if results.get("event_timeline"):
+            st.subheader("📅 Technical Events Timeline")
             for event in results["event_timeline"]:
                 st.json(event)
+        
+        st.subheader("📊 Raw Frame Analysis")
+        st.markdown(results.get("full_transcript", "No raw analysis available"))
+        st.caption("*This is the detailed frame-by-frame analysis that was synthesized into the final assessment above.*")
     
     # Scoring interface
     st.subheader("📝 Manual Scoring")
