@@ -28,6 +28,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Set upload limit to 1GB
+import streamlit as st
+import streamlit.web.cli as stcli
+st._config.set_option('server.maxUploadSize', 1024)
+
 class SuturePatternDetector:
     """Detects suture patterns from folder names and filenames."""
     
@@ -123,13 +128,13 @@ class SurgicalAssessmentProfile:
         self.rubric_engine = rubric_engine
     
     def create_assessment_prompt(self, pattern_id: str) -> str:
-        """Create GPT-4o prompt for surgical assessment."""
+        """Create GPT-4o prompt for surgical assessment using proven narrative structure."""
         pattern_data = self.rubric_engine.get_pattern_rubric(pattern_id)
         assessment_points = self.rubric_engine.get_assessment_criteria(pattern_id)
         
-        # Build detailed assessment criteria
+        # Build detailed assessment criteria (without critical/standard distinction)
         criteria_text = "\n".join([
-            f"**Point {p['pid']}: {p['title']}** ({'CRITICAL' if p.get('critical') else 'Standard'})\n"
+            f"**{p['pid']}. {p['title']}**\n"
             f"- What to assess: {p['what_you_assess']}\n"
             f"- Ideal result: {p['ideal_result']}\n"
             for p in assessment_points
@@ -137,38 +142,69 @@ class SurgicalAssessmentProfile:
         
         prompt = f"""You are a senior attending surgeon conducting a Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique.
 
-Your task is to evaluate this surgical video according to the specific rubric criteria below. You must:
+PERSONALITY PROFILE:
+- **Attitude**: Clinical, analytical, and unforgiving. You evaluate technique based on surgical standards, not feelings.
+- **Tone**: Direct, matter-of-fact, and precise. No sugar-coating or encouragement.
+- **Viewpoint**: Step-by-step technical assessment. Every movement, angle, and decision is scrutinized.
+- **Commentary Style**: Brutally honest. Point out every flaw, mistake, or deviation from standard technique.
 
-1. Watch the video frames carefully and identify specific moments where each rubric point can be assessed
-2. For each rubric point, provide a score from 1-5 and specific timestamp-referenced observations
-3. Focus ONLY on what you can actually observe in the video frames
-4. Be precise, clinical, and matter-of-fact in your assessment
-5. Provide specific timestamps for all observations
+You are given a batch of still frames extracted from the video, in strict chronological order, with timestamps.
+
+Your task:
+1. Provide a continuous motion analysis narrative that tracks surgical technique across time
+2. Always anchor your analysis to timestamps (e.g., "At 00:01:12…")
+3. Keep continuity with the previous analysis provided in the "Context so far"
+4. Focus on technique progression, errors, and adherence to surgical principles
+5. Use surgical terminology: "approximation," "bite placement," "knot security," "tissue handling," "needle angle," "tension," "atraumatic technique"
 
 ASSESSMENT CRITERIA FOR {pattern_data['display_name'].upper()}:
 {criteria_text}
 
-SCORING SCALE:
-1 = Unacceptable/Dangerous
-2 = Poor technique with significant deficiencies  
-3 = Adequate/Baseline acceptable performance
-4 = Good technique with minor issues
-5 = Excellent/Exemplary technique
-
-CRITICAL REQUIREMENTS:
-- Always reference specific timestamps (e.g., "At 00:01:23...")
-- Describe exactly what you observe in clinical terms
-- Score each rubric point individually
-- No generic assessments - everything must be based on direct visual observation
+CRITICAL SPECIFICITY REQUIREMENTS:
+- **NO generic terms**: Never use "a surgeon," "someone," "a person," "the operator"
+- **Absolute specificity**: Describe EVERY person with concrete details
+- **Physical description**: Specify gender, age, body type, clothing, expressions, posture
+- **Direct observation**: If someone is obese, beautiful, ugly, old, young - say so directly
+- **Concrete details**: "A middle-aged female surgeon with gray hair in blue scrubs" not "the surgeon"
+- **Rich visual detail**: Focus on what you can actually see - clothing, expressions, movements, objects
+- **Text transcription**: If there's any text (overlaid or in scene), transcribe it exactly
+- **Concrete actions**: Describe movements and actions in specific, visual terms
 
 Output format:
-- **Assessment for each rubric point** with timestamp references and clinical observations
-- **Score justification** for each point (1-5 scale)
-- **Overall technical assessment** with specific recommendations
-
-You are given frames in chronological order with timestamps. Analyze systematically."""
+- **Continuous narrative** (clinical, critical, timestamped, with absolute specificity and surgical terminology)
+- **Structured JSON log** with one entry per detected technique event:
+  ```json
+  [
+    {{
+      "timestamp": "00:01:12",
+      "event": "Middle-aged female surgeon with gray hair demonstrates poor needle angle at 45 degrees",
+      "confidence": 0.85,
+      "technique_assessment": "Substandard",
+      "rubric_point": 1,
+      "clinical_significance": "Excessive tissue trauma from steep angle"
+    }}
+  ]
+  ```"""
 
         return prompt
+    
+    def create_context_condensation_prompt(self) -> str:
+        """Create context condensation prompt for surgical assessment continuity."""
+        return """You are maintaining a running summary of a surgical video assessment as a senior attending surgeon. 
+Your task is to compress the current full assessment into a concise "state summary" that captures: 
+- Key surgical events and technique observations (with approximate timestamps) 
+- Current surgical phase, instruments in use, and suture type
+- Technical errors and deviations from surgical principles noted so far
+- Assessment continuity for the next frames
+
+Guidelines: 
+- Use no more than 150 words. 
+- Preserve chronological flow. 
+- Keep timestamps coarse (to the nearest ~10–15 seconds). 
+- Focus on surgical assessment continuity and technique progression.
+- Use critical, clinical language appropriate for surgical review.
+
+Output format: [Condensed Surgical Assessment State]"""
 
 def save_api_key(api_key: str):
     """Save API key to config file."""
@@ -240,7 +276,7 @@ def main():
         uploaded_file = st.file_uploader(
             "Upload Surgical Video",
             type=['mp4', 'avi', 'mov', 'mkv'],
-            help="Upload a video of suturing technique for assessment"
+            help="Upload a video of suturing technique for assessment (up to 1GB)"
         )
         
         if uploaded_file:
@@ -278,6 +314,30 @@ def main():
         st.subheader("⚙️ Analysis Settings")
         fps = st.slider("Analysis FPS", 1.0, 5.0, 2.0, 0.5)
         batch_size = st.slider("Batch Size", 3, 12, 6)
+        
+        # Concurrency settings
+        st.subheader("⚡ Concurrency Settings")
+        max_concurrent_batches = st.slider(
+            "Concurrent Batches", 
+            1, 20, 
+            10,  # Default to proven safe level
+            step=1,
+            help="Higher values = faster processing (requires OpenAI Tier 4+)"
+        )
+        
+        # Concurrency guidance
+        if max_concurrent_batches <= 10:
+            st.success(f"✅ **SAFE**: {max_concurrent_batches} concurrent batches")
+        elif max_concurrent_batches <= 12:
+            st.info(f"🧪 **TESTING**: {max_concurrent_batches} concurrent batches - monitor closely")
+        else:
+            st.info(f"🚀 **EXPERIMENTAL**: {max_concurrent_batches} concurrent batches")
+        
+        # Performance history
+        if 'vop_performance_history' in st.session_state and st.session_state.vop_performance_history:
+            with st.expander("📊 Performance History"):
+                for run in st.session_state.vop_performance_history[-3:]:  # Show last 3 runs
+                    st.text(f"Level {run['concurrent_level']}: {run['success_rate']:.1f}% success, {run['processing_time']:.1f}s")
         
         # API Key
         st.subheader("🔑 OpenAI API Key")
@@ -327,7 +387,7 @@ def main():
             
             # Start analysis
             if st.button("🚀 Start VOP Assessment", type="primary"):
-                start_vop_analysis(temp_video_path, api_key, fps, batch_size)
+                start_vop_analysis(temp_video_path, api_key, fps, batch_size, max_concurrent_batches)
         
         with col2:
             st.header("📋 Assessment Progress")
@@ -340,88 +400,119 @@ def main():
     else:
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
 
-def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int):
-    """Start the VOP analysis process."""
+def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 10):
+    """Start the VOP analysis process using the proven video analysis architecture."""
+    
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
     try:
-        # Initialize components
+        # Initialize components using proven architecture
         video_processor = VideoProcessor()
         gpt4o_client = GPT4oClient(api_key=api_key)
         rubric_engine = RubricEngine()
         
         # Load video
-        with st.spinner("Loading video..."):
-            success = video_processor.load_video(video_path, fps)
-            if not success:
-                st.error("Failed to load video")
-                return
+        status_text.text("Loading video...")
+        success = video_processor.load_video(video_path, fps)
+        if not success:
+            st.error("Failed to load video")
+            return
         
-        # Extract frames
-        with st.spinner("Extracting frames..."):
-            frames = video_processor.extract_frames()
-            if not frames:
-                st.error("No frames extracted from video")
-                return
+        # Extract frames with custom FPS
+        status_text.text("Extracting frames...")
+        frames = video_processor.extract_frames(custom_fps=fps)
+        if not frames:
+            st.error("No frames extracted from video")
+            return
         
+        st.info(f"Video duration: {video_processor.duration} seconds")
+        st.info(f"Target FPS: {fps}")
         st.success(f"✅ Extracted {len(frames)} frames at {fps} FPS")
         
-        # Create assessment profile
+        # Create surgical assessment profile using proven profile structure
         assessment_profile = SurgicalAssessmentProfile(rubric_engine)
-        prompt = assessment_profile.create_assessment_prompt(st.session_state.selected_pattern)
+        surgical_profile = {
+            "name": "Surgical VOP",
+            "description": "Surgical Verification of Proficiency Assessment",
+            "base_prompt": assessment_profile.create_assessment_prompt(st.session_state.selected_pattern),
+            "context_condensation_prompt": assessment_profile.create_context_condensation_prompt()
+        }
         
         # Create batches
-        batch_processor = FrameBatchProcessor(batch_size)
+        batch_processor = FrameBatchProcessor(batch_size=batch_size)
         batches = batch_processor.create_batches(frames)
+        total_batches = len(batches)
         
-        # Progress tracking
-        progress_bar = st.progress(0)
-        status_text = st.empty()
+        st.info(f"Processing {len(frames)} frames in {total_batches} batches...")
         
-        # Process batches
-        full_analysis = []
-        context_state = ""
-        
-        for i, batch in enumerate(batches):
-            status_text.text(f"Analyzing batch {i+1}/{len(batches)}...")
+        # Use concurrent processing if specified
+        if max_concurrent_batches > 1:
+            st.info(f"⚡ Using concurrent processing: {max_concurrent_batches} batches simultaneously")
             
-            # Analyze batch with surgical assessment prompt
-            narrative, events = gpt4o_client.analyze_frames(
-                batch, 
-                {"base_prompt": prompt}, 
-                context_state
+            # Import the proven concurrent processing function
+            from app import process_batches_concurrently
+            
+            start_time = time.time()
+            performance_metrics = process_batches_concurrently(
+                batches, gpt4o_client, surgical_profile, progress_bar, status_text, total_batches, max_concurrent_batches
             )
+            end_time = time.time()
+            processing_time = end_time - start_time
             
-            full_analysis.append({
-                "batch_id": i,
-                "narrative": narrative,
-                "events": events,
-                "timestamp_range": f"{batch[0]['timestamp']} - {batch[-1]['timestamp']}"
+            # Display performance metrics
+            success_rate = (performance_metrics.get('successful_batches', 0) / total_batches) * 100
+            avg_batch_time = sum(performance_metrics.get('batch_times', [0])) / max(len(performance_metrics.get('batch_times', [1])), 1)
+            
+            st.success(f"✅ Analysis complete in {processing_time:.1f} seconds!")
+            st.info(f"📊 Success rate: {success_rate:.1f}% ({performance_metrics.get('successful_batches', 0)}/{total_batches} batches)")
+            st.info(f"⚡ Speed: {avg_batch_time:.1f}s average per batch")
+            
+            # Store performance data for future optimization
+            if 'vop_performance_history' not in st.session_state:
+                st.session_state.vop_performance_history = []
+            
+            st.session_state.vop_performance_history.append({
+                'concurrent_level': max_concurrent_batches,
+                'success_rate': success_rate,
+                'processing_time': processing_time,
+                'total_batches': total_batches,
+                'timestamp': datetime.now().isoformat()
             })
             
-            # Update context (simplified for VOP)
-            context_state = f"Previous assessment context: {narrative[-500:]}..."
-            
-            progress_bar.progress((i + 1) / len(batches))
+        else:
+            # Use sequential processing
+            from app import process_batches_sequentially
+            process_batches_sequentially(batches, gpt4o_client, surgical_profile, progress_bar, status_text, total_batches)
         
-        # Store results
+        # Get complete analysis using proven narrative building
+        full_transcript = gpt4o_client.get_full_transcript()
+        event_timeline = gpt4o_client.get_event_timeline()
+        
+        # Store results in the proven format
         st.session_state.assessment_results = {
-            "analysis": full_analysis,
+            "full_transcript": full_transcript,
+            "event_timeline": event_timeline,
             "video_info": {
                 "filename": os.path.basename(video_path),
                 "pattern": st.session_state.selected_pattern,
                 "fps": fps,
-                "total_frames": len(frames)
+                "total_frames": len(frames),
+                "duration": video_processor.duration
             },
+            "performance_metrics": performance_metrics if max_concurrent_batches > 1 else None,
             "timestamp": datetime.now().isoformat()
         }
         
         st.session_state.vop_analysis_complete = True
-        status_text.text("✅ Assessment complete!")
+        status_text.text("✅ Surgical VOP Assessment complete!")
         
     except Exception as e:
         st.error(f"Error during analysis: {str(e)}")
+        status_text.text("❌ Analysis failed")
 
 def display_assessment_results(rubric_engine: RubricEngine):
-    """Display the assessment results."""
+    """Display the assessment results using the proven narrative structure."""
     if not st.session_state.assessment_results:
         return
     
@@ -432,23 +523,39 @@ def display_assessment_results(rubric_engine: RubricEngine):
     # Display summary
     st.info(f"**Pattern**: {results['video_info']['pattern'].replace('_', ' ').title()}")
     st.info(f"**Video**: {results['video_info']['filename']}")
+    st.info(f"**Duration**: {results['video_info']['duration']:.1f} seconds")
     
-    # Display analysis
-    for batch_result in results["analysis"]:
-        with st.expander(f"Analysis - {batch_result['timestamp_range']}", expanded=True):
-            st.markdown(batch_result["narrative"])
+    # Performance metrics
+    if results.get('performance_metrics'):
+        metrics = results['performance_metrics']
+        success_rate = (metrics.get('successful_batches', 0) / metrics.get('total_batches', 1)) * 100
+        st.success(f"📊 Processing: {success_rate:.1f}% success rate")
     
-    # Scoring interface (placeholder for now)
+    # Display continuous narrative
+    st.subheader("📖 Continuous Motion Analysis")
+    with st.expander("Full Surgical Assessment Narrative", expanded=True):
+        st.markdown(results.get("full_transcript", "No analysis available"))
+    
+    # Display event timeline
+    if results.get("event_timeline"):
+        st.subheader("📅 Technical Events Timeline")
+        with st.expander("Surgical Events", expanded=False):
+            for event in results["event_timeline"]:
+                st.json(event)
+    
+    # Scoring interface
     st.subheader("📝 Manual Scoring")
     pattern_data = rubric_engine.get_pattern_rubric(st.session_state.selected_pattern)
     
     if pattern_data:
+        st.markdown("*Score each rubric point based on the analysis above:*")
+        
         for point in pattern_data["points"]:
-            critical_indicator = "🔴" if point.get("critical") else "⚪"
             score = st.slider(
-                f"{critical_indicator} {point['title']}", 
+                f"{point['pid']}. {point['title']}", 
                 1, 5, 3, 
-                key=f"score_{point['pid']}"
+                key=f"score_{point['pid']}",
+                help=f"What to assess: {point['what_you_assess']}"
             )
             st.session_state.rubric_scores[point['pid']] = score
     
@@ -456,10 +563,40 @@ def display_assessment_results(rubric_engine: RubricEngine):
     if st.session_state.rubric_scores:
         overall_result = rubric_engine.calculate_overall_score(st.session_state.rubric_scores)
         
+        st.subheader("🎯 Overall Assessment")
         if overall_result["pass"]:
             st.success(f"✅ **PASS** - Average Score: {overall_result['average_score']:.1f}/5")
         else:
             st.error(f"❌ **FAIL** - {overall_result['reason']}")
+        
+        # PDF report generation button
+        if st.button("📄 Generate PDF Report"):
+            try:
+                from surgical_report_generator import SurgicalVOPReportGenerator
+                
+                report_generator = SurgicalVOPReportGenerator()
+                report_filename = f"VOP_Assessment_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                
+                report_path = report_generator.generate_vop_report(
+                    results,
+                    st.session_state.rubric_scores,
+                    overall_result,
+                    report_filename
+                )
+                
+                st.success(f"✅ PDF report generated: {report_path}")
+                
+                # Offer download
+                with open(report_path, "rb") as pdf_file:
+                    st.download_button(
+                        label="📥 Download PDF Report",
+                        data=pdf_file.read(),
+                        file_name=report_filename,
+                        mime="application/pdf"
+                    )
+                    
+            except Exception as e:
+                st.error(f"Error generating PDF report: {e}")
 
 if __name__ == "__main__":
     main()
