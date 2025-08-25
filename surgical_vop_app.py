@@ -296,12 +296,19 @@ NO POETIC LANGUAGE: Avoid phrases like "as if measuring" or "like threading." St
 
 Create a tight, continuous surgical narrative that flows naturally without time constraints, focusing on technique evaluation. Address each rubric criterion with specific evidence from the video analysis. Every detail should be rendered in concrete, specific surgical terms.
 
-**MANDATORY SCORING REQUIREMENT**: You MUST conclude your assessment with explicit numerical scores for each rubric point in this format:
+**MANDATORY SCORING REQUIREMENT**: You MUST conclude your assessment with explicit numerical scores for each rubric point in this EXACT format:
 
-RUBRIC SCORES:
-Point 1 - [Title]: Score X/5 - [Brief justification with timestamp evidence]
-Point 2 - [Title]: Score X/5 - [Brief justification with timestamp evidence]
-[Continue for all rubric points]
+RUBRIC_SCORES_START
+1: X
+2: X  
+3: X
+4: X
+5: X
+6: X
+7: X
+RUBRIC_SCORES_END
+
+Where X is the numerical score (1-5) for each rubric point. This MUST be the final section of your response.
 
 **CRITICAL**: Maintain the clinical, analytical surgical assessment voice throughout your entire narrative. Your enhanced narrative should read as if it was written by the same surgical AI that conducted the initial frame analysis."""
 
@@ -353,6 +360,49 @@ Point 2 - [Title]: Score X/5 - [Brief justification with timestamp evidence]
         st.info("🔍 **Debug Info**: Check console for detailed error messages")
         print(f"Enhanced narrative creation error: {e}")
         return ""
+
+def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, int]:
+    """Extract numerical scores from GPT-5 enhanced narrative."""
+    scores = {}
+    
+    if not enhanced_narrative:
+        return scores
+    
+    try:
+        # Look for the scoring section
+        start_marker = "RUBRIC_SCORES_START"
+        end_marker = "RUBRIC_SCORES_END"
+        
+        start_idx = enhanced_narrative.find(start_marker)
+        end_idx = enhanced_narrative.find(end_marker)
+        
+        if start_idx != -1 and end_idx != -1:
+            scores_section = enhanced_narrative[start_idx + len(start_marker):end_idx].strip()
+            
+            # Parse each line
+            for line in scores_section.split('\n'):
+                line = line.strip()
+                if ':' in line:
+                    try:
+                        point_id, score_str = line.split(':', 1)
+                        point_id = int(point_id.strip())
+                        score = int(score_str.strip())
+                        
+                        # Validate score is in range
+                        if 1 <= score <= 5:
+                            scores[point_id] = score
+                        else:
+                            st.warning(f"Score {score} for point {point_id} is out of range (1-5)")
+                    except (ValueError, IndexError) as e:
+                        st.warning(f"Could not parse score line: {line}")
+                        continue
+        else:
+            st.warning("GPT-5 response did not include proper scoring format - scores will default to 3")
+            
+    except Exception as e:
+        st.error(f"Error extracting scores from narrative: {e}")
+    
+    return scores
 
 def save_api_key(api_key: str):
     """Save API key to config file."""
@@ -647,11 +697,22 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             rubric_engine
         )
         
+        # Extract scores from enhanced narrative
+        extracted_scores = extract_rubric_scores_from_narrative(enhanced_narrative)
+        
+        # Set extracted scores in session state
+        if extracted_scores:
+            st.session_state.rubric_scores = extracted_scores
+            st.success(f"✅ Extracted {len(extracted_scores)} rubric scores from GPT-5 assessment")
+        else:
+            st.warning("⚠️ Could not extract scores from GPT-5 - manual scoring required")
+        
         # Store results in the proven format
         st.session_state.assessment_results = {
             "full_transcript": full_transcript,  # Keep for debugging if needed
             "enhanced_narrative": enhanced_narrative,  # This is what we'll display
             "event_timeline": event_timeline,
+            "extracted_scores": extracted_scores,  # Store the extracted scores
             "video_info": {
                 "filename": os.path.basename(video_path),
                 "pattern": st.session_state.selected_pattern,
@@ -724,16 +785,25 @@ def display_assessment_results(rubric_engine: RubricEngine):
         st.caption("*This is the detailed frame-by-frame analysis that was synthesized into the final assessment above.*")
     
     # Scoring interface
-    st.subheader("📝 Manual Scoring")
+    st.subheader("📝 Assessment Scores")
     pattern_data = rubric_engine.get_pattern_rubric(st.session_state.selected_pattern)
     
     if pattern_data:
-        st.markdown("*Score each rubric point based on the analysis above:*")
+        # Check if we have extracted scores from GPT-5
+        extracted_scores = results.get("extracted_scores", {})
+        
+        if extracted_scores:
+            st.info("📊 **AI-Generated Scores** - Based on GPT-5 video analysis (adjust if needed):")
+        else:
+            st.markdown("*Score each rubric point based on the analysis above:*")
         
         for point in pattern_data["points"]:
+            # Use extracted score as default, or 3 if not available
+            default_score = extracted_scores.get(point['pid'], 3)
+            
             score = st.slider(
                 f"{point['pid']}. {point['title']}", 
-                1, 5, 3, 
+                1, 5, default_score, 
                 key=f"score_{point['pid']}",
                 help=f"What to assess: {point['what_you_assess']}"
             )

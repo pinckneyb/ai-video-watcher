@@ -240,12 +240,11 @@ class SurgicalVOPReportGenerator:
             
             if pattern_data:
                 # Create rubric table
-                table_data = [['Point', 'Criterion', 'Critical', 'Score', 'Assessment']]
+                table_data = [['Point', 'Criterion', 'Score', 'Assessment']]
                 
                 for point in pattern_data["points"]:
                     pid = point["pid"]
                     score = rubric_scores.get(pid, 3)
-                    critical = "Yes" if point.get("critical", False) else "No"
                     
                     # Score color coding
                     if score >= 4:
@@ -258,12 +257,11 @@ class SurgicalVOPReportGenerator:
                     table_data.append([
                         str(pid),
                         point['title'],
-                        critical,
                         f"{score}/5",
                         self._get_score_interpretation(score)
                     ])
                 
-                rubric_table = Table(table_data, colWidths=[0.5*inch, 2.5*inch, 0.8*inch, 0.6*inch, 1.6*inch])
+                rubric_table = Table(table_data, colWidths=[0.5*inch, 3.3*inch, 0.6*inch, 1.6*inch])
                 rubric_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
