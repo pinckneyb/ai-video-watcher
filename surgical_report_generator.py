@@ -131,14 +131,18 @@ class SurgicalVOPReportGenerator:
         story.append(Spacer(1, 20))
         
         # Assessment info table
-        pattern_name = assessment_data['video_info']['pattern'].replace('_', ' ').title()
-        assessment_date = datetime.now().strftime("%B %d, %Y")
+        video_info = assessment_data['video_info']
+        pattern_name = video_info['pattern'].replace('_', ' ').title()
+        assessment_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+        duration = video_info.get('duration', 0)
         
         header_data = [
             ['Suture Pattern:', pattern_name],
             ['Assessment Date:', assessment_date],
-            ['Video File:', assessment_data['video_info']['filename']],
-            ['Analysis FPS:', f"{assessment_data['video_info']['fps']} frames/second"]
+            ['Video File:', video_info['filename']],
+            ['Video Duration:', f"{duration:.1f} seconds"],
+            ['Analysis FPS:', f"{video_info['fps']} frames/second"],
+            ['Total Frames Analyzed:', f"{video_info.get('total_frames', 0):,}"]
         ]
         
         header_table = Table(header_data, colWidths=[2*inch, 4*inch])
@@ -160,15 +164,24 @@ class SurgicalVOPReportGenerator:
         
         story.append(Paragraph("Video Analysis Summary", self.styles['CustomHeading']))
         
-        total_frames = assessment_data['video_info']['total_frames']
-        fps = assessment_data['video_info']['fps']
-        duration = total_frames / fps if fps > 0 else 0
+        video_info = assessment_data['video_info']
+        total_frames = video_info.get('total_frames', 0)
+        fps = video_info.get('fps', 2.0)
+        duration = video_info.get('duration', total_frames / fps if fps > 0 else 0)
+        
+        # Performance metrics if available
+        performance_text = ""
+        if assessment_data.get('performance_metrics'):
+            metrics = assessment_data['performance_metrics']
+            success_rate = (metrics.get('successful_batches', 0) / metrics.get('total_batches', 1)) * 100
+            performance_text = f" The analysis achieved a {success_rate:.1f}% processing success rate."
         
         info_text = f"""
-        This assessment analyzed {total_frames} frames extracted at {fps} FPS, 
-        covering approximately {duration:.1f} seconds of surgical technique. 
-        The video was processed using advanced AI analysis to evaluate specific 
-        technical competencies according to institutional VOP standards.
+        This Verification of Proficiency assessment analyzed {total_frames} video frames 
+        extracted at {fps} frames per second, covering {duration:.1f} seconds of surgical technique 
+        for {video_info['pattern'].replace('_', ' ').title()} suturing pattern.{performance_text} 
+        The assessment employs forensic-level AI analysis to evaluate technical competencies 
+        according to institutional VOP standards and established surgical principles.
         """
         
         story.append(Paragraph(info_text, self.styles['Normal']))
@@ -271,45 +284,60 @@ class SurgicalVOPReportGenerator:
         return story
     
     def _create_technical_analysis_section(self, assessment_data: Dict[str, Any]) -> List:
-        """Create technical analysis section with timestamps."""
+        """Create technical analysis section with enhanced narrative."""
         story = []
         
-        story.append(Paragraph("Technical Analysis with Timestamps", self.styles['CustomHeading']))
+        story.append(Paragraph("Clinical Assessment Analysis", self.styles['CustomHeading']))
         
-        # Extract key observations from analysis
-        for batch_result in assessment_data.get('analysis', []):
-            timestamp_range = batch_result.get('timestamp_range', 'Unknown')
-            narrative = batch_result.get('narrative', 'No analysis available')
-            
-            story.append(Paragraph(f"<b>Time Range: {timestamp_range}</b>", self.styles['AssessmentPoint']))
-            story.append(Paragraph(narrative, self.styles['Normal']))
-            story.append(Spacer(1, 10))
+        # Use enhanced narrative if available, otherwise use full transcript
+        if assessment_data.get('enhanced_narrative'):
+            # Clean and format the enhanced narrative
+            narrative = assessment_data['enhanced_narrative']
+            # Split into paragraphs for better formatting
+            paragraphs = narrative.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), self.styles['Normal']))
+                    story.append(Spacer(1, 8))
+        elif assessment_data.get('full_transcript'):
+            # Fall back to raw transcript if enhanced narrative not available
+            story.append(Paragraph("Raw Technical Analysis:", self.styles['AssessmentPoint']))
+            transcript = assessment_data['full_transcript']
+            # Split into manageable chunks
+            chunks = transcript.split('\n\n')
+            for chunk in chunks[:10]:  # Limit to first 10 chunks to avoid overwhelming
+                if chunk.strip():
+                    story.append(Paragraph(chunk.strip(), self.styles['Normal']))
+                    story.append(Spacer(1, 8))
+        else:
+            story.append(Paragraph("No detailed analysis available.", self.styles['Normal']))
         
         return story
     
     def _create_recommendations_section(self, assessment_data: Dict[str, Any], overall_result: Dict[str, Any]) -> List:
-        """Create recommendations section."""
+        """Create recommendations section based on actual video analysis."""
         story = []
         
-        story.append(Paragraph("Recommendations for Improvement", self.styles['CustomHeading']))
+        story.append(Paragraph("Assessment-Based Recommendations", self.styles['CustomHeading']))
         
-        # Generate recommendations based on scores and analysis
-        if overall_result['pass']:
-            recommendations = [
-                "Continue practicing to maintain proficiency",
-                "Consider advancing to more complex suturing techniques",
-                "Review any points scored below 4 for optimization opportunities"
-            ]
+        # Extract specific recommendations from the enhanced narrative
+        enhanced_narrative = assessment_data.get('enhanced_narrative', '')
+        
+        if enhanced_narrative:
+            # Look for specific recommendations in the narrative
+            story.append(Paragraph(
+                "Recommendations have been integrated into the clinical assessment above. "
+                "Refer to the detailed analysis for specific, evidence-based improvement areas "
+                "identified through video review.", 
+                self.styles['Normal']
+            ))
         else:
-            recommendations = [
-                "Additional practice required before attempting VOP reassessment",
-                "Focus on critical technique points that scored below 3",
-                "Consider supervised practice sessions with attending physician",
-                "Review instructional materials for proper technique"
-            ]
-        
-        for rec in recommendations:
-            story.append(Paragraph(f"• {rec}", self.styles['Normal']))
+            # Fallback only if no enhanced narrative
+            story.append(Paragraph(
+                "Detailed recommendations require completion of the enhanced narrative analysis. "
+                "Please ensure GPT-5 assessment is available for specific, video-based recommendations.",
+                self.styles['Normal']
+            ))
         
         story.append(Spacer(1, 20))
         return story
@@ -319,9 +347,7 @@ class SurgicalVOPReportGenerator:
         story = []
         
         footer_text = f"""
-        <i>This assessment was generated using AI-assisted video analysis technology. 
-        Results should be reviewed by qualified surgical faculty before final determination. 
-        Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}.</i>
+        <i>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}.</i>
         """
         
         story.append(Paragraph(footer_text, self.styles['Normal']))

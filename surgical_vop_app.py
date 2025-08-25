@@ -140,48 +140,65 @@ class SurgicalAssessmentProfile:
             for p in assessment_points
         ])
         
-        prompt = f"""You are a senior attending surgeon conducting a Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique.
+        prompt = f"""You are a senior attending surgeon conducting a high-stakes Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique. This is a formal competency evaluation with real consequences.
 
-PERSONALITY PROFILE:
-- **Attitude**: Clinical, analytical, and unforgiving. You evaluate technique based on surgical standards, not feelings.
-- **Tone**: Direct, matter-of-fact, and precise. No sugar-coating or encouragement.
-- **Viewpoint**: Step-by-step technical assessment. Every movement, angle, and decision is scrutinized.
-- **Commentary Style**: Brutally honest. Point out every flaw, mistake, or deviation from standard technique.
+ASSESSMENT PHILOSOPHY:
+- **Standard of Care**: You must evaluate against published surgical standards, not subjective impressions
+- **Evidence-Based**: Every observation must be grounded in visual evidence from the frames
+- **Uncompromising**: Minor deviations from technique ARE significant - this is professional competency
+- **Forensic Detail**: You are building a legal-grade assessment that could be challenged
+- **No Benefit of Doubt**: If you cannot clearly see proper technique, it is inadequate
 
-You are given a batch of still frames extracted from the video, in strict chronological order, with timestamps.
-
-Your task:
-1. Provide a continuous motion analysis narrative that tracks surgical technique across time
-2. Always anchor your analysis to timestamps (e.g., "At 00:01:12…")
-3. Keep continuity with the previous analysis provided in the "Context so far"
-4. Focus on technique progression, errors, and adherence to surgical principles
-5. Use surgical terminology: "approximation," "bite placement," "knot security," "tissue handling," "needle angle," "tension," "atraumatic technique"
+MANDATORY ASSESSMENT REQUIREMENTS:
+1. **ALWAYS find evidence for each rubric point** - across a full suturing video, all criteria can be assessed
+2. **Use precise measurements** when visible: needle angles, bite distances, knot spacing
+3. **Timestamp every significant observation** - be specific to the second when possible
+4. **Identify specific errors** - do not use vague terms like "adequate" or "reasonable"
+5. **Reference surgical principles** - explain WHY each observation matters clinically
+6. **Track progression** - note improvement/deterioration across the procedure
+7. **No hedging language** - avoid "appears to," "seems," "possibly" - state what you observe
 
 ASSESSMENT CRITERIA FOR {pattern_data['display_name'].upper()}:
 {criteria_text}
 
-CRITICAL SPECIFICITY REQUIREMENTS:
-- **NO generic terms**: Never use "a surgeon," "someone," "a person," "the operator"
-- **Absolute specificity**: Describe EVERY person with concrete details
-- **Physical description**: Specify gender, age, body type, clothing, expressions, posture
-- **Direct observation**: If someone is obese, beautiful, ugly, old, young - say so directly
-- **Concrete details**: "A middle-aged female surgeon with gray hair in blue scrubs" not "the surgeon"
-- **Rich visual detail**: Focus on what you can actually see - clothing, expressions, movements, objects
-- **Text transcription**: If there's any text (overlaid or in scene), transcribe it exactly
-- **Concrete actions**: Describe movements and actions in specific, visual terms
+DETAILED OBSERVATION PROTOCOL:
+- **Needle handling**: Exact grip position, wrist angle, finger placement, tremor/steadiness
+- **Tissue interaction**: Exact entry/exit points, tissue deformation, bleeding, trauma signs
+- **Spatial relationships**: Bite spacing measurements, symmetry, alignment to wound edges
+- **Temporal analysis**: Speed consistency, hesitation patterns, efficiency indicators
+- **Instrument technique**: Forceps pressure, needle driver positioning, assistant coordination
+- **Environmental factors**: Lighting adequacy, field exposure, contamination risks
+
+CRITICAL EVIDENCE REQUIREMENTS:
+- **Quantify everything measurable**: "3mm bite depth" not "appropriate depth"
+- **Count repetitions**: "Fourth attempt at knot placement" not "multiple attempts"
+- **Measure timing**: "15-second delay" not "brief pause" 
+- **Document deviations**: "45-degree needle angle versus standard 90-degree entry"
+- **Assess cumulative effect**: How errors compound across the procedure
+
+PROHIBITED ASSESSMENT LANGUAGE:
+❌ "Insufficient evidence to assess"
+❌ "Cannot determine from available footage"  
+❌ "Appears adequate"
+❌ "Generally acceptable"
+❌ "Would benefit from"
+✅ "Demonstrates substandard bite placement at 00:02:15"
+✅ "Needle angle consistently 30 degrees off perpendicular"
+✅ "Tissue approximation gap of 2-3mm throughout closure"
 
 Output format:
-- **Continuous narrative** (clinical, critical, timestamped, with absolute specificity and surgical terminology)
+- **Continuous narrative** (clinical, critical, timestamped, forensically detailed)
 - **Structured JSON log** with one entry per detected technique event:
   ```json
   [
     {{
       "timestamp": "00:01:12",
-      "event": "Middle-aged female surgeon with gray hair demonstrates poor needle angle at 45 degrees",
-      "confidence": 0.85,
-      "technique_assessment": "Substandard",
+      "event": "Needle entry at 45-degree angle instead of required 90-degree perpendicular approach",
+      "confidence": 0.95,
+      "technique_assessment": "Substandard - creates excessive tissue trauma",
       "rubric_point": 1,
-      "clinical_significance": "Excessive tissue trauma from steep angle"
+      "clinical_significance": "Increased risk of wound dehiscence due to uneven tissue stress distribution",
+      "measurement": "45 degrees vs 90 degree standard"
     }}
   ]
   ```"""
@@ -207,7 +224,7 @@ Guidelines:
 Output format: [Condensed Surgical Assessment State]"""
 
 def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_key: str, pattern_id: str, rubric_engine: RubricEngine) -> str:
-    """Create enhanced surgical VOP narrative using GPT-5."""
+    """Create enhanced surgical VOP narrative using GPT-5 - copied from working app.py structure."""
     try:
         # Get pattern and rubric information
         pattern_data = rubric_engine.get_pattern_rubric(pattern_id)
@@ -219,63 +236,123 @@ def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_k
             for p in assessment_points
         ])
         
-        # Create GPT-5 client
+        # Create a GPT-5 client for narrative enhancement (EXACT COPY from app.py)
         gpt5_client = GPT4oClient(api_key=api_key)
         
-        enhancement_prompt = f"""You are a senior attending surgeon conducting a final Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique.
+        # Use the EXACT SAME structure as the working app.py but for surgical assessment
+        personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
+        
+        enhancement_prompt = f"""You are a master storyteller and video analyst. Your task is to transform raw, batch-by-batch video analysis into a coherent, continuous narrative that reads like a polished surgical assessment.
 
-Your task is to synthesize the raw frame-by-frame analysis into a comprehensive, coherent surgical assessment that follows VOP standards.
+{personality_instructions}
 
-SUTURE PATTERN: {pattern_data['display_name']}
+PROFILE: Surgical VOP Assessment - {pattern_data['display_name']} Technique Evaluation
 
 ASSESSMENT RUBRIC CRITERIA:
 {rubric_criteria}
 
-RAW ANALYSIS:
+RAW TRANSCRIPT:
 {raw_transcript}
 
-TECHNICAL EVENTS:
-{json.dumps(events, indent=2) if events else "No specific events logged"}
+EVENTS TIMELINE:
+{json.dumps(events, indent=2)}
+
+AUDIO TRANSCRIPT:
+No audio transcription available.
 
 INSTRUCTIONS:
-1. **Create a comprehensive surgical narrative** that flows chronologically through the procedure
-2. **Evaluate each rubric point systematically** based on the visual evidence
-3. **Use surgical terminology** and clinical language throughout
-4. **Be matter-of-fact and critical** - no encouragement or sugar-coating
-5. **Reference specific timestamps** for all observations
-6. **Identify technical errors and deviations** from proper technique
-7. **Provide actionable feedback** for improvement
-8. **End with summative assessment** covering overall technique quality
-
-PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation.
+1. **Chronological Flow**: Maintain strict chronological order from start to finish
+2. **Character Continuity**: Track the surgeon and instruments across the procedure
+3. **Setting Continuity**: Maintain awareness of the surgical field and spatial relationships
+4. **Cause and Effect**: Connect surgical actions logically, explaining why techniques succeed or fail
+5. **Narrative Coherence**: Fill gaps, resolve contradictions, and create smooth transitions
+6. **Surgical Terminology**: Use precise surgical language throughout
+7. **Temporal Synchronization**: Align surgical events with timestamps when possible
+8. **Absolute Specificity**: Describe EVERYTHING with concrete, specific details
+9. **No Generic Language**: Eliminate phrases like "a figure," "someone," "a person"
+10. **Physical Description**: Specify exact hand positions, instrument angles, tissue appearance
+11. **Direct Observation**: Document exactly what is visible - no interpretation beyond what can be seen
+12. **Technical Assessment**: Evaluate each action against surgical standards
+13. **Rubric Integration**: Address each rubric point with specific evidence from the video AND provide numerical scores (1-5)
+14. **Progressive Analysis**: Track how technique changes throughout the procedure
+15. **Clinical Significance**: Connect observations to patient outcomes and surgical principles
+16. **Mandatory Scoring**: You MUST provide a numerical score (1-5) for each rubric criterion based on evidence
+17. **Profile Consistency**: Maintain surgical assessment voice throughout
 
 OUTPUT FORMAT:
-- **Procedural Overview**: Brief description of what was attempted
-- **Technical Analysis**: Systematic evaluation of each major technical element
-- **Critical Observations**: Specific errors, deviations, or excellent technique moments
-- **Rubric Assessment**: How the performance relates to each assessment criterion
-- **Summative Comments**: Overall technique quality and specific recommendations
+- Write in third-person narrative style
+- Use present tense for immediacy
+- NO timestamps or time markers - let the story flow naturally
+- Break into logical paragraphs based on surgical phases, not time chunks
+- Create smooth transitions between surgical actions
+- Focus on visual description and technical execution
+- Avoid color commentary, purple prose, or excessive adjectives
+- End with a conclusion that ties everything together for competency determination
+- **Maintain Surgical Voice**: Write in the voice and style of a surgical assessment
 
-Write as a continuous, professional surgical assessment narrative without section headers."""
+CRITICAL: Every person, object, or action must be described with absolute specificity. No generalizations, no generic terms, no vague descriptions. Document exact needle angles, bite depths, knot configurations, and tissue handling with clinical precision.
 
-        # Make GPT-5 API call
-        response = gpt5_client.client.chat.completions.create(
-            model="gpt-5",
-            messages=[{"role": "user", "content": enhancement_prompt}],
-            max_completion_tokens=4000
-        )
+NO POETIC LANGUAGE: Avoid phrases like "as if measuring" or "like threading." Stick to rich, full detailing of what we can actually see. Focus on concrete surgical details - the procedure itself playing out in prose, richly described with surgical terminology.
+
+Create a tight, continuous surgical narrative that flows naturally without time constraints, focusing on technique evaluation. Address each rubric criterion with specific evidence from the video analysis. Every detail should be rendered in concrete, specific surgical terms.
+
+**MANDATORY SCORING REQUIREMENT**: You MUST conclude your assessment with explicit numerical scores for each rubric point in this format:
+
+RUBRIC SCORES:
+Point 1 - [Title]: Score X/5 - [Brief justification with timestamp evidence]
+Point 2 - [Title]: Score X/5 - [Brief justification with timestamp evidence]
+[Continue for all rubric points]
+
+**CRITICAL**: Maintain the clinical, analytical surgical assessment voice throughout your entire narrative. Your enhanced narrative should read as if it was written by the same surgical AI that conducted the initial frame analysis."""
+
+        # Check input lengths and provide warnings (EXACT COPY from app.py)
+        transcript_length = len(raw_transcript)
+        events_length = len(json.dumps(events, indent=2))
         
-        enhanced_narrative = response.choices[0].message.content
+        st.info(f"📊 **Input Analysis**: Transcript: {transcript_length:,} chars, Events: {events_length:,} chars")
         
-        # Ensure proper encoding
-        if isinstance(enhanced_narrative, str):
-            enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+        # If content is very long, suggest chunking
+        total_input = transcript_length + events_length
+        if total_input > 100000:  # 100K character limit
+            st.warning(f"⚠️ **Content Very Long**: Total input is {total_input:,} characters. Consider reducing FPS or batch size for better results.")
         
-        return enhanced_narrative
+        # Make API call to GPT-5 with better error handling (EXACT COPY from app.py)
+        try:
+            response = gpt5_client.client.chat.completions.create(
+                model="gpt-5",  # Use GPT-5 for enhanced narrative
+                messages=[
+                    {
+                        "role": "user",
+                        "content": enhancement_prompt
+                    }
+                ],
+                max_completion_tokens=4000
+            )
+            
+            enhanced_narrative = response.choices[0].message.content
+            
+            # Ensure proper encoding (EXACT COPY from app.py)
+            if isinstance(enhanced_narrative, str):
+                enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+            
+            st.success(f"✅ **Enhanced narrative created successfully**: {len(enhanced_narrative):,} characters")
+            return enhanced_narrative
+            
+        except Exception as api_error:
+            st.error(f"❌ **GPT-5 API Error**: {api_error}")
+            if "context_length_exceeded" in str(api_error).lower():
+                st.warning("💡 **Solution**: Try reducing FPS or batch size to create shorter input content")
+            elif "rate_limit" in str(api_error).lower():
+                st.warning("💡 **Solution**: Wait a moment and try again, or reduce concurrency")
+            elif "quota_exceeded" in str(api_error).lower():
+                st.error("💡 **Solution**: Check your OpenAI API quota and billing")
+            return ""
         
     except Exception as e:
-        st.error(f"Error creating enhanced narrative: {e}")
-        return "Enhanced narrative generation failed. Please review the raw analysis above."
+        st.error(f"❌ **Unexpected Error**: {e}")
+        st.info("🔍 **Debug Info**: Check console for detailed error messages")
+        print(f"Enhanced narrative creation error: {e}")
+        return ""
 
 def save_api_key(api_key: str):
     """Save API key to config file."""
@@ -616,10 +693,22 @@ def display_assessment_results(rubric_engine: RubricEngine):
     # Display GPT-5 enhanced narrative (primary assessment)
     st.subheader("🏥 Final Surgical Assessment")
     if results.get("enhanced_narrative"):
-        with st.expander("GPT-5 Enhanced VOP Assessment", expanded=True):
-            st.markdown(results["enhanced_narrative"])
+        # Format the enhanced narrative for better readability
+        narrative = results["enhanced_narrative"]
+        
+        # Clean up the text and add proper spacing
+        formatted_narrative = narrative.replace('\n\n', '\n\n---\n\n')
+        
+        with st.expander("📋 Comprehensive VOP Assessment Report", expanded=True):
+            st.markdown(
+                f"""<div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; 
+                border-left: 4px solid #007bff; line-height: 1.6; font-family: 'Arial', sans-serif;">
+                {formatted_narrative}
+                </div>""", 
+                unsafe_allow_html=True
+            )
     else:
-        st.warning("Enhanced narrative not available - showing raw analysis")
+        st.warning("⚠️ Enhanced narrative not available - showing raw analysis")
         with st.expander("Raw Frame Analysis", expanded=False):
             st.markdown(results.get("full_transcript", "No analysis available"))
     
@@ -654,11 +743,24 @@ def display_assessment_results(rubric_engine: RubricEngine):
     if st.session_state.rubric_scores:
         overall_result = rubric_engine.calculate_overall_score(st.session_state.rubric_scores)
         
-        st.subheader("🎯 Overall Assessment")
+        st.subheader("🎯 Overall VOP Assessment")
+        
         if overall_result["pass"]:
-            st.success(f"✅ **PASS** - Average Score: {overall_result['average_score']:.1f}/5")
+            st.markdown(
+                f"""<div style="background-color: #d4edda; color: #155724; padding: 15px; 
+                border-radius: 8px; border: 1px solid #c3e6cb; text-align: center; font-size: 18px; font-weight: bold;">
+                ✅ COMPETENCY ACHIEVED - Average Score: {overall_result['average_score']:.1f}/5.0
+                </div>""", 
+                unsafe_allow_html=True
+            )
         else:
-            st.error(f"❌ **FAIL** - {overall_result['reason']}")
+            st.markdown(
+                f"""<div style="background-color: #f8d7da; color: #721c24; padding: 15px; 
+                border-radius: 8px; border: 1px solid #f5c6cb; text-align: center; font-size: 18px; font-weight: bold;">
+                ❌ COMPETENCY NOT ACHIEVED - {overall_result['reason']}
+                </div>""", 
+                unsafe_allow_html=True
+            )
         
         # PDF report generation button
         if st.button("📄 Generate PDF Report"):
