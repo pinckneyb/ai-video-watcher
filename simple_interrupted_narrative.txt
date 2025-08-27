@@ -1,0 +1,52 @@
+### Simple Interrupted (Four Stitches, Narrative with Rubric Fulfilment)
+
+**Initial field**
+The wound is straight and clean. The operator prepares to work left to right. Instruments are organized, hands remain near the pad throughout (fulfilling **Economy of time and motion, pid 7**).
+
+**Stitch 1**
+
+* The needle enters the near margin at a right angle, arcs smoothly, and emerges on the far side at a mirror point. This shows **Perpendicular needle passes (pid 1)**, with symmetric bites and no shearing.
+* The edge is stabilized with a single precise forceps grasp, no repeated pinching, fulfilling **Gentle tissue handling (pid 2)**.
+* The wound edges are gently drawn together. They just meet without whitening or separation, demonstrating **Appropriate approximation/tension (pid 4)**.
+* The knot is tied with alternating throws that sit flat and square, satisfying **Square, secure knots (pid 3)**.
+* The knot lies to the side, off the incision, with tails even. The bridge is perpendicular. The resulting closure shows flat-to-slight eversion, meeting **Edge eversion (pid 6)**.
+* The spacing from the end is appropriate, beginning the pattern of **Even spacing (pid 5)** that will be maintained.
+
+**Stitch 2**
+
+* Again, the needle enters and exits perpendicularly, symmetric across the wound (**pid 1**).
+* The operator repeats the single light grasp on each edge (**pid 2**).
+* The edges between stitch 1 and 2 are approximated with no gapping or puckering (**pid 4**).
+* Knot tied square and secure, tails trimmed evenly (**pid 3**).
+* Both stitches now show parallel bridges, about 0.5–1.0 cm apart (**pid 5**).
+* The ridge between them is slightly everted and continuous (**pid 6**).
+* The operator’s hands never drift far from the site, confirming **pid 7** again.
+
+**Stitch 3**
+
+* Placement mirrors prior: perpendicular passes (**pid 1**), one clean grasp per margin (**pid 2**).
+* Knot construction is again square, flat, and off the wound (**pid 3**).
+* Approximation produces uniform contact, edges touching without undue tension (**pid 4**).
+* The gap is equal to the first, preserving **even spacing within 0.5–1.0 cm (pid 5)**.
+* Skin edges remain flat-to-slightly everted (**pid 6**).
+
+**Stitch 4**
+
+* The final stitch repeats all features: perpendicular entry/exit (**pid 1**), minimal tissue manipulation (**pid 2**), secure square knot (**pid 3**), correct approximation without blanching (**pid 4**).
+* Interval is consistent with prior, maintaining **pid 5**.
+* Closure shows flat-slight eversion, no inversion (**pid 6**).
+* All movements are efficient, instruments kept close (**pid 7**).
+
+**Completion appearance**
+
+* Four separate stitches form a uniform “railroad track.”
+* All passes are perpendicular (**pid 1**).
+* Tissue was handled gently throughout (**pid 2**).
+* Knots are square, flat, and secure (**pid 3**).
+* Wound edges approximate precisely, no gaps or blanching (**pid 4**).
+* Spacing is regular, all within the 0.5–1.0 cm standard (**pid 5**).
+* Edge profile is flat or slightly everted (both ar eacceptable), never inverted (**pid 6**).
+* Operator maintained efficient, localized movements (**pid 7**).
+
+The closure achieves the full set of rubric ideals for the **Simple Interrupted** pattern.
+

@@ -4,7 +4,7 @@ Creates professional assessment reports for surgical residents.
 """
 
 from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -12,6 +12,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import json
+import os
+from PIL import Image as PILImage
 
 class SurgicalVOPReportGenerator:
     """Generates professional PDF reports for surgical VOP assessments."""
@@ -107,11 +109,20 @@ class SurgicalVOPReportGenerator:
         # Detailed rubric assessment
         story.extend(self._create_rubric_assessment_section(rubric_scores, assessment_data))
         
-        # Technical analysis
-        story.extend(self._create_technical_analysis_section(assessment_data))
+        # Overall assessment and summative feedback
+        story.extend(self._create_summative_assessment_section(overall_result, assessment_data))
         
-        # Recommendations
-        story.extend(self._create_recommendations_section(assessment_data, overall_result))
+        # Page break before image comparison
+        story.append(PageBreak())
+        
+        # Image comparison section
+        story.extend(self._create_image_comparison_section(assessment_data))
+        
+        # New page for detailed narrative analysis
+        story.append(PageBreak())
+        
+        # Detailed narrative analysis section
+        story.extend(self._create_detailed_narrative_section(assessment_data))
         
         # Footer
         story.extend(self._create_footer())
@@ -130,19 +141,14 @@ class SurgicalVOPReportGenerator:
         story.append(Paragraph("Suturing Technique Assessment Report", self.styles['Heading2']))
         story.append(Spacer(1, 20))
         
-        # Assessment info table
+        # Minimal assessment info
         video_info = assessment_data['video_info']
         pattern_name = video_info['pattern'].replace('_', ' ').title()
-        assessment_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")
-        duration = video_info.get('duration', 0)
+        assessment_date = datetime.now().strftime("%B %d, %Y")
         
         header_data = [
             ['Suture Pattern:', pattern_name],
-            ['Assessment Date:', assessment_date],
-            ['Video File:', video_info['filename']],
-            ['Video Duration:', f"{duration:.1f} seconds"],
-            ['Analysis FPS:', f"{video_info['fps']} frames/second"],
-            ['Total Frames Analyzed:', f"{video_info.get('total_frames', 0):,}"]
+            ['Assessment Date:', assessment_date]
         ]
         
         header_table = Table(header_data, colWidths=[2*inch, 4*inch])
@@ -159,35 +165,8 @@ class SurgicalVOPReportGenerator:
         return story
     
     def _create_video_info_section(self, assessment_data: Dict[str, Any]) -> List:
-        """Create video information section."""
-        story = []
-        
-        story.append(Paragraph("Video Analysis Summary", self.styles['CustomHeading']))
-        
-        video_info = assessment_data['video_info']
-        total_frames = video_info.get('total_frames', 0)
-        fps = video_info.get('fps', 2.0)
-        duration = video_info.get('duration', total_frames / fps if fps > 0 else 0)
-        
-        # Performance metrics if available
-        performance_text = ""
-        if assessment_data.get('performance_metrics'):
-            metrics = assessment_data['performance_metrics']
-            success_rate = (metrics.get('successful_batches', 0) / metrics.get('total_batches', 1)) * 100
-            performance_text = f" The analysis achieved a {success_rate:.1f}% processing success rate."
-        
-        info_text = f"""
-        This Verification of Proficiency assessment analyzed {total_frames} video frames 
-        extracted at {fps} frames per second, covering {duration:.1f} seconds of surgical technique 
-        for {video_info['pattern'].replace('_', ' ').title()} suturing pattern.{performance_text} 
-        The assessment employs forensic-level AI analysis to evaluate technical competencies 
-        according to institutional VOP standards and established surgical principles.
-        """
-        
-        story.append(Paragraph(info_text, self.styles['Normal']))
-        story.append(Spacer(1, 15))
-        
-        return story
+        """Remove verbose video info section."""
+        return []
     
     def _create_overall_result_section(self, overall_result: Dict[str, Any]) -> List:
         """Create overall assessment result section."""
@@ -224,9 +203,10 @@ class SurgicalVOPReportGenerator:
         """Create detailed rubric assessment section."""
         story = []
         
-        story.append(Paragraph("Detailed Rubric Assessment", self.styles['CustomHeading']))
+        story.append(Paragraph("Assessment Results", self.styles['CustomHeading']))
+        story.append(Spacer(1, 10))
         
-        # Load rubric data to get point descriptions
+        # Load rubric data and enhanced narrative for detailed assessments
         try:
             with open("unified_rubric.JSON", 'r') as f:
                 rubric_data = json.load(f)
@@ -239,106 +219,185 @@ class SurgicalVOPReportGenerator:
                     break
             
             if pattern_data:
-                # Create rubric table
-                table_data = [['Point', 'Criterion', 'Score', 'Assessment']]
+                enhanced_narrative = assessment_data.get('enhanced_narrative', '')
                 
+                # Extract assessment paragraphs from enhanced narrative for each rubric point
                 for point in pattern_data["points"]:
                     pid = point["pid"]
                     score = rubric_scores.get(pid, 3)
+                    score_text = self._get_score_interpretation(score)
                     
-                    # Score color coding
-                    if score >= 4:
-                        score_color = colors.darkgreen
-                    elif score >= 3:
-                        score_color = colors.orange
-                    else:
-                        score_color = colors.darkred
+                    # Create professional rubric point assessment
+                    story.append(Paragraph(f"<b>{pid}. {point['title']}</b>", self.styles['Normal']))
+                    story.append(Spacer(1, 6))
                     
-                    table_data.append([
-                        str(pid),
-                        point['title'],
-                        f"{score}/5",
-                        self._get_score_interpretation(score)
-                    ])
-                
-                rubric_table = Table(table_data, colWidths=[0.5*inch, 3.3*inch, 0.6*inch, 1.6*inch])
-                rubric_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
-                ]))
-                
-                story.append(rubric_table)
+                    # Score with interpretation
+                    score_para = f"<b>Score: {score}/5 ({score_text})</b>"
+                    story.append(Paragraph(score_para, self.styles['Normal']))
+                    story.append(Spacer(1, 6))
+                    
+                    # Create cogent assessment with actionable advice
+                    # This will be populated from the enhanced narrative parsing
+                    feedback_text = self._extract_rubric_feedback(enhanced_narrative, pid, point['title'], score)
+                    
+                    story.append(Paragraph(feedback_text, self.styles['Normal']))
+                    story.append(Spacer(1, 12))
         
         except Exception as e:
             story.append(Paragraph(f"Error loading rubric details: {e}", self.styles['Normal']))
         
+        return story
+    
+    def _extract_rubric_feedback(self, enhanced_narrative: str, pid: int, title: str, score: int) -> str:
+        """Extract specific rubric point assessment from GPT-5 enhanced narrative."""
+        if not enhanced_narrative:
+            return f"Summary: Detailed assessment requires enhanced narrative from GPT-5 analysis of complete video."
+        
+        # The GPT-5 enhanced narrative should contain assessments for each rubric point
+        # Look for content structured by rubric point numbers or titles
+        lines = enhanced_narrative.split('\n')
+        
+        # Strategy 1: Look for explicit rubric point sections
+        rubric_content = []
+        collecting = False
+        
+        for i, line in enumerate(lines):
+            line_clean = line.strip()
+            if not line_clean:
+                continue
+                
+            # Check if this line starts a rubric point section
+            if (line_clean.startswith(f"{pid}.") or 
+                line_clean.startswith(f"Point {pid}") or
+                line_clean.startswith(f"Rubric {pid}") or
+                (str(pid) in line_clean and title.lower() in line_clean.lower())):
+                collecting = True
+                rubric_content = [line_clean]
+                continue
+            
+            # If we're collecting and hit another rubric point, stop
+            elif collecting and (any(line_clean.startswith(f"{j}.") for j in range(1, 8) if j != pid) or
+                                line_clean.startswith("Point ") or
+                                line_clean.startswith("Rubric ") or
+                                line_clean.startswith("RUBRIC_SCORES")):
+                break
+            
+            # If collecting, add substantial content
+            elif collecting and len(line_clean) > 10:
+                rubric_content.append(line_clean)
+        
+        # If we found specific rubric content, use it
+        if rubric_content and len(rubric_content) > 1:
+            # Combine the content, excluding the header line
+            content = " ".join(rubric_content[1:])
+            if len(content) > 300:
+                content = content[:300] + "..."
+            return f"Summary: {content}"
+        
+        # Strategy 2: Look for content related to this rubric point by keywords
+        keywords = {
+            1: ['needle', 'perpendicular', 'angle', 'entry', 'passes', '90'],
+            2: ['tissue', 'handling', 'gentle', 'forceps', 'grasp', 'manipulation'],
+            3: ['knot', 'square', 'secure', 'tie', 'throw', 'tension'],
+            4: ['approximation', 'tension', 'edge', 'contact', 'gap', 'alignment'],
+            5: ['spacing', 'even', 'uniform', 'distance', 'interval', 'cm'],
+            6: ['eversion', 'edge', 'inversion', 'position', 'roll', 'flat'],
+            7: ['motion', 'efficiency', 'movement', 'economy', 'smooth', 'hands']
+        }.get(pid, [title.lower()])
+        
+        # Find paragraphs with relevant keywords
+        relevant_paras = []
+        current_para = []
+        
+        for line in lines:
+            line_clean = line.strip()
+            if not line_clean:
+                if current_para and any(any(keyword in sentence.lower() for keyword in keywords) 
+                                      for sentence in current_para):
+                    relevant_paras.append(" ".join(current_para))
+                current_para = []
+            else:
+                current_para.append(line_clean)
+        
+        # Check last paragraph
+        if current_para and any(any(keyword in sentence.lower() for keyword in keywords) 
+                              for sentence in current_para):
+            relevant_paras.append(" ".join(current_para))
+        
+        # Return the most relevant paragraph
+        if relevant_paras:
+            # Pick the longest/most substantial paragraph
+            best_para = max(relevant_paras, key=len)
+            if len(best_para) > 300:
+                best_para = best_para[:300] + "..."
+            return f"Summary: {best_para}"
+        
+        # Strategy 3: Extract general procedural content
+        substantial_paras = []
+        current_para = []
+        
+        for line in lines:
+            line_clean = line.strip()
+            if not line_clean:
+                if current_para and len(" ".join(current_para)) > 50:
+                    para_text = " ".join(current_para)
+                    if not any(skip in para_text.lower() for skip in ['rubric_scores', 'score:', 'overall']):
+                        substantial_paras.append(para_text)
+                current_para = []
+            else:
+                if not line_clean.startswith(('RUBRIC', 'Score:')):
+                    current_para.append(line_clean)
+        
+        # Check last paragraph
+        if current_para and len(" ".join(current_para)) > 50:
+            para_text = " ".join(current_para)
+            if not any(skip in para_text.lower() for skip in ['rubric_scores', 'score:', 'overall']):
+                substantial_paras.append(para_text)
+        
+        if substantial_paras:
+            # Take the first substantial paragraph as general assessment
+            para = substantial_paras[0]
+            if len(para) > 300:
+                para = para[:300] + "..."
+            return f"Summary: {para}"
+        
+        return f"Summary: Assessment of {title.lower()} based on video analysis shows {self._get_score_interpretation(score).lower()} performance level."
+    
+    def _create_summative_assessment_section(self, overall_result: Dict[str, Any], assessment_data: Dict[str, Any]) -> List:
+        """Create summative assessment with final score and holistic feedback."""
+        story = []
+        
+        story.append(Paragraph("Final Assessment", self.styles['CustomHeading']))
+        story.append(Spacer(1, 10))
+        
+        # VOP-aligned final score with Likert scale + adjective
+        avg_score = overall_result.get('average_score', 3.0)
+        score_text = self._get_score_interpretation(round(avg_score))
+        
+        story.append(Paragraph(f"<b>Final Score: {round(avg_score)} - {score_text}</b>", self.styles['Normal']))
+        story.append(Spacer(1, 10))
+        
+        # Create longer, actionable summative feedback
+        scores = assessment_data.get('extracted_scores', {})
+        avg_score = overall_result.get('average_score', 3.0)
+        
+        # Generate summative feedback based on performance patterns
+        summative_feedback = self._generate_summative_feedback(scores, avg_score, assessment_data)
+        
+        story.append(Paragraph("<b>Summative Comment:</b>", self.styles['Normal']))
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(summative_feedback.strip(), self.styles['Normal']))
         story.append(Spacer(1, 20))
+        
         return story
     
     def _create_technical_analysis_section(self, assessment_data: Dict[str, Any]) -> List:
-        """Create technical analysis section with enhanced narrative."""
-        story = []
-        
-        story.append(Paragraph("Clinical Assessment Analysis", self.styles['CustomHeading']))
-        
-        # Use enhanced narrative if available, otherwise use full transcript
-        if assessment_data.get('enhanced_narrative'):
-            # Clean and format the enhanced narrative
-            narrative = assessment_data['enhanced_narrative']
-            # Split into paragraphs for better formatting
-            paragraphs = narrative.split('\n\n')
-            for para in paragraphs:
-                if para.strip():
-                    story.append(Paragraph(para.strip(), self.styles['Normal']))
-                    story.append(Spacer(1, 8))
-        elif assessment_data.get('full_transcript'):
-            # Fall back to raw transcript if enhanced narrative not available
-            story.append(Paragraph("Raw Technical Analysis:", self.styles['AssessmentPoint']))
-            transcript = assessment_data['full_transcript']
-            # Split into manageable chunks
-            chunks = transcript.split('\n\n')
-            for chunk in chunks[:10]:  # Limit to first 10 chunks to avoid overwhelming
-                if chunk.strip():
-                    story.append(Paragraph(chunk.strip(), self.styles['Normal']))
-                    story.append(Spacer(1, 8))
-        else:
-            story.append(Paragraph("No detailed analysis available.", self.styles['Normal']))
-        
-        return story
+        """Removed - keeping reports concise."""
+        return []
     
     def _create_recommendations_section(self, assessment_data: Dict[str, Any], overall_result: Dict[str, Any]) -> List:
-        """Create recommendations section based on actual video analysis."""
-        story = []
-        
-        story.append(Paragraph("Assessment-Based Recommendations", self.styles['CustomHeading']))
-        
-        # Extract specific recommendations from the enhanced narrative
-        enhanced_narrative = assessment_data.get('enhanced_narrative', '')
-        
-        if enhanced_narrative:
-            # Look for specific recommendations in the narrative
-            story.append(Paragraph(
-                "Recommendations have been integrated into the clinical assessment above. "
-                "Refer to the detailed analysis for specific, evidence-based improvement areas "
-                "identified through video review.", 
-                self.styles['Normal']
-            ))
-        else:
-            # Fallback only if no enhanced narrative
-            story.append(Paragraph(
-                "Detailed recommendations require completion of the enhanced narrative analysis. "
-                "Please ensure GPT-5 assessment is available for specific, video-based recommendations.",
-                self.styles['Normal']
-            ))
-        
-        story.append(Spacer(1, 20))
-        return story
+        """Removed - recommendations included in summative feedback."""
+        return []
     
     def _create_footer(self) -> List:
         """Create report footer."""
@@ -353,15 +412,193 @@ class SurgicalVOPReportGenerator:
         return story
     
     def _get_score_interpretation(self, score: int) -> str:
-        """Get text interpretation of numeric score."""
+        """Get VOP-aligned text interpretation of numeric score."""
         interpretations = {
-            1: "Unacceptable",
-            2: "Poor",
-            3: "Adequate",
-            4: "Good", 
-            5: "Excellent"
+            1: "Remediation / Unsafe",
+            2: "Minimal Pass / Basic Competent",
+            3: "Developing Pass / Generally Reliable",
+            4: "Proficient", 
+            5: "Exemplary / Model"
         }
         return interpretations.get(score, "Unknown")
+    
+    def _create_image_comparison_section(self, assessment_data: Dict[str, Any]) -> List:
+        """Create side-by-side comparison with gold standard image."""
+        story = []
+        
+        try:
+            story.append(Paragraph("Visual Comparison", self.styles['CustomHeading']))
+            
+            pattern_id = assessment_data['video_info']['pattern']
+            
+            # Map pattern IDs to gold standard images
+            gold_standard_images = {
+                'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
+                'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
+                'subcuticular': 'subcuticular_example.png'
+            }
+            
+            gold_standard_path = gold_standard_images.get(pattern_id)
+            
+            if gold_standard_path and os.path.exists(gold_standard_path):
+                # Create comparison table
+                story.append(Paragraph("Side-by-Side Comparison: Gold Standard vs. Learner Performance", self.styles['Normal']))
+                story.append(Spacer(1, 10))
+                
+                # Calculate image dimensions to make them equal height
+                target_height = 2.5 * inch  # Target height for both images
+                
+                # Add gold standard image
+                try:
+                    gold_img = Image(gold_standard_path)
+                    # Get original dimensions
+                    pil_img = PILImage.open(gold_standard_path)
+                    original_width, original_height = pil_img.size
+                    
+                    # Calculate width to maintain aspect ratio
+                    aspect_ratio = original_width / original_height
+                    gold_width = target_height * aspect_ratio
+                    
+                    gold_img.drawHeight = target_height
+                    gold_img.drawWidth = gold_width
+                    
+                    # Create table with images side by side
+                    image_data = [
+                        ['Gold Standard', 'Learner Performance'],
+                        [gold_img, Paragraph("Final frame from analyzed video would appear here in actual implementation", self.styles['Normal'])]
+                    ]
+                    
+                    image_table = Table(image_data, colWidths=[3*inch, 3*inch])
+                    image_table.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 12),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                    ]))
+                    
+                    story.append(image_table)
+                    story.append(Spacer(1, 10))
+                    
+                    # Add explanation
+                    explanation = f"""
+                    The gold standard image above represents the ideal final result for {pattern_id.replace('_', ' ').title()} 
+                    suturing technique. Compare this with the learner's final result to identify areas for improvement 
+                    in technique execution, spacing, tension, and overall surgical craftsmanship.
+                    """
+                    story.append(Paragraph(explanation, self.styles['Normal']))
+                    
+                except Exception as img_error:
+                    story.append(Paragraph(f"Error loading gold standard image: {img_error}", self.styles['Normal']))
+            else:
+                story.append(Paragraph(f"Gold standard image not available for {pattern_id}", self.styles['Normal']))
+            
+        except Exception as e:
+            story.append(Paragraph(f"Error creating image comparison: {e}", self.styles['Normal']))
+        
+        story.append(Spacer(1, 20))
+        return story
+    
+    def _generate_summative_feedback(self, scores: Dict[int, int], avg_score: float, assessment_data: Dict[str, Any]) -> str:
+        """Extract summative feedback from AI-generated enhanced narrative."""
+        enhanced_narrative = assessment_data.get('enhanced_narrative', '')
+        
+        if not enhanced_narrative:
+            return "Comprehensive summative feedback requires enhanced narrative generation from AI analysis."
+        
+        # Look for conclusion, summary, or assessment sections in the narrative
+        lines = enhanced_narrative.split('\n')
+        summative_content = []
+        
+        # Find paragraphs that seem like conclusions or overall assessments
+        for i, line in enumerate(lines):
+            line_lower = line.lower()
+            # Look for conclusion-type content
+            if any(keyword in line_lower for keyword in ['overall', 'summary', 'conclusion', 'assessment', 'competency', 'performance']):
+                # Take this line and a few following lines
+                for j in range(i, min(i + 3, len(lines))):
+                    if lines[j].strip() and len(lines[j].strip()) > 20:
+                        summative_content.append(lines[j].strip())
+                break
+        
+        # If no specific conclusion found, take the last substantial paragraphs
+        if not summative_content:
+            substantial_lines = [line.strip() for line in lines 
+                               if len(line.strip()) > 50 and 
+                               not line.strip().startswith(('RUBRIC', '1:', '2:', '3:', '4:', '5:', '6:', '7:')) and
+                               not any(char.isdigit() and ':' in line[:10] for char in line[:10])]
+            
+            # Take last few substantial lines as summative content
+            if substantial_lines:
+                summative_content = substantial_lines[-2:] if len(substantial_lines) > 1 else substantial_lines[-1:]
+        
+        # Combine the summative content
+        if summative_content:
+            return ' '.join(summative_content)
+        
+        # Final fallback - extract any meaningful content from the middle of the narrative
+        meaningful_lines = [line.strip() for line in lines 
+                          if len(line.strip()) > 40 and 
+                          not line.strip().startswith(('RUBRIC', 'Score:')) and
+                          not any(str(i) + ':' in line for i in range(1, 8))]
+        
+        if meaningful_lines:
+            # Take a representative sample from the middle
+            mid_point = len(meaningful_lines) // 2
+            return meaningful_lines[mid_point] if meaningful_lines else "AI-generated summative feedback not available."
+        
+        return "Enhanced narrative analysis required for detailed summative feedback."
+    
+    def _create_detailed_narrative_section(self, assessment_data: Dict[str, Any]) -> List:
+        """Create detailed narrative analysis with timestamps and actionable advice."""
+        story = []
+        
+        story.append(Paragraph("Video Analysis Narrative", self.styles['CustomTitle']))
+        story.append(Spacer(1, 20))
+        
+        # Enhanced narrative content
+        enhanced_narrative = assessment_data.get('enhanced_narrative', '')
+        
+        if enhanced_narrative:
+            # Clean up and format the narrative
+            narrative_text = enhanced_narrative.replace('RUBRIC_SCORES_START', '').replace('RUBRIC_SCORES_END', '')
+            
+            # Remove scoring section
+            lines = narrative_text.split('\n')
+            cleaned_lines = []
+            skip_scoring = False
+            
+            for line in lines:
+                if ':' in line and len(line.strip()) < 10 and any(char.isdigit() for char in line):
+                    skip_scoring = True
+                    continue
+                if skip_scoring and not line.strip():
+                    skip_scoring = False
+                    continue
+                if not skip_scoring and line.strip():
+                    cleaned_lines.append(line.strip())
+            
+            # Format as narrative paragraphs
+            narrative_content = ' '.join(cleaned_lines)
+            paragraphs = narrative_content.split('. ')
+            
+            current_paragraph = ""
+            for i, sentence in enumerate(paragraphs):
+                if sentence.strip():
+                    current_paragraph += sentence + ". "
+                
+                    # Create paragraph breaks every 3-4 sentences
+                    if (i + 1) % 3 == 0 or i == len(paragraphs) - 1:
+                        if current_paragraph.strip():
+                            story.append(Paragraph(current_paragraph.strip(), self.styles['Normal']))
+                            story.append(Spacer(1, 12))
+                        current_paragraph = ""
+        else:
+            story.append(Paragraph("Detailed narrative analysis not available. Enhanced narrative generation required for comprehensive assessment.", self.styles['Normal']))
+        
+        return story
 
 # Usage example
 def generate_sample_report():

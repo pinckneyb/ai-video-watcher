@@ -1,0 +1,53 @@
+### Vertical Mattress (Four Stitches, Narrative with Rubric Fulfilment)
+
+**Initial field**
+The wound is straight and clean. Operator sets instruments for left-to-right progress. Hands remain close to the pad throughout, already fulfilling **Economy of time and motion (pid 7)**.
+
+**Stitch 1**
+
+* The needle enters the near side several millimeters from the edge, passes deep, and emerges symmetrically on the far side at equal distance. This is the **far-far deep pass**. Without tying, the operator re-enters on the far edge near the wound margin, runs a more superficial arc, and exits at the near margin. This confirms **Correct deep (far-far) and superficial (near-near) passes (pid 1)**.
+* Each edge is stabilized with a single light forceps grasp, avoiding crushing, fulfilling **Gentle tissue handling (pid 2)**.
+* As tension is applied, the deep loop draws the wound base together while the superficial loop rolls the skin edges outward, producing balanced support. This demonstrates **Balanced tension deep vs superficial (pid 4)**.
+* A knot is tied square and flat on the near side, tails equal, satisfying **Square, secure knots (pid 3)**.
+* The closure shows a firm ridge of everted skin, clear evidence of **Proper eversion (pid 6)**.
+
+**Stitch 2**
+
+* Placement a short, equal step to the right. Deep pass and superficial pass replicate the far-far/near-near geometry (**pid 1**).
+* Edges handled gently with single precise grasps (**pid 2**).
+* Knot tied square and secure, resting off the edge (**pid 3**).
+* Approximation shows the same balanced tension: firm deep support, superficial layer not strangled (**pid 4**).
+* Spacing between stitch 1 and 2 is within 0.5–1.0 cm, fulfilling **Even spacing (pid 5)**.
+* Skin edges peak uniformly, confirming **pid 6**.
+* Motions remain efficient, instruments close (**pid 7**).
+
+**Stitch 3**
+
+* Needle again makes symmetric deep and superficial passes (**pid 1**).
+* Forceps use remains restrained, single light grasp per edge (**pid 2**).
+* Knot is tied square and flat (**pid 3**).
+* Edges appose with firm but not excessive pull, showing deep support plus gentle epidermal closure (**pid 4**).
+* Interval equal to prior stitches (**pid 5**).
+* Eversion ridge is uniform (**pid 6**).
+* Movements efficient, no wasted departures (**pid 7**).
+
+**Stitch 4**
+
+* The final stitch mirrors all earlier parameters: far-far deep pass, near-near superficial pass (**pid 1**), gentle edge handling (**pid 2**), secure square knot (**pid 3**), balanced closure tension (**pid 4**).
+* Interval is matched to the sequence (**pid 5**).
+* Closure ridge continues without gaps or inversion (**pid 6**).
+* Economy of motion is maintained (**pid 7**).
+
+**Completion appearance**
+
+* Four vertical mattress stitches span the wound. Each stitch shows paired parallel strands: one deep, one superficial.
+* All knots are square and secure, aligned on the same side (**pid 3**).
+* Needle paths were consistently deep then superficial (**pid 1**).
+* Tissue was handled gently (**pid 2**).
+* Deep tension supports the wound while superficial passes bring edges together without strangulation (**pid 4**).
+* Spacing is uniform within 0.5–1.0 cm (**pid 5**).
+* Eversion is prominent and consistent (**pid 6**).
+* Operator movements efficient throughout (**pid 7**).
+
+The result is the hallmark “double-rung” pattern of vertical mattress closure, with strong eversion and secure approximation meeting all rubric ideals.
+

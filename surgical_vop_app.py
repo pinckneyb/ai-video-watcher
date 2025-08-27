@@ -28,10 +28,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Set upload limit to 1GB
+# Set upload limit to 2GB for large MOV files
 import streamlit as st
-import streamlit.web.cli as stcli
-st._config.set_option('server.maxUploadSize', 1024)
+try:
+    st._config.set_option('server.maxUploadSize', 2048)
+except:
+    # Fallback if config setting fails
+    pass
 
 class SuturePatternDetector:
     """Detects suture patterns from folder names and filenames."""
@@ -98,27 +101,18 @@ class RubricEngine:
         return pattern["points"] if pattern else []
     
     def calculate_overall_score(self, point_scores: Dict[int, int]) -> Dict[str, Any]:
-        """Calculate overall assessment result."""
+        """Calculate overall assessment result using VOP-aligned criteria."""
         if not point_scores:
             return {"pass": False, "reason": "No scores provided"}
         
-        # Get critical points
-        pattern_data = self.get_pattern_rubric(st.session_state.get('selected_pattern'))
-        critical_points = [p for p in pattern_data["points"] if p.get("critical", False)]
-        critical_pids = [p["pid"] for p in critical_points]
-        
-        # Check pass/fail criteria
-        all_scores_above_3 = all(score >= 3 for score in point_scores.values())
-        no_critical_below_3 = all(point_scores.get(pid, 3) >= 3 for pid in critical_pids)
-        
-        passes = all_scores_above_3 and no_critical_below_3
+        # VOP pass rule: Pass if every rubric point >= 2; otherwise Remediation
+        all_scores_above_2 = all(score >= 2 for score in point_scores.values())
         
         return {
-            "pass": passes,
+            "pass": all_scores_above_2,
             "total_points": len(point_scores),
             "average_score": sum(point_scores.values()) / len(point_scores),
-            "critical_points_passed": no_critical_below_3,
-            "reason": "PASS" if passes else "FAIL - Critical points below threshold or overall performance inadequate"
+            "reason": "PASS - Meets VOP competency standards" if all_scores_above_2 else "REMEDIATION - Requires additional training"
         }
 
 class SurgicalAssessmentProfile:
@@ -126,13 +120,44 @@ class SurgicalAssessmentProfile:
     
     def __init__(self, rubric_engine: RubricEngine):
         self.rubric_engine = rubric_engine
+        self.narrative_guides = self._load_narrative_guides()
+    
+    def _load_narrative_guides(self) -> Dict[str, str]:
+        """Load the ideal narrative examples for each pattern."""
+        guides = {}
+        patterns = {
+            "simple_interrupted": "simple_interrupted_narrative.txt",
+            "vertical_mattress": "vertical_mattress_narrative.txt", 
+            "subcuticular": "subcuticular_narrative.txt"
+        }
+        
+        for pattern_id, filename in patterns.items():
+            try:
+                # Try multiple encodings to handle any encoding issues
+                for encoding in ['utf-8', 'utf-8-sig', 'latin1', 'cp1252']:
+                    try:
+                        with open(filename, 'r', encoding=encoding) as f:
+                            guides[pattern_id] = f.read()
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                else:
+                    # If all encodings fail, use fallback
+                    guides[pattern_id] = "Narrative guide not available due to encoding issues."
+                    print(f"Could not load narrative guide for {pattern_id}: encoding issues")
+            except Exception as e:
+                print(f"Could not load narrative guide for {pattern_id}: {e}")
+                guides[pattern_id] = "Narrative guide not available."
+        
+        return guides
     
     def create_assessment_prompt(self, pattern_id: str) -> str:
         """Create GPT-4o prompt for surgical assessment using proven narrative structure."""
         pattern_data = self.rubric_engine.get_pattern_rubric(pattern_id)
         assessment_points = self.rubric_engine.get_assessment_criteria(pattern_id)
+        ideal_narrative = self.narrative_guides.get(pattern_id, "No narrative guide available.")
         
-        # Build detailed assessment criteria (without critical/standard distinction)
+        # Build detailed assessment criteria (all points equal weight)
         criteria_text = "\n".join([
             f"**{p['pid']}. {p['title']}**\n"
             f"- What to assess: {p['what_you_assess']}\n"
@@ -140,88 +165,27 @@ class SurgicalAssessmentProfile:
             for p in assessment_points
         ])
         
-        prompt = f"""You are a senior attending surgeon conducting a high-stakes Verification of Proficiency (VOP) assessment for {pattern_data['display_name']} suturing technique. This is a formal competency evaluation with real consequences.
+        prompt = f"""You are conducting a VOP assessment for {pattern_data['display_name']} suturing. Analyze frames for evidence of each rubric point. Be concise.
 
-ASSESSMENT PHILOSOPHY:
-- **Standard of Care**: You must evaluate against published surgical standards, not subjective impressions
-- **Evidence-Based**: Every observation must be grounded in visual evidence from the frames
-- **Uncompromising**: Minor deviations from technique ARE significant - this is professional competency
-- **Forensic Detail**: You are building a legal-grade assessment that could be challenged
-- **No Benefit of Doubt**: If you cannot clearly see proper technique, it is inadequate
-
-MANDATORY ASSESSMENT REQUIREMENTS:
-1. **ALWAYS find evidence for each rubric point** - across a full suturing video, all criteria can be assessed
-2. **Use precise measurements** when visible: needle angles, bite distances, knot spacing
-3. **Timestamp every significant observation** - be specific to the second when possible
-4. **Identify specific errors** - do not use vague terms like "adequate" or "reasonable"
-5. **Reference surgical principles** - explain WHY each observation matters clinically
-6. **Track progression** - note improvement/deterioration across the procedure
-7. **No hedging language** - avoid "appears to," "seems," "possibly" - state what you observe
-
-ASSESSMENT CRITERIA FOR {pattern_data['display_name'].upper()}:
+RUBRIC POINTS TO ASSESS:
 {criteria_text}
 
-DETAILED OBSERVATION PROTOCOL:
-- **Needle handling**: Exact grip position, wrist angle, finger placement, tremor/steadiness
-- **Tissue interaction**: Exact entry/exit points, tissue deformation, bleeding, trauma signs
-- **Spatial relationships**: Bite spacing measurements, symmetry, alignment to wound edges
-- **Temporal analysis**: Speed consistency, hesitation patterns, efficiency indicators
-- **Instrument technique**: Forceps pressure, needle driver positioning, assistant coordination
-- **Environmental factors**: Lighting adequacy, field exposure, contamination risks
+IDEAL REFERENCE:
+{ideal_narrative[:500]}...
 
-CRITICAL EVIDENCE REQUIREMENTS:
-- **Quantify everything measurable**: "3mm bite depth" not "appropriate depth"
-- **Count repetitions**: "Fourth attempt at knot placement" not "multiple attempts"
-- **Measure timing**: "15-second delay" not "brief pause" 
-- **Document deviations**: "45-degree needle angle versus standard 90-degree entry"
-- **Assess cumulative effect**: How errors compound across the procedure
+REQUIREMENTS:
+1. Assess each rubric point with specific evidence
+2. Count hand/instrument departures from work area for efficiency
+3. Identify pattern type with confidence (1-5)
+4. Be brief - final report will be one page
 
-PROHIBITED ASSESSMENT LANGUAGE:
-❌ "Insufficient evidence to assess"
-❌ "Cannot determine from available footage"  
-❌ "Appears adequate"
-❌ "Generally acceptable"
-❌ "Would benefit from"
-✅ "Demonstrates substandard bite placement at 00:02:15"
-✅ "Needle angle consistently 30 degrees off perpendicular"
-✅ "Tissue approximation gap of 2-3mm throughout closure"
-
-Output format:
-- **Continuous narrative** (clinical, critical, timestamped, forensically detailed)
-- **Structured JSON log** with one entry per detected technique event:
-  ```json
-  [
-    {{
-      "timestamp": "00:01:12",
-      "event": "Needle entry at 45-degree angle instead of required 90-degree perpendicular approach",
-      "confidence": 0.95,
-      "technique_assessment": "Substandard - creates excessive tissue trauma",
-      "rubric_point": 1,
-      "clinical_significance": "Increased risk of wound dehiscence due to uneven tissue stress distribution",
-      "measurement": "45 degrees vs 90 degree standard"
-    }}
-  ]
-  ```"""
+OUTPUT: Brief observations for each rubric point with timestamps."""
 
         return prompt
     
     def create_context_condensation_prompt(self) -> str:
         """Create context condensation prompt for surgical assessment continuity."""
-        return """You are maintaining a running summary of a surgical video assessment as a senior attending surgeon. 
-Your task is to compress the current full assessment into a concise "state summary" that captures: 
-- Key surgical events and technique observations (with approximate timestamps) 
-- Current surgical phase, instruments in use, and suture type
-- Technical errors and deviations from surgical principles noted so far
-- Assessment continuity for the next frames
-
-Guidelines: 
-- Use no more than 150 words. 
-- Preserve chronological flow. 
-- Keep timestamps coarse (to the nearest ~10–15 seconds). 
-- Focus on surgical assessment continuity and technique progression.
-- Use critical, clinical language appropriate for surgical review.
-
-Output format: [Condensed Surgical Assessment State]"""
+        return """Condense surgical assessment progress in 100 words max. Include key technique observations, errors noted, and current suturing phase. Maintain clinical tone."""
 
 def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_key: str, pattern_id: str, rubric_engine: RubricEngine) -> str:
     """Create enhanced surgical VOP narrative using GPT-5 - copied from working app.py structure."""
@@ -242,62 +206,38 @@ def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_k
         # Use the EXACT SAME structure as the working app.py but for surgical assessment
         personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
         
-        enhancement_prompt = f"""You are a master storyteller and video analyst. Your task is to transform raw, batch-by-batch video analysis into a coherent, continuous narrative that reads like a polished surgical assessment.
+        enhancement_prompt = f"""You are a senior attending surgeon writing a VOP assessment for {pattern_data['display_name']} suturing. Write naturally and specifically based on what you observed in this video. Avoid generic language.
 
-{personality_instructions}
+RAW ANALYSIS:
+{raw_transcript[:3000]}...
 
-PROFILE: Surgical VOP Assessment - {pattern_data['display_name']} Technique Evaluation
-
-ASSESSMENT RUBRIC CRITERIA:
+RUBRIC CRITERIA:
 {rubric_criteria}
 
-RAW TRANSCRIPT:
-{raw_transcript}
+CRITICAL: Use the specific observations from the raw analysis above. Write about what you actually saw in THIS video, not generic competencies. Be direct, specific, and actionable.
 
-EVENTS TIMELINE:
-{json.dumps(events, indent=2)}
+For each rubric point, write one substantive paragraph that:
+- References specific moments, actions, or techniques observed
+- Explains WHY the performance earned its score
+- Provides targeted improvement advice based on what was seen
 
-AUDIO TRANSCRIPT:
-No audio transcription available.
+Then write a summative paragraph that:
+- Synthesizes your observations of this learner's specific performance
+- Identifies patterns in their technique
+- Provides actionable next steps based on their demonstrated strengths/weaknesses
 
-INSTRUCTIONS:
-1. **Chronological Flow**: Maintain strict chronological order from start to finish
-2. **Character Continuity**: Track the surgeon and instruments across the procedure
-3. **Setting Continuity**: Maintain awareness of the surgical field and spatial relationships
-4. **Cause and Effect**: Connect surgical actions logically, explaining why techniques succeed or fail
-5. **Narrative Coherence**: Fill gaps, resolve contradictions, and create smooth transitions
-6. **Surgical Terminology**: Use precise surgical language throughout
-7. **Temporal Synchronization**: Align surgical events with timestamps when possible
-8. **Absolute Specificity**: Describe EVERYTHING with concrete, specific details
-9. **No Generic Language**: Eliminate phrases like "a figure," "someone," "a person"
-10. **Physical Description**: Specify exact hand positions, instrument angles, tissue appearance
-11. **Direct Observation**: Document exactly what is visible - no interpretation beyond what can be seen
-12. **Technical Assessment**: Evaluate each action against surgical standards
-13. **Rubric Integration**: Address each rubric point with specific evidence from the video AND provide numerical scores (1-5)
-14. **Progressive Analysis**: Track how technique changes throughout the procedure
-15. **Clinical Significance**: Connect observations to patient outcomes and surgical principles
-16. **Mandatory Scoring**: You MUST provide a numerical score (1-5) for each rubric criterion based on evidence
-17. **Profile Consistency**: Maintain surgical assessment voice throughout
+DO NOT use phrases like:
+- "demonstrates competency"
+- "meets standards" 
+- "adequate performance"
+- "continue developing"
 
-OUTPUT FORMAT:
-- Write in third-person narrative style
-- Use present tense for immediacy
-- NO timestamps or time markers - let the story flow naturally
-- Break into logical paragraphs based on surgical phases, not time chunks
-- Create smooth transitions between surgical actions
-- Focus on visual description and technical execution
-- Avoid color commentary, purple prose, or excessive adjectives
-- End with a conclusion that ties everything together for competency determination
-- **Maintain Surgical Voice**: Write in the voice and style of a surgical assessment
+DO use specific observations like:
+- "At 2:15, the needle angle was consistently 45 degrees..."
+- "The third knot showed improved square configuration..."
+- "Hand movements off-camera occurred 8 times during..."
 
-CRITICAL: Every person, object, or action must be described with absolute specificity. No generalizations, no generic terms, no vague descriptions. Document exact needle angles, bite depths, knot configurations, and tissue handling with clinical precision.
-
-NO POETIC LANGUAGE: Avoid phrases like "as if measuring" or "like threading." Stick to rich, full detailing of what we can actually see. Focus on concrete surgical details - the procedure itself playing out in prose, richly described with surgical terminology.
-
-Create a tight, continuous surgical narrative that flows naturally without time constraints, focusing on technique evaluation. Address each rubric criterion with specific evidence from the video analysis. Every detail should be rendered in concrete, specific surgical terms.
-
-**MANDATORY SCORING REQUIREMENT**: You MUST conclude your assessment with explicit numerical scores for each rubric point in this EXACT format:
-
+MANDATORY SCORING:
 RUBRIC_SCORES_START
 1: X
 2: X  
@@ -306,11 +246,7 @@ RUBRIC_SCORES_START
 5: X
 6: X
 7: X
-RUBRIC_SCORES_END
-
-Where X is the numerical score (1-5) for each rubric point. This MUST be the final section of your response.
-
-**CRITICAL**: Maintain the clinical, analytical surgical assessment voice throughout your entire narrative. Your enhanced narrative should read as if it was written by the same surgical AI that conducted the initial frame analysis."""
+RUBRIC_SCORES_END"""
 
         # Check input lengths and provide warnings (EXACT COPY from app.py)
         transcript_length = len(raw_transcript)
@@ -474,8 +410,19 @@ def main():
         uploaded_file = st.file_uploader(
             "Upload Surgical Video",
             type=['mp4', 'avi', 'mov', 'mkv', 'm4v'],
-            help="Upload a video of suturing technique for assessment (up to 1GB)"
+            help="Upload a video of suturing technique for assessment (up to 2GB). MOV files supported."
         )
+        
+        # Add upload status and troubleshooting
+        if uploaded_file is not None:
+            file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
+            uploaded_file.seek(0)  # Reset file pointer
+            st.info(f"📁 **File**: {uploaded_file.name}")
+            st.info(f"📊 **Size**: {file_size_mb:.1f} MB")
+            
+            if file_size_mb > 2000:  # 2GB limit
+                st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
+                uploaded_file = None
         
         if uploaded_file:
             # Attempt automatic detection
@@ -504,8 +451,7 @@ def main():
                 
                 with st.expander("View Rubric Details"):
                     for point in pattern_data["points"]:
-                        critical_badge = "🔴 CRITICAL" if point.get("critical") else "⚪ Standard"
-                        st.markdown(f"**{point['pid']}. {point['title']}** {critical_badge}")
+                        st.markdown(f"**{point['pid']}. {point['title']}**")
                         st.markdown(f"*{point['what_you_assess']}*")
         
         # Analysis settings
@@ -597,6 +543,33 @@ def main():
     
     else:
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
+        
+        # Troubleshooting section
+        with st.expander("🔧 Troubleshooting Upload Issues"):
+            st.markdown("""
+            **If you're experiencing upload errors:**
+            
+            1. **Network Error**: 
+               - Check your internet connection
+               - Try refreshing the page (F5)
+               - Try a smaller video file first
+            
+            2. **Large MOV Files**:
+               - Maximum size: 2GB
+               - For larger files, compress using video editing software
+               - Convert MOV to MP4 if needed
+            
+            3. **Supported Formats**:
+               - MP4 (recommended)
+               - AVI, MOV, MKV, M4V
+               
+            4. **Browser Issues**:
+               - Try Chrome or Firefox
+               - Clear browser cache
+               - Disable browser extensions temporarily
+            """)
+            
+            st.info("💡 **Tip**: For best performance, use MP4 files under 500MB when possible.")
 
 def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 10):
     """Start the VOP analysis process using the proven video analysis architecture."""

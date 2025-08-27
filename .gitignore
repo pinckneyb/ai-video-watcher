@@ -41,6 +41,8 @@ Thumbs.db
 
 # Project specific
 config.json
+.env
+surgical_config.json
 temp_*
 temp_video_*
 *_audio.wav
