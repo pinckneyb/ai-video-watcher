@@ -188,7 +188,12 @@ OUTPUT: Brief observations for each rubric point with timestamps."""
         return """Condense surgical assessment progress in 100 words max. Include key technique observations, errors noted, and current suturing phase. Maintain clinical tone."""
 
 def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_key: str, pattern_id: str, rubric_engine: RubricEngine) -> str:
-    """Create enhanced surgical VOP narrative using GPT-5 - copied from working app.py structure."""
+    """
+    Stage 2: Narrative Synthesis using GPT-5
+    This function implements the proper two-stage AI pipeline as specified:
+    - Stage 1 (GPT-4o): Already completed - frame-by-frame batch analysis
+    - Stage 2 (GPT-5): Synthesize ALL batch outputs into comprehensive narrative
+    """
     try:
         # Get pattern and rubric information
         pattern_data = rubric_engine.get_pattern_rubric(pattern_id)
@@ -200,143 +205,290 @@ def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_k
             for p in assessment_points
         ])
         
-        # Create a GPT-5 client for narrative enhancement (EXACT COPY from app.py)
+        # Create OpenAI client
         gpt5_client = GPT4oClient(api_key=api_key)
         
-        # Use the EXACT SAME structure as the working app.py but for surgical assessment
-        personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
-        
-        enhancement_prompt = f"""You are a senior attending surgeon writing a VOP assessment for {pattern_data['display_name']} suturing. Write naturally and specifically based on what you observed in this video. Avoid generic language.
+        # CRITICAL: This is the system prompt that enforces the two-stage pipeline
+        system_prompt = f"""You are a senior attending surgeon conducting a VOP assessment for {pattern_data['display_name']} suturing.
 
-RAW ANALYSIS:
-{raw_transcript[:3000]}...
+IMPORTANT: You are operating in Stage 2 (Narrative Synthesis) of a two-stage AI pipeline.
+
+STAGE 1 (Vision, gpt-4o) has already completed:
+- Analyzed batches of still frames from the video (every 5-10 frames)
+- Described each batch locally in detail with frame ranges
+- Identified surgical actions, tissue handling, needle angles, knot formation, and visible outcomes
+- Output was structured observations tagged with frame ranges
+
+STAGE 2 (Narrative Synthesis, gpt-5) - YOUR CRITICAL TASK:
+- Input: the FULL set of batch descriptions from Stage 1, spanning the ENTIRE video in chronological order
+- Task: construct a comprehensive chronological narrative of the ENTIRE procedure
+- You must integrate ALL batches into one overarching account
+
+CRITICAL REQUIREMENTS:
+• Connect actions across batches into a continuous timeline
+• Capture progress (setup, each stitch placement, knot tying, completion)
+• Identify transitions (needle reloads, knot sequences, wound closure milestones)
+• Do NOT overweight early batches; treat all batches as equally important
+• Synthesize repeated actions into higher-level patterns (e.g., "four simple interrupted stitches placed in sequence")
+• This stage is NOT a re-summarization of the first few inputs
+• You must use ALL the batch data provided to create a complete picture
+
+Your output will be used for rubric-based assessment, so be comprehensive and specific."""
+
+        # User prompt with the complete transcript data
+        user_prompt = f"""RAW ANALYSIS FROM STAGE 1 (ALL BATCHES):
+{raw_transcript}
 
 RUBRIC CRITERIA:
 {rubric_criteria}
 
-CRITICAL: Use the specific observations from the raw analysis above. Write about what you actually saw in THIS video, not generic competencies. Be direct, specific, and actionable.
+ASSESSMENT TASK:
+Based on your comprehensive synthesis of ALL batch outputs above, assess each rubric point with specific evidence spanning the entire video.
 
-For each rubric point, write one substantive paragraph that:
-- References specific moments, actions, or techniques observed
-- Explains WHY the performance earned its score
-- Provides targeted improvement advice based on what was seen
+CRITICAL GRADING GUIDELINES - BE EXTREMELY DEMANDING:
+- Score 1 = Remediation/Unsafe (major errors, unsafe technique, closure unreliable)
+- Score 2 = Minimal Pass/Basic Competent (safe but inefficient, rough technique, minor errors)
+- Score 3 = Developing Pass/Generally Reliable (mostly correct, occasional flaws, reliable closure)
+- Score 4 = Proficient (consistently correct, independent, efficient - genuinely excellent work)
+- Score 5 = Exemplary/Model (near-ideal execution, precise, smooth, teachable example - EXTREMELY RARE)
 
-Then write a summative paragraph that:
-- Synthesizes your observations of this learner's specific performance
-- Identifies patterns in their technique
-- Provides actionable next steps based on their demonstrated strengths/weaknesses
+YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE:
+- Be relentlessly critical and unforgiving in your assessment
+- Assume EVERY technique has flaws until proven otherwise
+- Score 4-5 ONLY for truly exceptional performance that occurs maybe 1-2% of the time
+- Most competent residents will score 1-2, with 3 being solid performance
+- A score of 2 should be your STARTING POINT for safe, adequate technique
+- A score of 3 means genuinely skilled, reliable performance worthy of independence
+- A score of 4 means you would use this video to teach other attendings
+- A score of 5 means this is among the best technique you've seen in your entire career
 
-DO NOT use phrases like:
-- "demonstrates competency"
-- "meets standards" 
-- "adequate performance"
-- "continue developing"
+CRITICAL VISIBILITY RULES:
+- NEVER penalize scores due to poor visibility, lighting, focus, blockage, or resolution
+- If you cannot adequately assess a rubric point due to visibility issues, assign 3* (provisional score)
+- Only mention visibility limitations when they genuinely prevent assessment (3* cases)
+- For scoreable observations (1-5), focus on what you CAN see, don't mention visibility issues
+- Make your best estimate from visible technique and score accordingly
+- Use "3*" format only when visibility truly prevents assessment
 
-DO use specific observations like:
-- "At 2:15, the needle angle was consistently 45 degrees..."
-- "The third knot showed improved square configuration..."
-- "Hand movements off-camera occurred 8 times during..."
+BE RUTHLESSLY CRITICAL - DEMAND PERFECTION:
+- Your default assumption is that technique is FLAWED until proven exceptional
+- Start with score 1-2 and only move higher with compelling evidence of excellence
+- Look for EVERY imperfection: hesitation, wasted motion, suboptimal angles, inconsistent spacing, loose knots
+- ANY visible flaw should significantly lower the score
+- Score 2 should be your DEFAULT for safe, functional technique
+- Score 3 requires demonstration of genuine surgical skill and consistency
+- Scores 4-5 are reserved for truly outstanding performance that you see rarely
+- Remember: surgical excellence requires perfection - patients' lives depend on it
 
-MANDATORY SCORING:
-RUBRIC_SCORES_START
-1: X
-2: X  
-3: X
-4: X
-5: X
-6: X
-7: X
-RUBRIC_SCORES_END"""
+For each rubric point, write assessment in this EXACT format:
 
-        # Check input lengths and provide warnings (EXACT COPY from app.py)
+**[X]. [Rubric Point Title]:**
+[Clean, specific observation of what was seen across the complete video - NO timestamps, NO generic advice]
+Score: [X]/5
+
+CRITICAL FORMATTING RULES:
+- NO TIMESTAMPS in the main assessment (save for appendix)
+- Use exactly "Score: X/5" format for each rubric point
+- NO generic improvement suggestions like "practice more" or "focus on consistency" 
+- NO lists of timestamp ranges like "(00:00:12–00:00:14; 00:00:15–00:00:17...)"
+- Write clean, prose descriptions of what was consistently observed
+- Only mention visibility issues if they genuinely prevent assessment (requiring 3* score)
+- Be specific about technique patterns, not individual moments
+
+Then write a comprehensive summative assessment that:
+- Provides a holistic, gestalt review of the entire procedure (minimum 4-5 sentences)
+- Synthesizes unique insights drawn from the interplay of different technical aspects
+- Discusses the learner's overall surgical approach and decision-making patterns
+- Identifies both strengths and areas for development with specific observations
+- Offers a nuanced evaluation of surgical maturity and technique integration
+- Avoids generic encouragement, timestamp lists, or simple recitation of individual rubric points
+- STRUCTURE AS MEANINGFUL PARAGRAPHS: Break into 2-3 focused paragraphs for readability
+
+EXAMPLE FORMAT:
+**1. Perpendicular needle passes:**
+Needle entries consistently demonstrated 90-degree angles throughout most of the procedure, with symmetric bites maintained across the majority of passes. Some minor angular deviations were noted but did not significantly compromise overall technique quality.
+Score: 4/5
+
+Format your response with clear sections for each rubric point, followed by the summative assessment."""
+
+        # Validate input
         transcript_length = len(raw_transcript)
-        events_length = len(json.dumps(events, indent=2))
+        if transcript_length < 500:
+            st.error("❌ **STAGE 2 FAILED**: Insufficient transcript content for synthesis")
+            st.warning(f"Transcript only {transcript_length} characters - need at least 500 for meaningful synthesis")
+            return ""
         
-        st.info(f"📊 **Input Analysis**: Transcript: {transcript_length:,} chars, Events: {events_length:,} chars")
+        st.info(f"📊 **STAGE 2 Input**: Transcript: {transcript_length:,} characters")
+        st.info(f"📝 **Content Preview**: {raw_transcript[:200]}...")
         
-        # If content is very long, suggest chunking
-        total_input = transcript_length + events_length
-        if total_input > 100000:  # 100K character limit
-            st.warning(f"⚠️ **Content Very Long**: Total input is {total_input:,} characters. Consider reducing FPS or batch size for better results.")
-        
-        # Make API call to GPT-5 with better error handling (EXACT COPY from app.py)
+        # Make API call to GPT-5
         try:
+            st.info(f"🔍 **Calling GPT-5 API** for narrative synthesis...")
+            st.info(f"🔍 **Prompt lengths**: System: {len(system_prompt)}, User: {len(user_prompt)}")
+            
             response = gpt5_client.client.chat.completions.create(
-                model="gpt-5",  # Use GPT-5 for enhanced narrative
+                model="gpt-5",
                 messages=[
-                    {
-                        "role": "user",
-                        "content": enhancement_prompt
-                    }
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
                 ],
-                max_completion_tokens=4000
+                max_completion_tokens=8000,
+                reasoning_effort="low",
+                verbosity="low"
             )
             
             enhanced_narrative = response.choices[0].message.content
             
-            # Ensure proper encoding (EXACT COPY from app.py)
+            # Debug: Show what GPT-5 actually returned
+            st.info(f"🔍 **GPT-5 Response Debug**: {type(enhanced_narrative)}, length: {len(enhanced_narrative) if enhanced_narrative else 0}")
+            if enhanced_narrative:
+                st.info(f"🔍 **First 200 chars**: {enhanced_narrative[:200]}")
+            else:
+                st.error(f"🔍 **GPT-5 returned None or empty string**")
+                st.info(f"🔍 **Full response object**: {response}")
+            
+            if not enhanced_narrative or len(enhanced_narrative.strip()) < 100:
+                st.error("❌ **GPT-5 returned empty or insufficient narrative**")
+                st.info(f"🔍 **Content length**: {len(enhanced_narrative.strip()) if enhanced_narrative else 0}")
+                return ""
+            
+            # Ensure proper encoding
             if isinstance(enhanced_narrative, str):
                 enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
             
-            st.success(f"✅ **Enhanced narrative created successfully**: {len(enhanced_narrative):,} characters")
+            st.success(f"✅ **Stage 2 Complete**: GPT-5 narrative synthesis successful - {len(enhanced_narrative):,} characters")
+            st.info(f"📝 **First 300 chars**: {enhanced_narrative[:300]}...")
             return enhanced_narrative
             
         except Exception as api_error:
             st.error(f"❌ **GPT-5 API Error**: {api_error}")
-            if "context_length_exceeded" in str(api_error).lower():
-                st.warning("💡 **Solution**: Try reducing FPS or batch size to create shorter input content")
-            elif "rate_limit" in str(api_error).lower():
-                st.warning("💡 **Solution**: Wait a moment and try again, or reduce concurrency")
-            elif "quota_exceeded" in str(api_error).lower():
-                st.error("💡 **Solution**: Check your OpenAI API quota and billing")
-            return ""
+            st.error(f"🔍 **Error Type**: {type(api_error).__name__}")
+            st.error(f"🔍 **Error Details**: {str(api_error)}")
+            
+            # Fallback to GPT-4o
+            st.warning("🔄 **Falling back to GPT-4o** for narrative synthesis...")
+            try:
+                response = gpt5_client.client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    max_completion_tokens=4000
+                )
+                
+                enhanced_narrative = response.choices[0].message.content
+                if isinstance(enhanced_narrative, str):
+                    enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+                
+                st.success(f"✅ **Fallback Complete**: GPT-4o narrative synthesis successful - {len(enhanced_narrative):,} characters")
+                return enhanced_narrative
+                
+            except Exception as fallback_error:
+                st.error(f"❌ **Fallback GPT-4o also failed**: {fallback_error}")
+                return ""
         
     except Exception as e:
-        st.error(f"❌ **Unexpected Error**: {e}")
+        st.error(f"❌ **Unexpected Error in Stage 2**: {e}")
         st.info("🔍 **Debug Info**: Check console for detailed error messages")
-        print(f"Enhanced narrative creation error: {e}")
+        print(f"Stage 2 narrative synthesis error: {e}")
         return ""
 
 def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, int]:
-    """Extract numerical scores from GPT-5 enhanced narrative."""
+    """Extract numerical scores from GPT-5 enhanced narrative using natural language patterns."""
     scores = {}
     
     if not enhanced_narrative:
         return scores
     
     try:
-        # Look for the scoring section
-        start_marker = "RUBRIC_SCORES_START"
-        end_marker = "RUBRIC_SCORES_END"
+        import re
         
-        start_idx = enhanced_narrative.find(start_marker)
-        end_idx = enhanced_narrative.find(end_marker)
+        # Look for the exact format: "Score: X/5" or "Score: X*/5" (provisional)
+        score_patterns = [
+            r'Score:\s*(\d+)(\*)?/5',                              # "Score: 3/5" or "Score: 3*/5"
+            r'(\d+)\.\s+[^:]+Score:\s*(\d+)(\*)?/5',              # "1. Title Score: 3/5" or "3*/5"
+            r'\*\*(\d+)\.[^:]*\*\*:.*?Score:\s*(\d+)(\*)?/5',     # "**1. Title**: ... Score: 3/5" or "3*/5"
+        ]
         
-        if start_idx != -1 and end_idx != -1:
-            scores_section = enhanced_narrative[start_idx + len(start_marker):end_idx].strip()
+        # First, try the primary format: "Score: X/5" or "Score: X*/5"
+        primary_matches = re.findall(r'Score:\s*(\d+)(\*)?/5', enhanced_narrative, re.IGNORECASE)
+        
+        # If we have exactly 7 scores in order, use them
+        if len(primary_matches) == 7:
+            for i, (score_str, asterisk) in enumerate(primary_matches, 1):
+                try:
+                    score = int(score_str)
+                    if 1 <= score <= 5:
+                        scores[i] = score
+                        # Store provisional flag if present
+                        if asterisk:
+                            if 'provisional_scores' not in globals():
+                                globals()['provisional_scores'] = {}
+                            globals()['provisional_scores'][i] = True
+                except ValueError:
+                    continue
+        else:
+            # Fallback: look for patterns with point numbers
+            numbered_patterns = [
+                r'(\d+)\.\s+[^:]*Score:\s*(\d+)/5',              # "1. Title Score: 3/5"
+                r'\*\*(\d+)\.[^:]*\*\*:.*?Score:\s*(\d+)/5',     # "**1. Title**: ... Score: 3/5"
+            ]
             
-            # Parse each line
-            for line in scores_section.split('\n'):
-                line = line.strip()
-                if ':' in line:
+            for pattern in numbered_patterns:
+                matches = re.findall(pattern, enhanced_narrative, re.IGNORECASE | re.DOTALL)
+                for match in matches:
                     try:
-                        point_id, score_str = line.split(':', 1)
-                        point_id = int(point_id.strip())
-                        score = int(score_str.strip())
+                        point_id = int(match[0])
+                        score = int(match[1])
                         
                         # Validate score is in range
-                        if 1 <= score <= 5:
+                        if 1 <= score <= 5 and 1 <= point_id <= 7:
                             scores[point_id] = score
-                        else:
-                            st.warning(f"Score {score} for point {point_id} is out of range (1-5)")
-                    except (ValueError, IndexError) as e:
-                        st.warning(f"Could not parse score line: {line}")
+                    except (ValueError, IndexError):
                         continue
-        else:
-            st.warning("GPT-5 response did not include proper scoring format - scores will default to 3")
+        
+        # If we don't have all 7 scores, try alternate patterns
+        if len(scores) < 7:
+            # Look for patterns in sections starting with numbers
+            lines = enhanced_narrative.split('\n')
+            current_point = None
             
+            for line in lines:
+                line = line.strip()
+                
+                # Check if line starts with rubric point number
+                point_match = re.match(r'^(\d+)\.', line)
+                if point_match:
+                    current_point = int(point_match.group(1))
+                    if current_point > 7:
+                        current_point = None
+                
+                # Look for score in current section
+                if current_point and current_point not in scores:
+                    score_match = re.search(r'\b(\d+)(?:/5)?\b', line)
+                    if score_match:
+                        score = int(score_match.group(1))
+                        if 1 <= score <= 5:
+                            scores[current_point] = score
+        
+        # If still missing scores, default missing ones to 3 (Generally Reliable)
+        for i in range(1, 8):
+            if i not in scores:
+                scores[i] = 3
+                st.info(f"Defaulted rubric point {i} to score 3 (Generally Reliable)")
+        
+        st.info(f"✅ Extracted scores: {scores}")
+        
+        # Debug: Show what we're trying to extract from
+        st.info(f"🔍 **Score extraction debug**: Looking for scores in {len(enhanced_narrative)} character narrative")
+        if enhanced_narrative:
+            st.info(f"📝 **Sample text**: {enhanced_narrative[:500]}...")
+        
     except Exception as e:
         st.error(f"Error extracting scores from narrative: {e}")
+        # Default all to 3 if extraction completely fails
+        scores = {i: 3 for i in range(1, 8)}
     
     return scores
 
@@ -413,12 +565,10 @@ def main():
             help="Upload a video of suturing technique for assessment (up to 2GB). MOV files supported."
         )
         
-        # Add upload status and troubleshooting
+        # Simple file size check
         if uploaded_file is not None:
             file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
             uploaded_file.seek(0)  # Reset file pointer
-            st.info(f"📁 **File**: {uploaded_file.name}")
-            st.info(f"📊 **Size**: {file_size_mb:.1f} MB")
             
             if file_size_mb > 2000:  # 2GB limit
                 st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
@@ -456,32 +606,20 @@ def main():
         
         # Analysis settings
         st.subheader("⚙️ Analysis Settings")
-        fps = st.slider("Analysis FPS", 1.0, 5.0, 2.0, 0.5)
-        batch_size = st.slider("Batch Size", 3, 12, 6)
+        fps = st.slider("Analysis FPS", 1.0, 5.0, 1.0, 0.5)
+        batch_size = 6  # Fixed optimal value
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
         max_concurrent_batches = st.slider(
             "Concurrent Batches", 
             1, 20, 
-            10,  # Default to proven safe level
+            20,  # Maximum performance setting
             step=1,
             help="Higher values = faster processing (requires OpenAI Tier 4+)"
         )
         
-        # Concurrency guidance
-        if max_concurrent_batches <= 10:
-            st.success(f"✅ **SAFE**: {max_concurrent_batches} concurrent batches")
-        elif max_concurrent_batches <= 12:
-            st.info(f"🧪 **TESTING**: {max_concurrent_batches} concurrent batches - monitor closely")
-        else:
-            st.info(f"🚀 **EXPERIMENTAL**: {max_concurrent_batches} concurrent batches")
-        
-        # Performance history
-        if 'vop_performance_history' in st.session_state and st.session_state.vop_performance_history:
-            with st.expander("📊 Performance History"):
-                for run in st.session_state.vop_performance_history[-3:]:  # Show last 3 runs
-                    st.text(f"Level {run['concurrent_level']}: {run['success_rate']:.1f}% success, {run['processing_time']:.1f}s")
+
         
         # API Key
         st.subheader("🔑 OpenAI API Key")
@@ -544,32 +682,7 @@ def main():
     else:
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
         
-        # Troubleshooting section
-        with st.expander("🔧 Troubleshooting Upload Issues"):
-            st.markdown("""
-            **If you're experiencing upload errors:**
-            
-            1. **Network Error**: 
-               - Check your internet connection
-               - Try refreshing the page (F5)
-               - Try a smaller video file first
-            
-            2. **Large MOV Files**:
-               - Maximum size: 2GB
-               - For larger files, compress using video editing software
-               - Convert MOV to MP4 if needed
-            
-            3. **Supported Formats**:
-               - MP4 (recommended)
-               - AVI, MOV, MKV, M4V
-               
-            4. **Browser Issues**:
-               - Try Chrome or Firefox
-               - Clear browser cache
-               - Disable browser extensions temporarily
-            """)
-            
-            st.info("💡 **Tip**: For best performance, use MP4 files under 500MB when possible.")
+
 
 def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 10):
     """Start the VOP analysis process using the proven video analysis architecture."""
@@ -637,7 +750,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             st.success(f"✅ Analysis complete in {processing_time:.1f} seconds!")
             st.info(f"📊 Success rate: {success_rate:.1f}% ({performance_metrics.get('successful_batches', 0)}/{total_batches} batches)")
-            st.info(f"⚡ Speed: {avg_batch_time:.1f}s average per batch")
+            st.info(f"📊 **Batches processed**: {performance_metrics.get('successful_batches', 0)}/{total_batches}")
             
             # Store performance data for future optimization
             if 'vop_performance_history' not in st.session_state:
@@ -656,12 +769,80 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             from app import process_batches_sequentially
             process_batches_sequentially(batches, gpt4o_client, surgical_profile, progress_bar, status_text, total_batches)
         
+        # CRITICAL: Wait a moment for all async operations to complete
+        time.sleep(2)
+        
+        # Verify that the transcript was populated
+        st.info("🔍 **Verifying transcript collection...**")
+        transcript_length = len(gpt4o_client.get_full_transcript())
+        st.info(f"📝 **Transcript collected**: {transcript_length} characters")
+        
+        if transcript_length < 100:
+            st.error("❌ **CRITICAL ERROR**: Transcript not populated by batch processing!")
+            st.warning("This indicates the batch processing is not calling update_context() properly")
+            
+            # Try manual test to see if the client works at all
+            st.info("🧪 **Testing client manually...**")
+            try:
+                test_narrative = "Test narrative for debugging"
+                test_events = [{"type": "test", "timestamp": "00:00:00"}]
+                gpt4o_client.update_context(test_narrative, test_events)
+                test_length = len(gpt4o_client.get_full_transcript())
+                st.info(f"🧪 **Manual test result**: {test_length} characters after manual update")
+            except Exception as test_error:
+                st.error(f"🧪 **Manual test failed**: {test_error}")
+            
+            return
+        
+        # If we get here, the transcript should be populated
+        st.success("✅ **Transcript verification passed** - proceeding to Stage 2")
+        
         # Get complete analysis using proven narrative building
         full_transcript = gpt4o_client.get_full_transcript()
         event_timeline = gpt4o_client.get_event_timeline()
         
-        # Create enhanced narrative using GPT-5
-        status_text.text("Creating final surgical assessment with GPT-5...")
+        # DEBUG: Let's see exactly what we're getting
+        st.info(f"🔍 **DEBUG**: Raw transcript type: {type(full_transcript)}")
+        st.info(f"🔍 **DEBUG**: Raw transcript length: {len(full_transcript) if full_transcript else 0}")
+        st.info(f"🔍 **DEBUG**: Transcript content: {repr(full_transcript[:500]) if full_transcript else 'None'}")
+        
+        # Also check the internal state of the client
+        st.info(f"🔍 **DEBUG**: Client full_transcript list length: {len(gpt4o_client.full_transcript)}")
+        if gpt4o_client.full_transcript:
+            st.info(f"🔍 **DEBUG**: First transcript entry: {repr(gpt4o_client.full_transcript[0][:200]) if gpt4o_client.full_transcript[0] else 'None'}")
+        
+        # STAGE 1: GPT-4o has completed frame-by-frame analysis
+        # STAGE 2: GPT-5 synthesizes ALL batch outputs into comprehensive narrative
+        status_text.text("STAGE 2: Synthesizing complete video narrative with GPT-5...")
+        
+        # Ensure we have ALL batch outputs for synthesis
+        if not full_transcript or len(full_transcript.strip()) < 100:
+            st.error("❌ STAGE 1 FAILED: Insufficient GPT-4o batch analysis for synthesis")
+            st.warning(f"Transcript content: {repr(full_transcript[:200]) if full_transcript else 'None'}")
+            st.warning(f"Client internal state: {len(gpt4o_client.full_transcript)} transcript entries")
+            return
+        
+        # Check that we have substantial content from multiple batches
+        transcript_lines = full_transcript.split('\n')
+        substantial_lines = [line for line in transcript_lines if len(line.strip()) > 50]
+        
+        if len(substantial_lines) < 5:
+            st.error("❌ STAGE 1 FAILED: Insufficient batch analysis content for synthesis")
+            st.warning(f"Only {len(substantial_lines)} substantial analysis lines found")
+            st.warning(f"Sample lines: {substantial_lines[:3] if substantial_lines else 'None'}")
+            return
+        
+        # Check for time diversity across batches
+        time_indicators = ['00:', '01:', '02:', '03:', '04:', '05:', '06:', '07:', '08:', '09:', '10:']
+        time_ranges_found = sum(1 for indicator in time_indicators if indicator in full_transcript)
+        
+        if time_ranges_found < 3:
+            st.warning(f"⚠️ **Limited Time Coverage**: Only {time_ranges_found} time ranges detected - may indicate incomplete video analysis")
+        
+        st.info(f"📊 **STAGE 1 Complete**: {len(full_transcript):,} characters from {len(substantial_lines)} substantial analysis lines")
+        st.info(f"📝 **Time Coverage**: {time_ranges_found} time ranges detected")
+        st.info(f"📝 **Content Preview**: {full_transcript[:200]}...")
+        
         enhanced_narrative = create_surgical_vop_narrative(
             full_transcript, 
             event_timeline, 
@@ -669,6 +850,14 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             st.session_state.selected_pattern,
             rubric_engine
         )
+        
+        # Debug: Check if enhanced narrative was generated
+        if enhanced_narrative:
+            st.success(f"✅ GPT-5 Enhanced Narrative Generated: {len(enhanced_narrative)} characters")
+            st.info(f"First 200 chars: {enhanced_narrative[:200]}...")
+        else:
+            st.error("❌ GPT-5 Enhanced Narrative Generation FAILED")
+            st.warning("This will cause PDF generation to fail")
         
         # Extract scores from enhanced narrative
         extracted_scores = extract_rubric_scores_from_narrative(enhanced_narrative)
@@ -694,7 +883,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 "duration": video_processor.duration
             },
             "performance_metrics": performance_metrics if max_concurrent_batches > 1 else None,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "video_path": video_path  # Add video path for final image extraction
         }
         
         st.session_state.vop_analysis_complete = True
@@ -805,34 +995,37 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 unsafe_allow_html=True
             )
         
-        # PDF report generation button
-        if st.button("📄 Generate PDF Report"):
+        # PDF report generation and download button
+        if st.button("📄 Generate & Download PDF Report", type="primary"):
             try:
                 from surgical_report_generator import SurgicalVOPReportGenerator
                 
                 report_generator = SurgicalVOPReportGenerator()
                 report_filename = f"VOP_Assessment_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 
-                report_path = report_generator.generate_vop_report(
-                    results,
-                    st.session_state.rubric_scores,
-                    overall_result,
-                    report_filename
-                )
+                with st.spinner("Generating PDF report..."):
+                    report_path = report_generator.generate_vop_report(
+                        results,
+                        st.session_state.rubric_scores,
+                        overall_result,
+                        report_filename
+                    )
                 
-                st.success(f"✅ PDF report generated: {report_path}")
+                st.success(f"✅ PDF report generated successfully!")
                 
-                # Offer download
+                # Automatically trigger download
                 with open(report_path, "rb") as pdf_file:
                     st.download_button(
                         label="📥 Download PDF Report",
                         data=pdf_file.read(),
                         file_name=report_filename,
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        key="pdf_download"
                     )
                     
             except Exception as e:
                 st.error(f"Error generating PDF report: {e}")
+                st.error("Check console for detailed error information")
 
 if __name__ == "__main__":
     main()

@@ -95,7 +95,7 @@ class VideoProcessor:
     def extract_frames(self, start_time: float = 0.0, end_time: Optional[float] = None, 
                       custom_fps: Optional[float] = None) -> List[dict]:
         """
-        Extract frames from video with metadata.
+        Extract frames from video with metadata using robust FFmpeg approach.
         
         Args:
             start_time: Start time in seconds
@@ -119,42 +119,122 @@ class VideoProcessor:
         
         print(f"Extracting frames: start={start_time}, end={end_time}, fps={fps}, duration={self.duration}")
         
+        # Try FFmpeg extraction first (more robust)
+        try:
+            frames = self._extract_frames_ffmpeg(start_time, end_time, fps)
+            if frames:
+                print(f"Extracted {len(frames)} frames using FFmpeg")
+                return frames
+        except Exception as e:
+            print(f"FFmpeg extraction failed: {e}, falling back to OpenCV")
+        
+        # Fallback to OpenCV with more resilient frame seeking
         frames = []
         cap = cv2.VideoCapture(self.video_path)
         
         if not cap.isOpened():
             raise ValueError("Failed to open video for frame extraction")
         
+        # Get total frame count and FPS for more accurate positioning
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        video_fps = cap.get(cv2.CAP_PROP_FPS)
+        
+        print(f"Video info: {total_frames} total frames at {video_fps} FPS")
+        
         # Calculate frame intervals
         frame_interval = 1.0 / fps
         current_time = start_time
+        consecutive_failures = 0
+        max_failures = 10  # Allow some failures but not endless loop
         
-        while current_time < end_time:
-            # Set position to current time
+        while current_time < end_time and consecutive_failures < max_failures:
+            # Try frame-based positioning as alternative to time-based
+            frame_number = int(current_time * video_fps)
+            
+            # Try both time-based and frame-based positioning
+            success = False
+            
+            # Method 1: Time-based
             cap.set(cv2.CAP_PROP_POS_MSEC, current_time * 1000)
-            
             ret, frame = cap.read()
-            if not ret:
-                print(f"Failed to read frame at time {current_time}")
-                break
             
-            # Convert BGR to RGB
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if not ret and frame_number < total_frames:
+                # Method 2: Frame-based
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+                ret, frame = cap.read()
             
-            # Create frame metadata
-            frame_data = {
-                'frame_id': len(frames),
-                'timestamp': current_time,
-                'timestamp_formatted': self._format_timestamp(current_time),
-                'frame': frame_rgb,
-                'frame_pil': Image.fromarray(frame_rgb)
-            }
+            if ret and frame is not None:
+                # Convert BGR to RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                
+                # Create frame metadata
+                frame_data = {
+                    'frame_id': len(frames),
+                    'timestamp': current_time,
+                    'timestamp_formatted': self._format_timestamp(current_time),
+                    'frame': frame_rgb,
+                    'frame_pil': Image.fromarray(frame_rgb)
+                }
+                
+                frames.append(frame_data)
+                consecutive_failures = 0  # Reset failure counter
+            else:
+                consecutive_failures += 1
+                print(f"Failed to read frame at time {current_time} (failure {consecutive_failures})")
             
-            frames.append(frame_data)
             current_time += frame_interval
         
         cap.release()
         print(f"Extracted {len(frames)} frames")
+        return frames
+    
+    def _extract_frames_ffmpeg(self, start_time: float, end_time: float, fps: float) -> List[dict]:
+        """Extract frames using FFmpeg for better compatibility."""
+        import tempfile
+        import os
+        import glob
+        
+        frames = []
+        
+        # Create temporary directory for frames
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_pattern = os.path.join(temp_dir, "frame_%06d.jpg")
+            
+            # Use FFmpeg to extract frames
+            try:
+                (
+                    ffmpeg
+                    .input(self.video_path, ss=start_time, t=(end_time - start_time))
+                    .filter('fps', fps=fps)
+                    .output(output_pattern)
+                    .overwrite_output()
+                    .run(capture_stdout=True, capture_stderr=True)
+                )
+            except ffmpeg.Error as e:
+                raise Exception(f"FFmpeg frame extraction failed: {e.stderr.decode()}")
+            
+            # Load extracted frames
+            frame_files = sorted(glob.glob(os.path.join(temp_dir, "frame_*.jpg")))
+            
+            for i, frame_file in enumerate(frame_files):
+                timestamp = start_time + (i / fps)
+                if timestamp >= end_time:
+                    break
+                
+                # Load frame using PIL
+                frame_pil = Image.open(frame_file)
+                frame_rgb = np.array(frame_pil)
+                
+                frame_data = {
+                    'frame_id': len(frames),
+                    'timestamp': timestamp,
+                    'timestamp_formatted': self._format_timestamp(timestamp),
+                    'frame': frame_rgb,
+                    'frame_pil': frame_pil
+                }
+                
+                frames.append(frame_data)
+        
         return frames
     
     def _format_timestamp(self, seconds: float) -> str:

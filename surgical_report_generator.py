@@ -118,11 +118,7 @@ class SurgicalVOPReportGenerator:
         # Image comparison section
         story.extend(self._create_image_comparison_section(assessment_data))
         
-        # New page for detailed narrative analysis
-        story.append(PageBreak())
-        
-        # Detailed narrative analysis section
-        story.extend(self._create_detailed_narrative_section(assessment_data))
+
         
         # Footer
         story.extend(self._create_footer())
@@ -231,8 +227,14 @@ class SurgicalVOPReportGenerator:
                     story.append(Paragraph(f"<b>{pid}. {point['title']}</b>", self.styles['Normal']))
                     story.append(Spacer(1, 6))
                     
-                    # Score with interpretation
-                    score_para = f"<b>Score: {score}/5 ({score_text})</b>"
+                    # Score with interpretation (handle provisional scores)
+                    provisional_scores = getattr(self, 'provisional_scores', {})
+                    is_provisional = provisional_scores.get(pid, False)
+                    
+                    if is_provisional:
+                        score_para = f"<b>Score: {score}*/5 ({score_text}) - Provisional, requires review</b>"
+                    else:
+                        score_para = f"<b>Score: {score}/5 ({score_text})</b>"
                     story.append(Paragraph(score_para, self.styles['Normal']))
                     story.append(Spacer(1, 6))
                     
@@ -249,119 +251,66 @@ class SurgicalVOPReportGenerator:
         return story
     
     def _extract_rubric_feedback(self, enhanced_narrative: str, pid: int, title: str, score: int) -> str:
-        """Extract specific rubric point assessment from GPT-5 enhanced narrative."""
+        """Extract clean, concise rubric point assessment WITHOUT timestamps for first page."""
+        
         if not enhanced_narrative:
             return f"Summary: Detailed assessment requires enhanced narrative from GPT-5 analysis of complete video."
         
-        # The GPT-5 enhanced narrative should contain assessments for each rubric point
-        # Look for content structured by rubric point numbers or titles
+        # Look for the specific rubric point in the enhanced narrative
         lines = enhanced_narrative.split('\n')
         
-        # Strategy 1: Look for explicit rubric point sections
-        rubric_content = []
+        # Find the section for this specific rubric point
+        rubric_section = None
         collecting = False
+        collected_content = []
         
-        for i, line in enumerate(lines):
+        for line in lines:
             line_clean = line.strip()
             if not line_clean:
                 continue
-                
-            # Check if this line starts a rubric point section
-            if (line_clean.startswith(f"{pid}.") or 
-                line_clean.startswith(f"Point {pid}") or
-                line_clean.startswith(f"Rubric {pid}") or
-                (str(pid) in line_clean and title.lower() in line_clean.lower())):
+            
+            # Check if this line starts our target rubric point
+            if (line_clean.startswith(f"**{pid}.") or 
+                line_clean.startswith(f"{pid}.") or
+                (f"**{pid}." in line_clean and title.lower() in line_clean.lower())):
                 collecting = True
-                rubric_content = [line_clean]
                 continue
             
             # If we're collecting and hit another rubric point, stop
-            elif collecting and (any(line_clean.startswith(f"{j}.") for j in range(1, 8) if j != pid) or
-                                line_clean.startswith("Point ") or
-                                line_clean.startswith("Rubric ") or
-                                line_clean.startswith("RUBRIC_SCORES")):
+            elif collecting and (any(line_clean.startswith(f"**{j}.") or line_clean.startswith(f"{j}.") for j in range(1, 8) if j != pid) or
+                                line_clean.startswith("**Summative") or
+                                line_clean.startswith("Summative")):
                 break
             
-            # If collecting, add substantial content
-            elif collecting and len(line_clean) > 10:
-                rubric_content.append(line_clean)
+            # If collecting, add content but filter out timestamps and scores
+            elif collecting:
+                # Skip lines that are just timestamps or scores
+                if not (line_clean.startswith("Score:") or 
+                       "00:" in line_clean or
+                       line_clean.startswith("**") and ":" in line_clean):
+                    collected_content.append(line_clean)
         
-        # If we found specific rubric content, use it
-        if rubric_content and len(rubric_content) > 1:
-            # Combine the content, excluding the header line
-            content = " ".join(rubric_content[1:])
-            if len(content) > 300:
-                content = content[:300] + "..."
-            return f"Summary: {content}"
+        # Clean up the collected content
+        if collected_content:
+            # Join all content and clean it up
+            content = " ".join(collected_content)
+            
+            # Remove any remaining timestamp patterns
+            import re
+            content = re.sub(r'\b\d{2}:\d{2}(?::\d{2})?(?:–\d{2}:\d{2}(?::\d{2})?)?[;,\s]*', '', content)
+            content = re.sub(r'\(e\.g\.,\s*[^)]*\)', '', content)  # Remove timestamp examples
+            content = re.sub(r'\s+', ' ', content)  # Clean up multiple spaces
+            content = content.strip()
+            
+            # Remove "Score: X/5" if present
+            content = re.sub(r'\s*Score:\s*\d+/5\s*', '', content)
+            
+            if len(content) > 50:  # Make sure we have substantial content
+                return content
         
-        # Strategy 2: Look for content related to this rubric point by keywords
-        keywords = {
-            1: ['needle', 'perpendicular', 'angle', 'entry', 'passes', '90'],
-            2: ['tissue', 'handling', 'gentle', 'forceps', 'grasp', 'manipulation'],
-            3: ['knot', 'square', 'secure', 'tie', 'throw', 'tension'],
-            4: ['approximation', 'tension', 'edge', 'contact', 'gap', 'alignment'],
-            5: ['spacing', 'even', 'uniform', 'distance', 'interval', 'cm'],
-            6: ['eversion', 'edge', 'inversion', 'position', 'roll', 'flat'],
-            7: ['motion', 'efficiency', 'movement', 'economy', 'smooth', 'hands']
-        }.get(pid, [title.lower()])
-        
-        # Find paragraphs with relevant keywords
-        relevant_paras = []
-        current_para = []
-        
-        for line in lines:
-            line_clean = line.strip()
-            if not line_clean:
-                if current_para and any(any(keyword in sentence.lower() for keyword in keywords) 
-                                      for sentence in current_para):
-                    relevant_paras.append(" ".join(current_para))
-                current_para = []
-            else:
-                current_para.append(line_clean)
-        
-        # Check last paragraph
-        if current_para and any(any(keyword in sentence.lower() for keyword in keywords) 
-                              for sentence in current_para):
-            relevant_paras.append(" ".join(current_para))
-        
-        # Return the most relevant paragraph
-        if relevant_paras:
-            # Pick the longest/most substantial paragraph
-            best_para = max(relevant_paras, key=len)
-            if len(best_para) > 300:
-                best_para = best_para[:300] + "..."
-            return f"Summary: {best_para}"
-        
-        # Strategy 3: Extract general procedural content
-        substantial_paras = []
-        current_para = []
-        
-        for line in lines:
-            line_clean = line.strip()
-            if not line_clean:
-                if current_para and len(" ".join(current_para)) > 50:
-                    para_text = " ".join(current_para)
-                    if not any(skip in para_text.lower() for skip in ['rubric_scores', 'score:', 'overall']):
-                        substantial_paras.append(para_text)
-                current_para = []
-            else:
-                if not line_clean.startswith(('RUBRIC', 'Score:')):
-                    current_para.append(line_clean)
-        
-        # Check last paragraph
-        if current_para and len(" ".join(current_para)) > 50:
-            para_text = " ".join(current_para)
-            if not any(skip in para_text.lower() for skip in ['rubric_scores', 'score:', 'overall']):
-                substantial_paras.append(para_text)
-        
-        if substantial_paras:
-            # Take the first substantial paragraph as general assessment
-            para = substantial_paras[0]
-            if len(para) > 300:
-                para = para[:300] + "..."
-            return f"Summary: {para}"
-        
-        return f"Summary: Assessment of {title.lower()} based on video analysis shows {self._get_score_interpretation(score).lower()} performance level."
+        # Fallback: create a basic assessment based on score
+        score_text = self._get_score_interpretation(score)
+        return f"Assessment of {title.lower()} based on video analysis shows {score_text.lower()} performance level."
     
     def _create_summative_assessment_section(self, overall_result: Dict[str, Any], assessment_data: Dict[str, Any]) -> List:
         """Create summative assessment with final score and holistic feedback."""
@@ -383,10 +332,11 @@ class SurgicalVOPReportGenerator:
         
         # Generate summative feedback based on performance patterns
         summative_feedback = self._generate_summative_feedback(scores, avg_score, assessment_data)
+        summative_formatted = self._format_summative_paragraphs(summative_feedback)
         
         story.append(Paragraph("<b>Summative Comment:</b>", self.styles['Normal']))
         story.append(Spacer(1, 6))
-        story.append(Paragraph(summative_feedback.strip(), self.styles['Normal']))
+        story.append(Paragraph(summative_formatted.strip(), self.styles['Normal']))
         story.append(Spacer(1, 20))
         
         return story
@@ -462,10 +412,13 @@ class SurgicalVOPReportGenerator:
                     gold_img.drawHeight = target_height
                     gold_img.drawWidth = gold_width
                     
+                    # Extract final product image from video
+                    learner_img = self._extract_final_product_image(assessment_data, target_height)
+                    
                     # Create table with images side by side
                     image_data = [
                         ['Gold Standard', 'Learner Performance'],
-                        [gold_img, Paragraph("Final frame from analyzed video would appear here in actual implementation", self.styles['Normal'])]
+                        [gold_img, learner_img]
                     ]
                     
                     image_table = Table(image_data, colWidths=[3*inch, 3*inch])
@@ -502,105 +455,342 @@ class SurgicalVOPReportGenerator:
         return story
     
     def _generate_summative_feedback(self, scores: Dict[int, int], avg_score: float, assessment_data: Dict[str, Any]) -> str:
-        """Extract summative feedback from AI-generated enhanced narrative."""
+        """Extract the actual summative assessment from GPT-5 enhanced narrative."""
         enhanced_narrative = assessment_data.get('enhanced_narrative', '')
         
         if not enhanced_narrative:
             return "Comprehensive summative feedback requires enhanced narrative generation from AI analysis."
         
-        # Look for conclusion, summary, or assessment sections in the narrative
+        # GPT-5 writes summative assessment after all rubric points
+        # Look for content after all "Score: X/5" entries
         lines = enhanced_narrative.split('\n')
-        summative_content = []
+        summative_started = False
+        summative_lines = []
         
-        # Find paragraphs that seem like conclusions or overall assessments
-        for i, line in enumerate(lines):
-            line_lower = line.lower()
-            # Look for conclusion-type content
-            if any(keyword in line_lower for keyword in ['overall', 'summary', 'conclusion', 'assessment', 'competency', 'performance']):
-                # Take this line and a few following lines
-                for j in range(i, min(i + 3, len(lines))):
-                    if lines[j].strip() and len(lines[j].strip()) > 20:
-                        summative_content.append(lines[j].strip())
-                break
-        
-        # If no specific conclusion found, take the last substantial paragraphs
-        if not summative_content:
-            substantial_lines = [line.strip() for line in lines 
-                               if len(line.strip()) > 50 and 
-                               not line.strip().startswith(('RUBRIC', '1:', '2:', '3:', '4:', '5:', '6:', '7:')) and
-                               not any(char.isdigit() and ':' in line[:10] for char in line[:10])]
+        # Find where rubric scoring ends and summative begins
+        for line in lines:
+            line_clean = line.strip()
             
-            # Take last few substantial lines as summative content
-            if substantial_lines:
-                summative_content = substantial_lines[-2:] if len(substantial_lines) > 1 else substantial_lines[-1:]
+            # If we see "Score: X/5", we're still in rubric section
+            if "Score:" in line_clean and "/5" in line_clean:
+                summative_started = False
+                continue
+            
+            # If we've passed all scores and see substantial content, it's summative
+            if not summative_started and line_clean and len(line_clean) > 50:
+                # Check if this line doesn't start with rubric indicators
+                if not (line_clean.startswith(('**1.', '**2.', '**3.', '**4.', '**5.', '**6.', '**7.', '1.', '2.', '3.', '4.', '5.', '6.', '7.'))):
+                    summative_started = True
+                    summative_lines.append(line_clean)
+            elif summative_started and line_clean and len(line_clean) > 20:
+                summative_lines.append(line_clean)
         
-        # Combine the summative content
-        if summative_content:
-            return ' '.join(summative_content)
+        # If we found summative content, return it
+        if summative_lines:
+            return ' '.join(summative_lines)
         
-        # Final fallback - extract any meaningful content from the middle of the narrative
-        meaningful_lines = [line.strip() for line in lines 
-                          if len(line.strip()) > 40 and 
-                          not line.strip().startswith(('RUBRIC', 'Score:')) and
-                          not any(str(i) + ':' in line for i in range(1, 8))]
+        # Fallback: look for any content after the last score
+        last_score_index = -1
+        for i, line in enumerate(lines):
+            if "Score:" in line and "/5" in line:
+                last_score_index = i
         
-        if meaningful_lines:
-            # Take a representative sample from the middle
-            mid_point = len(meaningful_lines) // 2
-            return meaningful_lines[mid_point] if meaningful_lines else "AI-generated summative feedback not available."
+        if last_score_index >= 0:
+            # Take substantial content after the last score
+            for i in range(last_score_index + 1, len(lines)):
+                line_clean = lines[i].strip()
+                if len(line_clean) > 50:
+                    # Collect this and following substantial lines
+                    summative_content = []
+                    for j in range(i, len(lines)):
+                        if lines[j].strip() and len(lines[j].strip()) > 20:
+                            summative_content.append(lines[j].strip())
+                    return ' '.join(summative_content)
         
         return "Enhanced narrative analysis required for detailed summative feedback."
     
-    def _create_detailed_narrative_section(self, assessment_data: Dict[str, Any]) -> List:
-        """Create detailed narrative analysis with timestamps and actionable advice."""
-        story = []
+    def _format_summative_paragraphs(self, summative_text: str) -> str:
+        """Format summative comment into meaningful paragraphs for readability."""
+        if not summative_text or len(summative_text.strip()) < 50:
+            return summative_text
         
-        story.append(Paragraph("Video Analysis Narrative", self.styles['CustomTitle']))
-        story.append(Spacer(1, 20))
+        # Split into sentences
+        sentences = []
+        current_sentence = ""
         
-        # Enhanced narrative content
-        enhanced_narrative = assessment_data.get('enhanced_narrative', '')
+        for char in summative_text:
+            current_sentence += char
+            if char in '.!?' and len(current_sentence.strip()) > 20:
+                sentences.append(current_sentence.strip())
+                current_sentence = ""
         
-        if enhanced_narrative:
-            # Clean up and format the narrative
-            narrative_text = enhanced_narrative.replace('RUBRIC_SCORES_START', '').replace('RUBRIC_SCORES_END', '')
+        # Add any remaining text
+        if current_sentence.strip():
+            sentences.append(current_sentence.strip())
+        
+        if len(sentences) <= 3:
+            return summative_text  # Too short for meaningful paragraphing
+        
+        # Group sentences into 2-3 paragraphs based on content
+        paragraphs = []
+        current_para = []
+        
+        # Simple heuristic: group every 2-3 sentences, but break on key transition words
+        transition_words = ['however', 'furthermore', 'additionally', 'nevertheless', 'conversely', 'in contrast', 'overall']
+        
+        for i, sentence in enumerate(sentences):
+            current_para.append(sentence)
             
-            # Remove scoring section
-            lines = narrative_text.split('\n')
-            cleaned_lines = []
-            skip_scoring = False
+            # Check if we should start a new paragraph
+            should_break = False
             
-            for line in lines:
-                if ':' in line and len(line.strip()) < 10 and any(char.isdigit() for char in line):
-                    skip_scoring = True
-                    continue
-                if skip_scoring and not line.strip():
-                    skip_scoring = False
-                    continue
-                if not skip_scoring and line.strip():
-                    cleaned_lines.append(line.strip())
+            # Break after 2-3 sentences
+            if len(current_para) >= 3:
+                should_break = True
+            elif len(current_para) >= 2 and i < len(sentences) - 1:
+                # Look ahead to see if next sentence starts with transition word
+                next_sentence = sentences[i + 1].lower()
+                for word in transition_words:
+                    if next_sentence.startswith(word):
+                        should_break = True
+                        break
             
-            # Format as narrative paragraphs
-            narrative_content = ' '.join(cleaned_lines)
-            paragraphs = narrative_content.split('. ')
+            if should_break and current_para:
+                paragraphs.append(' '.join(current_para))
+                current_para = []
+        
+        # Add any remaining sentences
+        if current_para:
+            paragraphs.append(' '.join(current_para))
+        
+        # Join paragraphs with double line break for PDF formatting
+        return '<br/><br/>'.join(paragraphs)
+    
+    def _extract_final_product_image(self, assessment_data: Dict[str, Any], target_height: float):
+        """Extract a high-quality final product image with robust hand/instrument avoidance."""
+        try:
+            # Get video path from assessment data
+            video_path = assessment_data.get('video_path')
+            if not video_path:
+                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
             
-            current_paragraph = ""
-            for i, sentence in enumerate(paragraphs):
-                if sentence.strip():
-                    current_paragraph += sentence + ". "
+            # Import video processor
+            from video_processor import VideoProcessor
+            import tempfile
+            import os
+            
+            processor = VideoProcessor()
+            success = processor.load_video(video_path)
+            
+            if not success:
+                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+            
+            # Multi-tier sampling strategy for best final product image
+            duration = processor.duration
+            candidate_frames = []
+            
+            # Tier 1: Last 3% of video (most likely to show final product without hands)
+            self._sample_video_segment_enhanced(processor, duration * 0.97, duration, 10, candidate_frames, "final_3pct")
+            
+            # Tier 2: Last 7% of video (backup)
+            self._sample_video_segment_enhanced(processor, duration * 0.93, duration * 0.97, 8, candidate_frames, "final_7pct")
+            
+            # Tier 3: Last 15% of video (final fallback)
+            self._sample_video_segment_enhanced(processor, duration * 0.85, duration * 0.93, 6, candidate_frames, "final_15pct")
+            
+            if not candidate_frames:
+                return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
+            
+            # Score all frames with enhanced criteria (hand/instrument avoidance)
+            scored_frames = []
+            for timestamp, frame_data, tier in candidate_frames:
+                quality_score = self._score_frame_quality_enhanced(frame_data['frame'], tier)
+                scored_frames.append((timestamp, frame_data, quality_score, tier))
+            
+            # Select best frame (highest quality score)
+            best_frame = max(scored_frames, key=lambda x: x[2])
+            frame_data = best_frame[1]
+            
+            # Create ReportLab Image directly from PIL image using BytesIO
+            import io
+            img_buffer = io.BytesIO()
+            frame_data['frame_pil'].save(img_buffer, format='JPEG', quality=95)  # Higher quality
+            img_buffer.seek(0)
+            
+            # Create ReportLab Image from buffer
+            learner_img = Image(img_buffer)
+            
+            # Get original dimensions and scale to match target height
+            pil_img = frame_data['frame_pil']
+            original_width, original_height = pil_img.size
+            aspect_ratio = original_width / original_height
+            learner_width = target_height * aspect_ratio
+            
+            learner_img.drawHeight = target_height
+            learner_img.drawWidth = learner_width
+            
+            return learner_img
                 
-                    # Create paragraph breaks every 3-4 sentences
-                    if (i + 1) % 3 == 0 or i == len(paragraphs) - 1:
-                        if current_paragraph.strip():
-                            story.append(Paragraph(current_paragraph.strip(), self.styles['Normal']))
-                            story.append(Spacer(1, 12))
-                        current_paragraph = ""
-        else:
-            story.append(Paragraph("Detailed narrative analysis not available. Enhanced narrative generation required for comprehensive assessment.", self.styles['Normal']))
-        
-        return story
+        except Exception as e:
+            return Paragraph(f"Error extracting final product image: {e}", self.styles['Normal'])
+    
+    def _sample_video_segment_enhanced(self, processor, start_time, end_time, num_samples, candidate_frames, tier_name):
+        """Sample frames from a specific video segment with enhanced selection."""
+        try:
+            segment_duration = end_time - start_time
+            if segment_duration <= 0:
+                return
+            
+            for i in range(num_samples):
+                if num_samples == 1:
+                    sample_time = start_time + segment_duration * 0.5
+                else:
+                    sample_time = start_time + (segment_duration * i / (num_samples - 1))
+                
+                frame_data = processor.get_frame_at_time(sample_time)
+                if frame_data:
+                    candidate_frames.append((sample_time, frame_data, tier_name))
+                    
+        except Exception as e:
+            print(f"Error sampling {tier_name} segment: {e}")
+    
+    def _score_frame_quality_enhanced(self, frame_array, tier):
+        """Enhanced frame quality scoring with hand/instrument detection avoidance."""
+        try:
+            import numpy as np
+            import cv2
+            
+            # Convert to grayscale for analysis
+            if len(frame_array.shape) == 3:
+                gray = cv2.cvtColor(frame_array, cv2.COLOR_RGB2GRAY)
+            else:
+                gray = frame_array
+            
+            # Basic quality metrics
+            sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
+            contrast = gray.std()
+            
+            # Brightness analysis (prefer well-lit images)
+            brightness_mean = gray.mean()
+            brightness_score = 1.0 - abs(brightness_mean - 128) / 128
+            
+            # Edge detection (good for seeing suture lines)
+            edges = cv2.Canny(gray, 50, 150)
+            edge_density = (edges > 0).sum() / edges.size
+            
+            # Hand/instrument avoidance scoring
+            h, w = gray.shape
+            center_region = frame_array[h//4:3*h//4, w//4:3*w//4] if len(frame_array.shape) == 3 else gray[h//4:3*h//4, w//4:3*w//4]
+            
+            hand_penalty = 0
+            if len(frame_array.shape) == 3:
+                # Skin tone detection (crude but effective)
+                skin_score = self._detect_skin_tones(center_region)
+                hand_penalty += skin_score * 0.4
+                
+                # Metallic instrument detection
+                metallic_score = self._detect_metallic_objects(center_region)
+                hand_penalty += metallic_score * 0.3
+            
+            # Combine scores
+            base_quality = (sharpness / 1000 + contrast / 100 + brightness_score + edge_density * 10) / 4
+            
+            # Tier bonus (prefer very latest frames)
+            tier_bonus = {"final_3pct": 0.4, "final_7pct": 0.2, "final_15pct": 0.0}.get(tier, 0)
+            
+            # Apply hand penalty
+            final_score = base_quality + tier_bonus - hand_penalty
+            
+            return max(0, final_score)
+            
+        except Exception as e:
+            print(f"Error in enhanced quality scoring: {e}")
+            return 0.0
+    
+    def _detect_skin_tones(self, image_region):
+        """Detect skin tones in image region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to HSV for better skin detection
+            hsv = cv2.cvtColor(image_region, cv2.COLOR_RGB2HSV)
+            
+            # Define skin tone ranges (conservative to avoid false positives)
+            lower_skin1 = np.array([0, 20, 70])
+            upper_skin1 = np.array([20, 255, 255])
+            lower_skin2 = np.array([160, 20, 70])
+            upper_skin2 = np.array([180, 255, 255])
+            
+            skin_mask1 = cv2.inRange(hsv, lower_skin1, upper_skin1)
+            skin_mask2 = cv2.inRange(hsv, lower_skin2, upper_skin2)
+            skin_mask = skin_mask1 | skin_mask2
+            
+            return (skin_mask > 0).sum() / skin_mask.size
+            
+        except:
+            return 0.0
+    
+    def _detect_metallic_objects(self, image_region):
+        """Detect metallic instruments in image region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to grayscale
+            gray = cv2.cvtColor(image_region, cv2.COLOR_RGB2GRAY)
+            
+            # Look for very bright regions (instruments reflect light)
+            bright_mask = gray > 200
+            
+            # Look for high contrast edges (instruments have sharp edges)
+            edges = cv2.Canny(gray, 100, 200)
+            edge_mask = edges > 0
+            
+            # Combine bright areas with high edge density
+            metallic_score = (bright_mask & edge_mask).sum() / bright_mask.size
+            
+            return metallic_score
+            
+        except:
+            return 0.0
+    
+    def _score_frame_quality(self, frame_array):
+        """Fallback frame quality scoring (backwards compatibility)."""
+        try:
+            import numpy as np
+            
+            # Convert to grayscale for analysis
+            if len(frame_array.shape) == 3:
+                gray = np.dot(frame_array[...,:3], [0.2989, 0.5870, 0.1140])
+            else:
+                gray = frame_array
+            
+            # Simple sharpness metric using gradient magnitude
+            grad_x = np.gradient(gray, axis=1)
+            grad_y = np.gradient(gray, axis=0)
+            sharpness = np.sqrt(grad_x**2 + grad_y**2).mean()
+            
+            # Calculate contrast (standard deviation)
+            contrast = gray.std()
+            
+            # Calculate brightness distribution (prefer mid-range brightness)
+            mean_brightness = gray.mean()
+            brightness_score = 1.0 - abs(mean_brightness - 127) / 127
+            
+            # Combine scores (weights favor sharpness and contrast)
+            quality_score = (sharpness * 0.5) + (contrast * 0.3) + (brightness_score * 0.2)
+            
+            return quality_score
+            
+        except Exception:
+            # Fallback scoring - just use standard deviation as proxy for content
+            try:
+                return frame_array.std()
+            except:
+                return 0.0
 
-# Usage example
+# Usage example  
 def generate_sample_report():
     """Generate a sample report for testing."""
     
