@@ -206,7 +206,7 @@ def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_k
         # Use the EXACT SAME structure as the working app.py but for surgical assessment
         personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
         
-        enhancement_prompt = f"""You are a senior attending surgeon writing a VOP assessment for {pattern_data['display_name']} suturing. Write naturally and specifically based on what you observed in this video. Avoid generic language.
+        enhancement_prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
 
 RAW ANALYSIS:
 {raw_transcript[:3000]}...
@@ -214,28 +214,31 @@ RAW ANALYSIS:
 RUBRIC CRITERIA:
 {rubric_criteria}
 
-CRITICAL: Use the specific observations from the raw analysis above. Write about what you actually saw in THIS video, not generic competencies. Be direct, specific, and actionable.
+STRICT SCORING GUIDELINES:
+- Score 1 = Major deficiencies - technique significantly below standard
+- Score 2 = Some deficiencies - technique below standard with notable issues  
+- Score 3 = Meets standard - technique is adequate and competent
+- Score 4 = Exceeds standard - technique is consistently good with minor areas for improvement
+- Score 5 = Exemplary - technique demonstrates mastery and serves as a model
 
-For each rubric point, write one substantive paragraph that:
-- References specific moments, actions, or techniques observed
-- Explains WHY the performance earned its score
-- Provides targeted improvement advice based on what was seen
+CRITICAL SCORING PHILOSOPHY:
+- Score 2 should be your DEFAULT for safe, functional technique
+- Score 4 means you would use this video to teach other attendings
+- Score 5 means this is among the best technique you've seen in your entire career
+- Assume EVERY technique has flaws until proven otherwise
+- You are training surgeons who will operate on real patients
+
+For each rubric point, write ONE OR TWO SENTENCES that:
+- Describe what you observed in the technique
+- Explain why the performance earned its score
+- NO timestamps, NO references to inability to judge
+- The AI must judge from the evidence available
 
 Then write a summative paragraph that:
-- Synthesizes your observations of this learner's specific performance
-- Identifies patterns in their technique
-- Provides actionable next steps based on their demonstrated strengths/weaknesses
-
-DO NOT use phrases like:
-- "demonstrates competency"
-- "meets standards" 
-- "adequate performance"
-- "continue developing"
-
-DO use specific observations like:
-- "At 2:15, the needle angle was consistently 45 degrees..."
-- "The third knot showed improved square configuration..."
-- "Hand movements off-camera occurred 8 times during..."
+- Provides entirely actionable critiques from holistic review
+- NO reprise of individual rubric assessments
+- NO timestamps, NO uncertainty about visibility
+- Must be useful observations and nothing else
 
 MANDATORY SCORING:
 RUBRIC_SCORES_START
@@ -269,7 +272,8 @@ RUBRIC_SCORES_END"""
                         "content": enhancement_prompt
                     }
                 ],
-                max_completion_tokens=4000
+                max_completion_tokens=8000,
+                reasoning_effort="low"
             )
             
             enhanced_narrative = response.choices[0].message.content
@@ -379,12 +383,23 @@ def initialize_session_state():
         st.session_state.saved_api_key = load_api_key()
 
 def detect_pattern_from_upload(uploaded_file) -> Optional[str]:
-    """Detect pattern from uploaded file name."""
+    """Detect pattern from uploaded file name(s)."""
     if not uploaded_file:
         return None
     
     detector = SuturePatternDetector()
-    filename = uploaded_file.name
+    
+    # Handle both single file and multiple files
+    if isinstance(uploaded_file, list):
+        # For multiple files, use the first file for pattern detection
+        if len(uploaded_file) > 0:
+            filename = uploaded_file[0].name
+        else:
+            return None
+    else:
+        # Single file
+        filename = uploaded_file.name
+    
     # For uploaded files, we don't have folder context
     return detector.detect_pattern("", filename)
 
@@ -408,39 +423,82 @@ def main():
         st.subheader("🧵 Suture Pattern")
         
         uploaded_file = st.file_uploader(
-            "Upload Surgical Video",
+            "Upload Surgical Video(s)",
             type=['mp4', 'avi', 'mov', 'mkv', 'm4v'],
-            help="Upload a video of suturing technique for assessment (up to 2GB). MOV files supported."
+            accept_multiple_files=True,
+            help="Upload one or multiple videos of suturing technique for assessment (up to 2GB each). MOV files supported."
         )
         
         # Add upload status and troubleshooting
         if uploaded_file is not None:
-            file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
-            uploaded_file.seek(0)  # Reset file pointer
-            st.info(f"📁 **File**: {uploaded_file.name}")
-            st.info(f"📊 **Size**: {file_size_mb:.1f} MB")
-            
-            if file_size_mb > 2000:  # 2GB limit
-                st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
-                uploaded_file = None
+            if isinstance(uploaded_file, list):
+                # Multiple files - just show count
+                st.info(f"📁 **Files**: {len(uploaded_file)} videos selected")
+                for i, file in enumerate(uploaded_file, 1):
+                    file_size_mb = len(file.read()) / (1024 * 1024)
+                    file.seek(0)  # Reset file pointer
+                    if file_size_mb > 2000:  # 2GB limit
+                        st.error(f"❌ **File too large**: {file.name} exceeds 2GB limit")
+                        uploaded_file = None
+                        break
+            else:
+                # Single file - just show count
+                file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
+                uploaded_file.seek(0)  # Reset file pointer
+                
+                if file_size_mb > 2000:  # 2GB limit
+                    st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
+                    uploaded_file = None
         
         if uploaded_file:
-            # Attempt automatic detection
-            detected_pattern = detect_pattern_from_upload(uploaded_file)
-            
-            if detected_pattern:
-                st.success(f"✅ Detected pattern: {detected_pattern.replace('_', ' ').title()}")
-                default_index = pattern_detector.get_available_patterns().index(detected_pattern)
+            # Pattern detection for single or multiple files
+            if isinstance(uploaded_file, list):
+                # Multiple files - detect pattern for each
+                st.subheader("🔍 Pattern Detection Results")
+                detected_patterns = {}
+                for i, file in enumerate(uploaded_file, 1):
+                    pattern = detect_pattern_from_upload(file)
+                    if pattern:
+                        detected_patterns[file.name] = pattern
+                        st.success(f"✅ {i}. {file.name}: {pattern.replace('_', ' ').title()}")
+                    else:
+                        st.warning(f"⚠️ {i}. {file.name}: Pattern not detected")
+                
+                # Show pattern summary
+                if detected_patterns:
+                    unique_patterns = list(set(detected_patterns.values()))
+                    if len(unique_patterns) == 1:
+                        st.info(f"📊 **All files use**: {unique_patterns[0].replace('_', ' ').title()}")
+                        default_pattern = unique_patterns[0]
+                    else:
+                        st.info(f"📊 **Mixed patterns detected**: {', '.join([p.replace('_', ' ').title() for p in unique_patterns])}")
+                        st.warning("⚠️ **Note**: Each file will be assessed with its detected pattern")
+                        default_pattern = unique_patterns[0]  # Use first pattern as default
+                else:
+                    st.error("❌ No patterns detected in any files")
+                    default_pattern = pattern_detector.get_available_patterns()[0]
+                
+                # Store individual patterns for processing
+                st.session_state.detected_patterns = detected_patterns
+                default_index = pattern_detector.get_available_patterns().index(default_pattern)
             else:
-                st.warning("⚠️ Pattern not detected from filename")
-                default_index = 0
+                # Single file - original logic
+                detected_pattern = detect_pattern_from_upload(uploaded_file)
+                if detected_pattern:
+                    st.success(f"✅ Detected pattern: {detected_pattern.replace('_', ' ').title()}")
+                    default_index = pattern_detector.get_available_patterns().index(detected_pattern)
+                else:
+                    st.warning("⚠️ Pattern not detected from filename")
+                    default_index = 0
+                st.session_state.detected_patterns = {uploaded_file.name: detected_pattern} if detected_pattern else {}
             
             # Pattern selection (with override capability)
             selected_pattern = st.selectbox(
-                "Confirm/Select Suture Pattern:",
+                "Confirm/Select Default Suture Pattern:",
                 options=pattern_detector.get_available_patterns(),
                 index=default_index,
-                format_func=lambda x: x.replace('_', ' ').title()
+                format_func=lambda x: x.replace('_', ' ').title(),
+                help="For multiple files with mixed patterns, this is the default. Each file will use its detected pattern."
             )
             st.session_state.selected_pattern = selected_pattern
             
@@ -456,32 +514,20 @@ def main():
         
         # Analysis settings
         st.subheader("⚙️ Analysis Settings")
-        fps = st.slider("Analysis FPS", 1.0, 5.0, 2.0, 0.5)
-        batch_size = st.slider("Batch Size", 3, 12, 6)
+        fps = st.slider("Analysis FPS", 1.0, 5.0, 5.0, 0.5)
+        batch_size = st.slider("Batch Size", 5, 15, 10, 1, help="Number of frames processed together in each batch")
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
         max_concurrent_batches = st.slider(
             "Concurrent Batches", 
-            1, 20, 
-            10,  # Default to proven safe level
+            1, 150, 
+            100,  # Default high performance setting
             step=1,
-            help="Higher values = faster processing (requires OpenAI Tier 4+)"
+            help="Higher values = faster processing (requires OpenAI Tier 4+). Use 100-150 for maximum speed."
         )
         
-        # Concurrency guidance
-        if max_concurrent_batches <= 10:
-            st.success(f"✅ **SAFE**: {max_concurrent_batches} concurrent batches")
-        elif max_concurrent_batches <= 12:
-            st.info(f"🧪 **TESTING**: {max_concurrent_batches} concurrent batches - monitor closely")
-        else:
-            st.info(f"🚀 **EXPERIMENTAL**: {max_concurrent_batches} concurrent batches")
-        
-        # Performance history
-        if 'vop_performance_history' in st.session_state and st.session_state.vop_performance_history:
-            with st.expander("📊 Performance History"):
-                for run in st.session_state.vop_performance_history[-3:]:  # Show last 3 runs
-                    st.text(f"Level {run['concurrent_level']}: {run['success_rate']:.1f}% success, {run['processing_time']:.1f}s")
+
         
         # API Key
         st.subheader("🔑 OpenAI API Key")
@@ -507,6 +553,11 @@ def main():
             st.session_state.saved_api_key = api_key
             save_api_key(api_key)
             st.success("✅ API key saved for future assessments!")
+        
+        # STOP button
+        st.subheader("🛑 App Control")
+        if st.button("🛑 STOP Application", type="secondary", help="Gracefully stop the application"):
+            st.stop()
     
     # Main content area
     if uploaded_file and st.session_state.selected_pattern and api_key:
@@ -516,25 +567,65 @@ def main():
         with col1:
             st.header("📹 Video Analysis")
             
-            # Video info
-            with st.expander("📊 Video Information", expanded=True):
-                # Save video temporarily for analysis
-                temp_video_path = f"temp_{uploaded_file.name}"
-                with open(temp_video_path, "wb") as f:
-                    f.write(uploaded_file.read())
+            # Handle single or multiple files
+            if isinstance(uploaded_file, list):
+                # Multiple files
+                st.info(f"📁 **Processing {len(uploaded_file)} videos**")
                 
-                video_info = extract_video_info(temp_video_path)
-                if "error" not in video_info:
-                    st.json(video_info)
-                else:
-                    st.error(f"Error reading video: {video_info['error']}")
-            
-            # Start analysis
-            if st.button("🚀 Start VOP Assessment", type="primary"):
-                start_vop_analysis(temp_video_path, api_key, fps, batch_size, max_concurrent_batches)
+                # Show video information for each file
+                with st.expander("📊 Video Information", expanded=True):
+                    temp_video_paths = []
+                    for i, file in enumerate(uploaded_file, 1):
+                        temp_path = f"temp_{file.name}"
+                        with open(temp_path, "wb") as f:
+                            f.write(file.read())
+                        temp_video_paths.append(temp_path)
+                        
+                        video_info = extract_video_info(temp_path)
+                        st.subheader(f"Video {i}: {file.name}")
+                        if "error" not in video_info:
+                            st.json(video_info)
+                        else:
+                            st.error(f"Error reading video: {video_info['error']}")
+                
+                # Start batch analysis
+                col_start, col_stop = st.columns([2, 1])
+                with col_start:
+                    if st.button("🚀 Start Batch VOP Assessment", type="primary"):
+                        # Process each video with its detected pattern
+                        for i, (file, temp_path) in enumerate(zip(uploaded_file, temp_video_paths), 1):
+                            file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
+                            st.info(f"Processing {i}/{len(uploaded_file)}: {file.name} ({file_pattern})")
+                            start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
+                with col_stop:
+                    if st.button("🛑 STOP Batch", type="secondary", help="Stop batch processing"):
+                        st.warning("🛑 Batch processing stopped by user")
+                        st.stop()
+            else:
+                # Single file
+                with st.expander("📊 Video Information", expanded=True):
+                    # Save video temporarily for analysis
+                    temp_video_path = f"temp_{uploaded_file.name}"
+                    with open(temp_video_path, "wb") as f:
+                        f.write(uploaded_file.read())
+                    
+                    video_info = extract_video_info(temp_video_path)
+                    if "error" not in video_info:
+                        st.json(video_info)
+                    else:
+                        st.error(f"Error reading video: {video_info['error']}")
+                
+                # Start analysis
+                if st.button("🚀 Start VOP Assessment", type="primary"):
+                    start_vop_analysis(temp_video_path, api_key, fps, batch_size, max_concurrent_batches)
         
         with col2:
             st.header("📋 Assessment Progress")
+            
+            # Emergency STOP button
+            if st.button("🛑 STOP Analysis", type="secondary", help="Stop current analysis process"):
+                st.warning("🛑 Analysis stopped by user")
+                st.stop()
             
             if st.session_state.vop_analysis_complete:
                 display_assessment_results(rubric_engine)
@@ -544,34 +635,9 @@ def main():
     else:
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
         
-        # Troubleshooting section
-        with st.expander("🔧 Troubleshooting Upload Issues"):
-            st.markdown("""
-            **If you're experiencing upload errors:**
-            
-            1. **Network Error**: 
-               - Check your internet connection
-               - Try refreshing the page (F5)
-               - Try a smaller video file first
-            
-            2. **Large MOV Files**:
-               - Maximum size: 2GB
-               - For larger files, compress using video editing software
-               - Convert MOV to MP4 if needed
-            
-            3. **Supported Formats**:
-               - MP4 (recommended)
-               - AVI, MOV, MKV, M4V
-               
-            4. **Browser Issues**:
-               - Try Chrome or Firefox
-               - Clear browser cache
-               - Disable browser extensions temporarily
-            """)
-            
-            st.info("💡 **Tip**: For best performance, use MP4 files under 500MB when possible.")
 
-def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 10):
+
+def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: str = None):
     """Start the VOP analysis process using the proven video analysis architecture."""
     
     progress_bar = st.progress(0)
@@ -601,12 +667,15 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         st.info(f"Target FPS: {fps}")
         st.success(f"✅ Extracted {len(frames)} frames at {fps} FPS")
         
+        # Use provided pattern or fall back to session state
+        current_pattern = pattern_id if pattern_id else st.session_state.selected_pattern
+        
         # Create surgical assessment profile using proven profile structure
         assessment_profile = SurgicalAssessmentProfile(rubric_engine)
         surgical_profile = {
             "name": "Surgical VOP",
             "description": "Surgical Verification of Proficiency Assessment",
-            "base_prompt": assessment_profile.create_assessment_prompt(st.session_state.selected_pattern),
+            "base_prompt": assessment_profile.create_assessment_prompt(current_pattern),
             "context_condensation_prompt": assessment_profile.create_context_condensation_prompt()
         }
         
@@ -666,7 +735,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             full_transcript, 
             event_timeline, 
             api_key,
-            st.session_state.selected_pattern,
+            current_pattern,
             rubric_engine
         )
         
@@ -688,7 +757,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             "extracted_scores": extracted_scores,  # Store the extracted scores
             "video_info": {
                 "filename": os.path.basename(video_path),
-                "pattern": st.session_state.selected_pattern,
+                "pattern": current_pattern,
                 "fps": fps,
                 "total_frames": len(frames),
                 "duration": video_processor.duration

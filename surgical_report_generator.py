@@ -4,7 +4,7 @@ Creates professional assessment reports for surgical residents.
 """
 
 from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -13,7 +13,11 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import json
 import os
-from PIL import Image as PILImage
+import io
+import re
+import numpy as np
+import cv2
+from PIL import Image
 
 class SurgicalVOPReportGenerator:
     """Generates professional PDF reports for surgical VOP assessments."""
@@ -386,7 +390,10 @@ class SurgicalVOPReportGenerator:
         
         story.append(Paragraph("<b>Summative Comment:</b>", self.styles['Normal']))
         story.append(Spacer(1, 6))
-        story.append(Paragraph(summative_feedback.strip(), self.styles['Normal']))
+        
+        # Format summative feedback into paragraphs
+        formatted_feedback = self._format_summative_paragraphs(summative_feedback.strip())
+        story.append(Paragraph(formatted_feedback, self.styles['Normal']))
         story.append(Spacer(1, 20))
         
         return story
@@ -427,7 +434,8 @@ class SurgicalVOPReportGenerator:
         story = []
         
         try:
-            story.append(Paragraph("Visual Comparison", self.styles['CustomHeading']))
+            story.append(Paragraph("Visual Assessment", self.styles['CustomHeading']))
+            story.append(Spacer(1, 10))
             
             pattern_id = assessment_data['video_info']['pattern']
             
@@ -440,65 +448,44 @@ class SurgicalVOPReportGenerator:
             
             gold_standard_path = gold_standard_images.get(pattern_id)
             
+            # Extract final product image first (at top)
+            story.append(Paragraph("<b>Learner Performance</b>", self.styles['Normal']))
+            story.append(Spacer(1, 6))
+            
+            final_product_img = self._extract_final_product_image_with_pad_detection(assessment_data, 3*inch)
+            story.append(final_product_img)
+            story.append(Spacer(1, 20))
+            
+            # Add gold standard image below
             if gold_standard_path and os.path.exists(gold_standard_path):
-                # Create comparison table
-                story.append(Paragraph("Side-by-Side Comparison: Gold Standard vs. Learner Performance", self.styles['Normal']))
-                story.append(Spacer(1, 10))
+                story.append(Paragraph("<b>Gold Standard Reference</b>", self.styles['Normal']))
+                story.append(Spacer(1, 6))
                 
-                # Calculate image dimensions to make them equal height
-                target_height = 2.5 * inch  # Target height for both images
-                
-                # Add gold standard image
                 try:
-                    gold_img = Image(gold_standard_path)
+                    gold_img = RLImage(gold_standard_path)
                     # Get original dimensions
-                    pil_img = PILImage.open(gold_standard_path)
+                    pil_img = Image.open(gold_standard_path)
                     original_width, original_height = pil_img.size
                     
-                    # Calculate width to maintain aspect ratio
+                    # Calculate dimensions to match final product width
                     aspect_ratio = original_width / original_height
-                    gold_width = target_height * aspect_ratio
+                    gold_width = 3 * inch
+                    gold_height = gold_width / aspect_ratio
                     
-                    gold_img.drawHeight = target_height
+                    gold_img.drawHeight = gold_height
                     gold_img.drawWidth = gold_width
                     
-                    # Create table with images side by side
-                    image_data = [
-                        ['Gold Standard', 'Learner Performance'],
-                        [gold_img, Paragraph("Final frame from analyzed video would appear here in actual implementation", self.styles['Normal'])]
-                    ]
+                    story.append(gold_img)
+                    story.append(Spacer(1, 20))
                     
-                    image_table = Table(image_data, colWidths=[3*inch, 3*inch])
-                    image_table.setStyle(TableStyle([
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('FONTSIZE', (0, 0), (-1, 0), 12),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-                    ]))
-                    
-                    story.append(image_table)
-                    story.append(Spacer(1, 10))
-                    
-                    # Add explanation
-                    explanation = f"""
-                    The gold standard image above represents the ideal final result for {pattern_id.replace('_', ' ').title()} 
-                    suturing technique. Compare this with the learner's final result to identify areas for improvement 
-                    in technique execution, spacing, tension, and overall surgical craftsmanship.
-                    """
-                    story.append(Paragraph(explanation, self.styles['Normal']))
-                    
-                except Exception as img_error:
-                    story.append(Paragraph(f"Error loading gold standard image: {img_error}", self.styles['Normal']))
+                except Exception as e:
+                    story.append(Paragraph(f"Error loading gold standard image: {e}", self.styles['Normal']))
             else:
-                story.append(Paragraph(f"Gold standard image not available for {pattern_id}", self.styles['Normal']))
+                story.append(Paragraph(f"Gold standard image not found for pattern: {pattern_id}", self.styles['Normal']))
             
         except Exception as e:
             story.append(Paragraph(f"Error creating image comparison: {e}", self.styles['Normal']))
         
-        story.append(Spacer(1, 20))
         return story
     
     def _generate_summative_feedback(self, scores: Dict[int, int], avg_score: float, assessment_data: Dict[str, Any]) -> str:
@@ -599,6 +586,388 @@ class SurgicalVOPReportGenerator:
             story.append(Paragraph("Detailed narrative analysis not available. Enhanced narrative generation required for comprehensive assessment.", self.styles['Normal']))
         
         return story
+
+    def _extract_final_product_image_with_pad_detection(self, assessment_data: Dict[str, Any], target_width: float):
+        """Extract and crop final product image with intelligent suturing pad detection."""
+        try:
+            # Get video path from assessment data
+            video_path = assessment_data.get('video_path')
+            if not video_path:
+                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+            
+            # Import video processor
+            from video_processor import VideoProcessor
+            import tempfile
+            import os
+            
+            processor = VideoProcessor()
+            success = processor.load_video(video_path)
+            
+            if not success:
+                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+            
+            # Multi-tier sampling strategy for best final product image
+            duration = processor.duration
+            candidate_frames = []
+            
+            # Tier 1: Last 3% of video (most likely to show final product without hands)
+            self._sample_video_segment_enhanced(processor, duration * 0.97, duration, 10, candidate_frames, "final_3pct")
+            
+            # Tier 2: Last 7% of video (backup)
+            self._sample_video_segment_enhanced(processor, duration * 0.93, duration * 0.97, 8, candidate_frames, "final_7pct")
+            
+            # Tier 3: Last 15% of video (final fallback)
+            self._sample_video_segment_enhanced(processor, duration * 0.85, duration * 0.93, 6, candidate_frames, "final_15pct")
+            
+            if not candidate_frames:
+                return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
+            
+            # Score all frames with enhanced criteria (hand/instrument avoidance)
+            scored_frames = []
+            for timestamp, frame_data, tier in candidate_frames:
+                quality_score = self._score_frame_quality_enhanced(frame_data, tier)
+                scored_frames.append((timestamp, frame_data, quality_score, tier))
+            
+            # Sort by quality score (highest first)
+            scored_frames.sort(key=lambda x: x[2], reverse=True)
+            
+            # Get the best frame
+            best_timestamp, best_frame, best_score, best_tier = scored_frames[0]
+            
+            # Convert to PIL Image and crop
+            pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
+            
+            # Intelligent cropping to focus on suturing area
+            cropped_image = self._intelligent_crop_suturing_area(pil_image)
+            
+            # Resize to target width while maintaining aspect ratio
+            aspect_ratio = cropped_image.height / cropped_image.width
+            target_height = int(target_width * aspect_ratio)
+            resized_image = cropped_image.resize((int(target_width), target_height), Image.Resampling.LANCZOS)
+            
+            # Convert to ReportLab Image
+            img_buffer = io.BytesIO()
+            resized_image.save(img_buffer, format='JPEG', quality=95)
+            img_buffer.seek(0)
+            
+            reportlab_image = RLImage(img_buffer, width=target_width, height=target_height)
+            
+            return reportlab_image
+            
+        except Exception as e:
+            return Paragraph(f"Error extracting final product image: {str(e)}", self.styles['Normal'])
+
+    def _sample_video_segment_enhanced(self, processor, start_time: float, end_time: float, 
+                                     num_samples: int, candidate_frames: list, tier: str):
+        """Enhanced video sampling with better frame quality assessment."""
+        try:
+            import cv2
+            
+            cap = cv2.VideoCapture(processor.video_path)
+            if not cap.isOpened():
+                return
+            
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            
+            # Calculate frame range
+            start_frame = int(start_time * fps)
+            end_frame = int(end_time * fps)
+            
+            # Sample frames evenly across the time range
+            if end_frame > start_frame:
+                frame_indices = np.linspace(start_frame, end_frame - 1, num_samples, dtype=int)
+                
+                for frame_idx in frame_indices:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                    ret, frame = cap.read()
+                    
+                    if ret and frame is not None:
+                        timestamp = frame_idx / fps
+                        candidate_frames.append((timestamp, frame, tier))
+            
+            cap.release()
+            
+        except Exception as e:
+            print(f"Error sampling video segment: {e}")
+
+    def _score_frame_quality_enhanced(self, frame, tier: str) -> float:
+        """Enhanced frame quality scoring with hand/instrument detection."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Base quality metrics
+            sharpness = cv2.Laplacian(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
+            contrast = np.std(frame)
+            brightness = np.mean(frame)
+            
+            # Normalize metrics (0-1 scale)
+            sharpness_norm = min(sharpness / 1000, 1.0)  # Laplacian variance normalization
+            contrast_norm = min(contrast / 100, 1.0)     # Standard deviation normalization
+            brightness_norm = 1.0 - abs(brightness - 127.5) / 127.5  # Distance from ideal brightness
+            
+            # Edge density (more edges = more detail)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray, 50, 150)
+            edge_density = np.sum(edges > 0) / (edges.shape[0] * edges.shape[1])
+            
+            # Penalize hand/instrument presence in center region
+            center_penalty = self._calculate_center_penalty(frame)
+            
+            # Tier bonus (prefer later frames)
+            tier_bonus = {"final_3pct": 0.3, "final_7pct": 0.2, "final_15pct": 0.1}.get(tier, 0.0)
+            
+            # Combined score
+            quality_score = (
+                sharpness_norm * 0.3 +
+                contrast_norm * 0.25 +
+                brightness_norm * 0.2 +
+                edge_density * 0.15 +
+                (1.0 - center_penalty) * 0.1 +
+                tier_bonus
+            )
+            
+            return quality_score
+            
+        except Exception as e:
+            print(f"Error scoring frame quality: {e}")
+            return 0.0
+
+    def _calculate_center_penalty(self, frame) -> float:
+        """Calculate penalty for hands/instruments in center region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            h, w = frame.shape[:2]
+            center_h_start, center_h_end = int(h * 0.3), int(h * 0.7)
+            center_w_start, center_w_end = int(w * 0.3), int(w * 0.7)
+            
+            center_region = frame[center_h_start:center_h_end, center_w_start:center_w_end]
+            
+            # Detect skin tones (hands)
+            skin_penalty = self._detect_skin_tones(center_region)
+            
+            # Detect metallic objects (instruments)
+            metallic_penalty = self._detect_metallic_objects(center_region)
+            
+            return min(skin_penalty + metallic_penalty, 1.0)
+            
+        except Exception as e:
+            print(f"Error calculating center penalty: {e}")
+            return 0.0
+
+    def _detect_skin_tones(self, region) -> float:
+        """Detect skin tones in the region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to HSV for better skin detection
+            hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
+            
+            # Define skin tone ranges in HSV
+            lower_skin1 = np.array([0, 20, 70], dtype=np.uint8)
+            upper_skin1 = np.array([20, 255, 255], dtype=np.uint8)
+            lower_skin2 = np.array([170, 20, 70], dtype=np.uint8)
+            upper_skin2 = np.array([180, 255, 255], dtype=np.uint8)
+            
+            # Create masks
+            mask1 = cv2.inRange(hsv, lower_skin1, upper_skin1)
+            mask2 = cv2.inRange(hsv, lower_skin2, upper_skin2)
+            skin_mask = mask1 + mask2
+            
+            # Calculate skin percentage
+            skin_pixels = np.sum(skin_mask > 0)
+            total_pixels = region.shape[0] * region.shape[1]
+            skin_percentage = skin_pixels / total_pixels
+            
+            return min(skin_percentage * 2, 1.0)  # Scale penalty
+            
+        except Exception as e:
+            print(f"Error detecting skin tones: {e}")
+            return 0.0
+
+    def _detect_metallic_objects(self, region) -> float:
+        """Detect metallic objects (instruments) in the region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to grayscale
+            gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+            
+            # Detect high-contrast edges (typical of metallic instruments)
+            edges = cv2.Canny(gray, 100, 200)
+            
+            # Look for long, straight edges (characteristic of surgical instruments)
+            lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=50, minLineLength=30, maxLineGap=10)
+            
+            if lines is not None:
+                # Calculate edge density from detected lines
+                line_pixels = sum(len(line) for line in lines)
+                total_pixels = region.shape[0] * region.shape[1]
+                metallic_percentage = line_pixels / total_pixels
+                return min(metallic_percentage * 3, 1.0)  # Scale penalty
+            
+            return 0.0
+            
+        except Exception as e:
+            print(f"Error detecting metallic objects: {e}")
+            return 0.0
+
+    def _intelligent_crop_suturing_area(self, image) -> Image.Image:
+        """Intelligently crop to focus on the suturing area with practice pad detection."""
+        try:
+            # Convert to numpy array for processing
+            img_array = np.array(image)
+            h, w = img_array.shape[:2]
+            
+            # Start search from center of image
+            center_x, center_y = w // 2, h // 2
+            
+            # Detect practice pad boundaries using edge detection and contour analysis
+            gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+            
+            # Apply Gaussian blur to reduce noise
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            
+            # Use adaptive thresholding to find practice pad boundaries
+            thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            
+            # Find contours to identify practice pad
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # Look for the largest rectangular contour (likely the practice pad)
+            best_contour = None
+            best_area = 0
+            
+            for contour in contours:
+                # Approximate contour to polygon
+                epsilon = 0.02 * cv2.arcLength(contour, True)
+                approx = cv2.approxPolyDP(contour, epsilon, True)
+                
+                # Check if it's roughly rectangular and large enough
+                if len(approx) >= 4:
+                    area = cv2.contourArea(contour)
+                    if area > best_area and area > (w * h * 0.1):  # At least 10% of image
+                        best_contour = contour
+                        best_area = area
+            
+            if best_contour is not None:
+                # Get bounding rectangle of practice pad
+                x, y, pad_w, pad_h = cv2.boundingRect(best_contour)
+                
+                # Expand the crop area slightly to include suturing area around pad
+                padding = 50
+                x = max(0, x - padding)
+                y = max(0, y - padding)
+                pad_w = min(w - x, pad_w + 2 * padding)
+                pad_h = min(h - y, pad_h + 2 * padding)
+                
+                # Make it square by taking the larger dimension
+                size = max(pad_w, pad_h)
+                
+                # Center the square around the practice pad
+                center_pad_x = x + pad_w // 2
+                center_pad_y = y + pad_h // 2
+                
+                crop_x = max(0, center_pad_x - size // 2)
+                crop_y = max(0, center_pad_y - size // 2)
+                
+                # Ensure we don't go outside image bounds
+                crop_x = min(crop_x, w - size)
+                crop_y = min(crop_y, h - size)
+                
+                cropped = image.crop((crop_x, crop_y, crop_x + size, crop_y + size))
+                
+            else:
+                # Fallback: search from center for best suturing area
+                crop_size = min(w, h) // 2  # Start with half the smaller dimension
+                
+                best_score = 0
+                best_crop = (center_x - crop_size // 2, center_y - crop_size // 2)
+                
+                # Search in expanding squares from center
+                for size_factor in [0.5, 0.6, 0.7, 0.8]:
+                    current_size = int(min(w, h) * size_factor)
+                    start_x = max(0, center_x - current_size // 2)
+                    start_y = max(0, center_y - current_size // 2)
+                    end_x = min(w, start_x + current_size)
+                    end_y = min(h, start_y + current_size)
+                    
+                    # Adjust if we hit boundaries
+                    if end_x - start_x < current_size:
+                        start_x = max(0, end_x - current_size)
+                    if end_y - start_y < current_size:
+                        start_y = max(0, end_y - current_size)
+                    
+                    crop_region = gray[start_y:end_y, start_x:end_x]
+                    edges = cv2.Canny(crop_region, 50, 150)
+                    score = np.sum(edges > 0) / (current_size * current_size)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_crop = (start_x, start_y)
+                        crop_size = current_size
+                
+                x, y = best_crop
+                cropped = image.crop((x, y, x + crop_size, y + crop_size))
+            
+            return cropped
+            
+        except Exception as e:
+            print(f"Error in intelligent cropping: {e}")
+            # Fallback to center crop
+            w, h = image.size
+            crop_size = min(w, h) // 2
+            x, y = (w - crop_size) // 2, (h - crop_size) // 2
+            return image.crop((x, y, x + crop_size, y + crop_size))
+
+    def _format_summative_paragraphs(self, summative_text: str) -> str:
+        """Format summative text into well-structured paragraphs."""
+        if not summative_text:
+            return ""
+        
+        # Split into sentences
+        sentences = re.split(r'(?<=[.!?])\s+', summative_text.strip())
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        if len(sentences) <= 3:
+            return summative_text
+        
+        # Group sentences into paragraphs
+        paragraphs = []
+        current_paragraph = []
+        
+        for sentence in sentences:
+            current_paragraph.append(sentence)
+            
+            # Check for paragraph breaks (transition words, length, or content)
+            if (len(current_paragraph) >= 2 and 
+                (any(transition in sentence.lower() for transition in 
+                     ['however', 'furthermore', 'additionally', 'moreover', 'in contrast', 'on the other hand']) or
+                 len(' '.join(current_paragraph)) > 200)):
+                paragraphs.append(' '.join(current_paragraph))
+                current_paragraph = []
+        
+        # Add remaining sentences
+        if current_paragraph:
+            paragraphs.append(' '.join(current_paragraph))
+        
+        # Ensure we have 2-3 paragraphs
+        if len(paragraphs) > 3:
+            # Merge smaller paragraphs
+            merged = []
+            for para in paragraphs:
+                if len(merged) == 0 or len(merged[-1]) > 150:
+                    merged.append(para)
+                else:
+                    merged[-1] += " " + para
+            paragraphs = merged
+        
+        return '<br/><br/>'.join(paragraphs)
 
 # Usage example
 def generate_sample_report():
