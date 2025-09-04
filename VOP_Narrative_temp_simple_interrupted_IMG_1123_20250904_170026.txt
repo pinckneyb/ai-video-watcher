@@ -1,0 +1,36 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_simple_interrupted_IMG_1123.MOV
+Pattern: simple_interrupted
+Analysis Date: 2025-09-04 17:00:26
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The sequence opens with setup and needle control. At 2–3.8 s the right hand uses a needle driver to load the curved needle near the upper‑left of the pad. The left hand and parked Adson forceps help present the suture near the swage while the driver re‑grasps the needle mid‑curve, orienting it perpendicular to the planned incision—ready for a controlled, 90-degree approach.
+
+By 8–9.8 s, the first pass has been initiated. The needle is extracted from the far/right wound edge with the right-hand driver, while the left hand uses tissue forceps to stabilize and slightly evert the near/left margin. As the needle clears, the driver slides its grip closer to the tip to follow the curvature through the exit, then reorients the arc toward the near edge for the next bite. The hands work in opposition across the wound: forceps marking the next entry on the left, driver advancing from the right.
+
+With that pass completed, attention shifts to managing slack and preparing to tie. Between 24–27.8 s the suture is drawn through smoothly. The left hand maintains tension and positioning while the right hand repurposes the driver for knot tying. A loop is formed around the driver tips; the driver captures the free end and draws it through, seating the first throw of an instrument tie down over the incision while the left hand provides counter‑traction. The motion is measured and deliberate—driver and fingers mostly off the tissue surface, suture guiding the tissue approximation.
+
+The next cycle begins with suture handling and reloading. At 56–57.8 s the right-hand driver briefly hovers over the wound as the left hand pulls the strand laterally to remove slack from a placed stitch. The driver then leaves the field while the left hand re‑enters holding the curved needle freehand, setting up for the next bite. At 58–59.8 s the right-hand driver returns to clamp the needle on its body (about the mid‑to‑distal third) with a near‑perpendicular orientation, aligning it for a likely right‑to‑left pass while the left hand stabilizes the suture near the swage. No tissue contact yet—this is precise staging above the field.
+
+The subsequent passage is captured at 66–67.8 s. The left hand now uses Adson forceps to lift and evert the left wound edge; the needle, already passed across from the right, emerges 1–2 mm from the left margin. The driver releases and re‑grips closer to the tip to deliver the needle out along its curve. Suture trails to the right; instruments work in close parallel at the margin, maintaining a clean extraction without crushing the edge.
+
+With the bite taken, the team moves into a steady tying rhythm. At 90–91.8 s the right-hand driver no longer holds the needle but instead manipulates the suture to perform instrument ties. The left hand controls the standing end near the wound. The driver loops, grasps a free end, and draws it across to form and seat the first throw. Both hands pull in opposite directions to snug the knot centrally over the incision, approximating the edges through suture compression alone.
+
+After securing a knot, trimming follows. At 104–105.8 s the left hand gently tents a suture tail adjacent to a central interrupted knot while the right hand brings in fine scissors. The blades approach parallel to the skin surface and cut close to the knot with the strand elevated, protecting the pad. Needle holder and other instruments rest off‑field.
+
+A brief reset phase spans 106–113.8 s. The left hand holds the needle and suture freehand near the wound; the right hand retrieves and prepares instruments above the field. The driver then holds the needle mid‑to‑proximal third, oriented appropriately, poised just lateral to the pad without contacting tissue—staged for another right‑to‑left approach.
+
+The closure continues in familiar cycles: pass, pull‑through, equalize, tie. At 138–139.8 s the needle is parked safely in the pad at the right margin while the right hand uses the driver to tie over a newly placed stitch. The left hand controls the long strand, maintaining gentle tension as the knot is seated directly over the wound line. A forward throw is completed and an opposing throw initiated to square the knot, tension applied gradually to avoid blanching. At 142–143.8 s, after another pass, the operator pulls the suture through to equalize the ends. The driver, still controlling the needle, briefly acts as a post to manage friction and prevent the knot from riding laterally as tension is applied.
+
+Preparation for additional passes repeats. At 152–153.8 s the left hand presents the needle over the pad while the right hand secures it with the driver around the mid‑curve, orienting the arc toward the central line. The central wound now shows several completed stitches with approximation maintained; a lateral practice incision remains untouched. By 154–155.8 s both hands lift out of the immediate field after confirming needle position and orientation—repositioning for the next bite.
+
+The final third of the sequence is devoted to finishing knots securely. At 176–177.8 s the left hand holds the standing end and forms a loop while the right-hand driver enters centrally to pick up the short tail, drawing it through for another throw; the needle remains out of play, parked safely. At 180–181.8 s the driver repeatedly grasps just beyond the knot, tightening successive throws; the left hand feeds and tensions the long strand to lay the knot neatly. At 188–189.8 s they complete the superior‑most stitch with additional alternating throws, the right hand modulating direction to square each throw while the left maintains controlled counter‑traction. Throughout, the wound edges remain approximated by existing stitches; no additional tissue bites are taken.
+
+The sequence concludes with final grooming. At 198–199.8 s the left hand pinches and tensions the remaining tail adjacent to a lower‑middle knot while the right hand brings in ring‑handled suture scissors. With blades angled slightly oblique and close to the knot, the cut is made flush to leave tidy, short tails. The driver and other instruments rest parked superior to the field, and the right hand withdraws, leaving a line of evenly spaced, tied, and trimmed simple interrupted sutures with edges well approximated.
+
+Across the entire video, the flow is consistent and methodical: precise needle loading and perpendicular approach; smooth, curved extraction with occasional forceps-assisted eversion; conscientious pull‑through and equalization; instrument ties laid with alternating throws, using hands in opposition to square and seat the knot centrally; safe needle parking during tying; and meticulous tail trimming. The hands maintain a stable working triangle around the incision, instruments enter and exit purposefully, and the rhythm settles into repeatable cycles that produce a clean, orderly closure.
+
+============================================================
+END OF NARRATIVE

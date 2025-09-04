@@ -1,0 +1,59 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_1415 _ vertical mattress.m4v
+Pattern: vertical_mattress
+Analysis Date: 2025-09-04 12:20:17
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video unfolds as a quiet, methodical practice session on a synthetic suture pad with several parallel incisions. The operator cycles through the core phases of interrupted suturing—planning and positioning, taking bites, regrasping and pulling through, tying, trimming, and reloading—moving between the rightmost and central wounds as the work progresses.
+
+Early setup and first approaches (60–109 s)
+- 60–69 s: The right hand arrives from the top-right with a needle holder pointed at the second-from-right incision. The left hand briefly appears with forceps from the top-left to oppose it. This is reconnaissance and positioning: the tools align across the target incision, but no bite is taken and no wrist rotation is seen. Both hands then clear the field.
+- 80–89 s: The left hand, now with a needle driver, centers over the right-middle slit. The right hand (forceps) alternates between orienting the needle on the driver and lightly presenting the near wound edge. The arc is adjusted towards a perpendicular approach. Still preparatory—no penetration yet—just careful loading, spacing, and field control.
+- 100–109 s: The first decisive pass is captured. The driver controls the needle as the right-hand forceps grasp and draw it through the near/right edge. A clean hand-to-hand transfer occurs; the driver regrips near the distal third to reestablish control, then the suture is pulled through. The driver becomes a post while the other hand manages the free strand, setting up for a knot.
+
+Regrasping, tying, and early trimming (120–179 s)
+- 120–129 s: With a suture already across the central incision, the hands focus on regrasping and repositioning the needle above the field. The right hand briefly switches to scissors, foreshadowing an upcoming trim, but no tissue pass occurs here.
+- 140–149 s: Attention shifts to a central stitch. The driver and a second instrument trade control of the two limbs to tighten and seat an existing knot. The goal is precise approximation without over-tension; instruments meet over the wound line and then separate in a controlled cinch.
+- 150–159 s: A fresh bite begins near a prior stitch. The right-hand forceps evert the right edge; the left-hand driver brings the needle in at roughly 90 degrees, initiating entry on the near side. This is classic near-side penetration with countertraction and eversion.
+- 170–179 s: The needle is “parked” off-screen and the driver serves as a post for an instrument tie. The right hand manages the strands, looping and delivering the short tail through before the throw is seated along the incision axis. The rhythm is steady: loop, deliver, cinch; no tissue manipulation in this short segment, just secure knot formation.
+
+Building a run of interrupted stitches on the right-side wounds (210–249 s)
+- 210–219 s: The field is idle, then refills with the needle holder from above and forceps from the right, aligned to the second-from-right incision. The needle is loaded at mid-to-distal shaft, perpendicular to the surface, with the forceps preparing the near margin.
+- 220–229 s: The near-side bite is executed. The right-hand forceps evert and stabilize the margin. The left hand advances the needle along its curve into the right dermal edge. The forceps then seize the tip; the driver relaxes and the right hand draws the needle and suture through. Only the entry and retrieval are shown; crossing to the far side will occur thereafter.
+- 240–249 s: With the suture through, the right hand controls the strand and helps the left hand reload the needle, restoring a perpendicular arc for the next pass. Instrument changes occur briefly, then both converge to finalize the regrasp. No penetration in this moment—this is a reset for the next bite.
+
+Knot management and tail trimming on the central line (260–279 s)
+- 260–269 s: The left instrument elevates a suture tail along the central row while the right-hand scissors trim it close to the knot. It’s precise and deliberate—lift, cut, release—maintaining a narrow working corridor to avoid disrupting adjacent stitches.
+- 270–279 s: With tails controlled, the left hand regrips the needle body and the right-hand forceps assist in rotating and seating it correctly for the next pass. The needle is firmly loaded and aligned, but again no tissue penetration is captured here—just disciplined preparation.
+
+Resuming placement along the central incision (330–339 s)
+- 330–339 s: After a quiet opening, the left-hand driver reenters with the needle loaded near the proximal/mid third. The right-hand forceps lift the right wound edge, everting it for entry. The needle hovers perpendicular, poised to initiate a new right-to-left pass adjacent to existing stitches.
+
+Ongoing knot security and trimming (370–379 s)
+- 370–379 s: The left hand tensions a strand near a previously completed central knot; the right-hand scissors trim the free ends. The cuts are made with the suture lifted off the skin to protect the edge. This consolidates earlier placements and tidies the line.
+
+Reloading and approaching the rightmost incision (390–409 s)
+- 390–399 s: The right hand initially presents the needle to the left-hand driver for loading near two-thirds from the tip. With the needle now oriented perpendicular to the surface, the right-hand forceps switch roles to lift the near edge of the rightmost incision, setting up a right-to-left pass.
+- 400–409 s: Another sequence of fine adjustments: the driver “chokes up” to midshaft control; the forceps briefly assist and manage the suture. No penetration occurs—this is a precision reloading and field-clearing interlude before the next bite.
+
+Planning, marking, and continuing the run on the rightmost incision (460–479 s)
+- 460–469 s: The needle remains safely parked in the driver while the opposite hand alternates between tensioning the free strand and using a blue marker to map a U-shaped guide beside the rightmost incision. It’s a planning moment, drawing intended entry and exit points to standardize bite width and depth.
+- 470–479 s: After tying a prior stitch, scissors trim tails while the other hand stabilizes the strand with a driver. Then the needle is reloaded again and presented over the rightmost incision. The right hand, now with forceps, hovers lateral to the edge, ready to evert as soon as the driver commits to the next entry.
+
+Final trimming and reset (480–498 s)
+- 480–489 s: With a knot stack stabilized by the needle driver, the left-hand scissors nip the tails to length. Both instruments then clear, leaving a tidy central line with shortened ends.
+- 490–498 s: The field rests briefly. Then both hands reenter: the left with an open needle driver, the right with forceps retrieving a curved needle and thread from the drape. It’s a clean reset—needle recovered and about to be reloaded—poised for the next cycle of bite, pull-through, tie, and trim.
+
+Overall flow and technique
+Across the session, the operator works in practiced cycles:
+- Position and present: driver loaded at the proximal-to-mid third, arc perpendicular; forceps lift and evert the near edge.
+- Take the bite: controlled wrist rotation along the needle’s curvature; forceps capture and deliver the tip for efficient pull-through.
+- Manage the line: driver becomes a post; instrument ties are formed with smooth, opposing motions along the incision axis.
+- Trim and reset: tails are elevated, cut close to the knot; the needle is reloaded for the next standardized bite.
+
+The hands maintain consistent geometry—driver from the superior/central axis, forceps from the right/lateral side—avoiding collisions and keeping suture clear of the field. Moments of quiet reloading and marking punctuate decisive passes and ties, giving the procedure a measured, rhythmic cadence. By the end, multiple interrupted stitches approximate the central and rightmost incisions with neatly trimmed tails, and the team is set to continue with the next planned bite.
+
+============================================================
+END OF NARRATIVE

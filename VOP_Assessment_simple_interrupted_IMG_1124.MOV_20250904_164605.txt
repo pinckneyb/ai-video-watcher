@@ -1,0 +1,71 @@
+SURGICAL VOP ASSESSMENT REPORT
+==================================================
+
+Video: simple_interrupted_IMG_1124.MOV
+Pattern: Simple Interrupted
+Duration: 147.6 seconds
+Analysis Date: 2025-09-04 16:46:05
+FPS: 1.0
+Total Frames: 148
+
+OVERALL ASSESSMENT
+--------------------
+Score: 3.7/5.0 - proficient
+
+RUBRIC ASSESSMENT
+-----------------
+Point 1: 4/5
+Point 2: 4/5
+Point 3: 4/5
+Point 4: 4/5
+Point 5: 3/5
+Point 6: 3/5
+Point 7: 4/5
+
+VIDEO NARRATIVE ANALYSIS
+-------------------------
+From the opening seconds, the video establishes a clear right-hand–dominant workflow on a multi‑incision synthetic pad, with the left hand assisting for exposure and suture control. The right hand enters with a needle driver and immediately loads the curved needle at the mid-to-proximal third, keeping the jaws perpendicular to the arc and the needle perpendicular to the pad. The left hand brings in Adson forceps to gently lift and evert the near wound edge, presenting a clean entry site. The first bite is driven in a smooth arc, with the driver regripping closer to the needle tip mid‑pass to follow the curvature precisely and complete the exit. As the suture is drawn through, the right hand leaves a short tail on the near side while the left manages the long limb away from the field to avoid entanglement.
+
+Without breaking rhythm, the operator transitions to tying. With the needle parked or still controlled in the driver, the right hand uses the instrument for an instrument tie: the long limb is wrapped around the jaws, the driver crosses to capture the short tail, and the throw is pulled through and slid down. The left hand alternates between holding the short free end and the standing end to square the knot and seat it centrally. Early on, the left relies on fingertips rather than forceps to maintain approximation as the knot advances; the driver at times is held vertically as a post to guide the knot straight down to the wound. Throws are tightened with opposing traction and alternating direction so the knot lies flat over the incision. The driver is briefly set down and regripped as needed to keep the jaws aligned and the loops controlled. By the end of this first tying sequence, the knot is compact and centered, with short tails.
+
+The focus then shifts to the small central vertical incision. The left hand resumes with Adson forceps on the left edge to evert and stabilize, while the right hand approaches from the upper/right, holding the needle correctly at its proximal third and aiming for a perpendicular right‑to‑left pass. The needle tip is positioned a few millimeters from the right margin and begins to enter in a controlled rotational motion. Although the complete passage isn’t shown continuously, the next moments pick up with tying on that newly placed stitch. The driver crosses the field to create a loop with the standing end; its tip then captures the short tail held near the left edge and pulls it through. Each throw is advanced and seated onto the wound with the forceps providing light, noncrushing stabilization. The operator alternates the direction of pull to square the knot and, in the final beats of the sequence, tensions both ends apart to lock the throw.
+
+Through the mid‑video, this cadence repeats and refines. The right hand keeps the needle holder working from the central‑right, periodically regripping the needle along its body to keep it safe and oriented while no tissue passes occur. The left hand manages strand tension from the inferior‑left, occasionally steadying the instrument for a better regrip. Multiple instrument‑tie throws are formed in succession: loops around the driver, capture of the opposite limb, then deliberate, horizontal tightening across the wound that slides each throw down in a controlled, coaxial motion. When a knot is secure, the driver is briefly placed aside and the left hand inspects and adjusts the lay.
+
+Preparation for the next stitch is deliberate. The right hand reloads the needle mid‑body with the arc perpendicular to the surface and aligned toward the next target along the central line, while the left hand controls the suture and keeps the needle tip clear. The left then brings in tissue forceps to evert the near edge again. A full, symmetric bite is taken across the central incision: entry perpendicular to the skin, pronation of the driver to follow the needle’s curvature, a mid‑pass regrip nearer the tip, and a smooth exit on the far edge. The suture is drawn through, leaving an adequate tail with no undue drag on the tissue.
+
+Tying follows immediately, and the technique evolves slightly. The left releases the forceps after seating the edges and shifts to hold the free end; the right hand uses the driver to execute instrument throws with the needle parked on the pad. Loops are thrown, the short end is retrieved, and each throw is slid down and squared with alternating, opposing tension. As the suture line progresses superiorly, the operator blends methods—finishing one stitch with a hand tie for added security after the instrument throws—then introduces scissors with the right hand to cut the tails while the left maintains gentle approximation.
+
+By the closing sequence, the pace eases. The right hand rests the needle holder and scissors superior to the field; both hands briefly stabilize the wooden board to reposition the pad, then the right hand lightly touches and checks the central knots. No further passes are taken. The field shows a midline incision closed with three simple interrupted sutures, knots lying centrally and evenly spaced, while lateral practice slits remain unused. Throughout, the surgeon maintains a consistent flow: precise needle loading and passage with forceps‑assisted eversion; parking and controlling the needle safely during tying; clean, squared instrument throws with alternating tension; occasional hand ties to finish; and disciplined instrument parking to keep the field clear. The result is a calm, coordinated rhythm of pass–pull‑through–tie, repeated and refined until the line is closed, followed by an unhurried inspection and tidy conclusion.
+
+FINAL SURGICAL ASSESSMENT
+--------------------------
+1. Perpendicular needle passes: The needle was consistently loaded correctly and driven with a controlled rotational motion, entering and exiting near-perpendicular with symmetric bites across the central incision. Precise mid‑pass regrips to follow the curve minimized shear, warranting a high score.
+
+2. Gentle tissue handling: Adsons were used to evert and stabilize with light, noncrushing force, and the suture was drawn through without drag. Occasional reliance on fingertips for approximation is a minor lapse, but overall handling remained atraumatic.
+
+3. Square, secure knots: Throws were alternated and slid down horizontally with a guided post, producing compact, centered knots; hand ties were added for security and tails kept short. This consistent squaring and deliberate seating indicates secure, well-constructed knots.
+
+4. Appropriate approximation/tension: Edges were approximated smoothly with coaxial knot advancement, resulting in closure without puckering or gaps and no evidence of over‑tightening. Balanced, opposing traction maintained just‑enough tension.
+
+5. Even spacing (0.5–1.0 cm): The three sutures finished in a uniform, centered pattern along the line. Because the absolute interval wasn’t demonstrated to be within 0.5–1.0 cm, this meets but does not exceed the standard.
+
+6. Edge eversion (flat/slight acceptable): Each pass used forceps-assisted eversion and perpendicular trajectory, resulting in a final line that appears flat to slightly everted without inversion. This achieves the expected outcome for simple interrupted closure.
+
+7. Economy of time and motion: The cadence was efficient with disciplined instrument parking, minimal off-field movements, and consistent control of the long limb. Brief regrips and pad repositioning were purposeful and did not add waste.
+
+RUBRIC_SCORES_START
+1: 4
+2: 4
+3: 4
+4: 4
+5: 3
+6: 3
+7: 4
+RUBRIC_SCORES_END
+
+Summative assessment:
+Tighten your system by eliminating fingertip contact with tissue; use Adsons exclusively and take a single, precise dermal grasp per edge to maintain approximation as throws slide down. Do not park the needle on the pad—keep it secured in the driver or place it in a neutral zone to avoid sharps risk and dulling the tip. Standardize your knot sequence (e.g., 2-1-1 for braided, 3-1-1 for monofilament) and avoid prolonged vertical “posting”; keep the instrument low and coaxial to prevent air knots and creep. Pre‑mark or mentally index spacing to ensure every stitch is 5–10 mm from the edge with 5–10 mm interstitch distance, and keep bite depth equal to bite width to maintain consistent, slight eversion. Streamline by minimizing nonessential regrips and ensuring the needle is always reloaded at the proximal third with the curvature already aligned to the next target. Maintain tail lengths at 3–5 mm and continue active long‑limb management to keep the field clean and prevent loop entanglement.
+
+END OF REPORT
+==================================================

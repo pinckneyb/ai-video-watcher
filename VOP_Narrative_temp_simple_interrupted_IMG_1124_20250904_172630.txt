@@ -1,0 +1,51 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_simple_interrupted_IMG_1124.MOV
+Pattern: simple_interrupted
+Analysis Date: 2025-09-04 17:26:30
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video opens on a staged synthetic skin pad with multiple vertical practice incisions. For the working sequence, attention centers on the midline wound, which will be closed with simple interrupted sutures while the lateral practice cuts remain untouched.
+
+0–19 s
+After a brief setup with instruments parked, the right hand enters with a needle driver and loads the curved needle correctly on its body, perpendicular to the skin surface. The left hand follows with Adson-style forceps, picking up the near dermal edge to provide countertraction and gentle eversion. The first bite is taken across the central incision: the driver advances the needle in a controlled arc following its curvature. Once the stitch traverses the wound, the needle is released and the driver is repurposed for tying. The long, needle-bearing limb is treated as the post.
+
+20–39 s
+The left hand shifts from forceps use to managing the suture ends—primarily the long limb—while the right hand, with the driver, performs an instrument tie. The long strand is wrapped over the driver; the driver reaches in to grasp the short tail at the knot and pulls it through to complete the first throw. Alternating throws follow. The hands pull in opposing vectors—right/superior-right versus left/inferior-left—to square and seat the knot directly over the incision. Throughout, the field is kept clear: the needle is parked safely away, and the suture is elevated to avoid tissue drag.
+
+40–49 s
+Tying continues with consistent, rhythmic throws. The left fingers occasionally press lightly near the wound to stabilize the tissue while tension is applied, but no forceps eversion is used in this short segment. The knot is cinched down cleanly over the wound center. By the end of the sequence, the right-hand instrument is temporarily set aside.
+
+50–59 s
+The next stitch is initiated at a more superior position along the same central wound. The right hand reloads the needle at the mid-to-proximal third; the left hand returns to toothed forceps to evert the near edge and present a small, even bite. The needle enters perpendicularly, advancing in a smooth arc. At this point the needle has not yet emerged on the far side; the pass is in progress, with the suture managed to the operator’s right to keep it clear of the field.
+
+60–69 s
+The focus shifts to tying the newly placed stitch. The curved needle is no longer in the driver. The left hand keeps the forceps near the left wound margin to steady and slightly evert the edge adjacent to the stitch as the knot is formed. The right hand uses the driver purely as a tying tool: a loop is created around the driver shaft; the driver grasps the short end and pulls it through. The suture limbs are then separated—left/up versus right/down—to seat the throw squarely over the wound. The long limb trails toward the lower-right; the short tail remains near the left margin. No new needle passes occur—action is limited to constructing and tightening the knot.
+
+70–89 s
+This is a sustained, methodical tying sequence. The right hand continues to operate the driver to build sequential throws, alternating directions to lock and square the knot. The left hand manages the short tail and overall slack, keeping the suture elevated above the pad except at the moment of cinching. The knot is centered and tightened with deliberate, opposing vectors. No forceps are used here; tissue approximation is maintained by suture tension alone. By the end of this arc, the knot over the midline is firm and seated.
+
+90–99 s
+There is a brief pause with instruments resting off the field. The right hand returns to pick up and properly grasp the needle on its body, then orients the tip toward the next bite location along the left side of the central incision, preparing for a right-to-left style pass. The left hand manages the free suture end to prevent drag. In the final frames of this segment, the left hand brings tissue forceps toward the left incision edge to stabilize it—positioning the hands for bimanual needle control with the driver dominant and forceps assisting. No penetration occurs yet.
+
+100–109 s
+A clean needle pass is performed across the small central wound. The left hand, with Adson forceps, lifts the dermis just back from the margin to provide countertraction and slight eversion at entry. The right hand drives the needle perpendicular to the skin, advancing it in a controlled rotation that follows the needle’s curve. A mid-arc regrip allows the right hand to complete the passage and retrieve the needle on the far (right) edge with minimal crush. The suture tail remains free; slack is actively managed to avoid entanglement.
+
+110–119 s
+With the bite completed, the needle is set down on the pad to the right. The right hand now uses the driver for an instrument tie, while the left hand releases the forceps and switches to controlling the short suture end with fingertips. The driver crosses midline to loop the long limb, reaches through the loop to capture the short end, and draws it through. The throw is tensioned centrally over the wound. The hands alternate slightly to keep the knot centered and to prevent tissue torsion.
+
+120–129 s
+Knot construction continues seamlessly. The curved needle remains parked off to the right. The right-hand driver forms loops; the left hand feeds and controls the tail, providing counter-tension. The driver repeatedly grasps the short end after each wrap and carries it across to tighten, laying down sequential alternating throws. The suture is kept elevated, coming to the pad only at the moment of seating so the knot sits flush over the midline without excessive compression of the skin edges.
+
+130–139 s
+With the knot secure, the right hand exchanges the driver for scissors while the left hand steadies the knot and maintains light tension on the limbs. The scissors trim the tails close to the knot. The nonactive instrument is parked superior-right to maintain a tidy field. At this stage, the central incision shows a series of simple interrupted sutures approximating the wound edges.
+
+140–147 s
+The sequence closes with final checks rather than new passes. Both hands briefly stabilize the wooden base to reposition the pad; instruments rest superior to the field. The right hand touches and gently presses the central knot—either with the driver tip or fingers—to confirm seating and tension. No new bites are taken, and no forceps eversion is performed. The central incision is now closed with three simple interrupted sutures (one superior knot appears partially loose but seated), and the lateral practice incisions remain untouched.
+
+Overall flow and rhythm
+The technique follows a consistent cycle: load the needle correctly and take a perpendicular, rotational bite with forceps-provided countertraction; park the needle safely; perform a careful instrument tie with alternating throws and opposing tension vectors to square and seat the knot; then trim tails and visually confirm approximation. Hand roles remain stable—right hand dominant with the needle driver (and later scissors), left hand alternating between forceps use during needle passage and fingertip control of the short suture limb during tying. Movements are economical and coordinated, with slack management and instrument parking keeping the field clear. The result is a steady, methodical progression from stitch placement to knot security, repeated across the central wound until closure is achieved.
+
+============================================================
+END OF NARRATIVE

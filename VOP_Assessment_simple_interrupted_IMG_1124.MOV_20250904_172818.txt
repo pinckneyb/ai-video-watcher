@@ -1,0 +1,40 @@
+Video: simple_interrupted_IMG_1124.MOV
+Pattern: Simple Interrupted
+
+1. Perpendicular needle passes 4/5 proficient
+Needle was consistently loaded on the body and driven perpendicular to the skin with a smooth, curvature-following arc under forceps countertraction, yielding symmetric bites across the wound. This minimizes shear and is consistently good; further fine-tuning would be to consciously mirror bite depth/width every time to eliminate residual variability. 
+
+2. Gentle tissue handling 4/5 proficient
+Adson pickups were single and deliberate on the dermis just off the edge with minimal crush, and the suture was kept elevated to avoid tissue drag while the needle was safely parked. Handling is atraumatic and above standard; avoid even light fingertip pressure on the epidermis during tie-down to reduce unnecessary compression.
+
+3. Square, secure knots 3/5 competent
+Instrument ties alternated direction with opposing vectors that squared and centered the knots, but one stitch remained partially loose despite multiple throws. This meets standard for basic security, yet inconsistent final tensioning and tail control prevent a higher score.
+
+4. Appropriate approximation/tension 3/5 competent
+Edges are brought together without blanching or dog-ears, but a superior stitch shows laxity that risks a small gap. Overall closure is adequate, though variability in setting the first throw leads to uneven tension along the line.
+
+5. Even spacing (0.5–1.0 cm) 3/5 competent
+Three sutures span the wound in a methodical pattern with roughly uniform intervals. Spacing meets basic expectations, but there is no clear deliberate measurement or rule-of-halves planning to ensure every interval sits within 0.5–1.0 cm.
+
+6. Edge eversion (flat/slight acceptable) 4/5 proficient
+Countertraction at entry consistently produced flat-to-slightly everted edges, and no inversion is evident after tie-down. Eversion is reliable; maintaining a gentle forceps lift during seating of the first throw would further guard against late flattening.
+
+7. Economy of time and motion 4/5 proficient
+Hand roles are stable with clean slack control, minimal off-field travel, and tidy instrument parking that keeps the field clear. Workflow is efficient and repeatable; keeping the needle locked in the driver rather than setting it on the pad would further streamline and enhance safety.
+
+SUMMATIVE ASSESSMENT:
+Your fundamentals are solid—perpendicular passes, atraumatic pickups, and organized instrument ties—but tighten execution where it counts. Standardize bite metrics and spacing: mirror depth/width and distance from the edge on both sides and use a rule-of-halves plan to keep intervals within 0.5–1.0 cm. During tying, declare the post (preferably the short limb), keep it truly stationary, and set the first square throw decisively with balanced opposing vectors before alternating directions; this will eliminate the residual laxity seen in one knot. Preserve eversion during cinch by maintaining a gentle forceps lift on the far edge rather than pressing with fingertips. Keep the needle secured in the driver or a neutral zone instead of on the field, and cut tails to consistent lengths (about 3 mm for braided, 5 mm for monofilament). These refinements will improve knot reliability, even out tension, and make the performance reproducible on live tissue.
+
+Summative assessment:
+Your fundamentals are solid—perpendicular passes, atraumatic pickups, and organized instrument ties—but tighten execution where it counts. Standardize bite metrics and spacing: mirror depth/width and distance from the edge on both sides and use a rule-of-halves plan to keep intervals within 0.5–1.0 cm. During tying, declare the post (preferably the short limb), keep it truly stationary, and set the first square throw decisively with balanced opposing vectors before alternating directions; this will eliminate the residual laxity seen in one knot. Preserve eversion during cinch by maintaining a gentle forceps lift on the far edge rather than pressing with fingertips. Keep the needle secured in the driver or a neutral zone instead of on the field, and cut tails to consistent lengths (about 3 mm for braided, 5 mm for monofilament). These refinements will improve knot reliability, even out tension, and make the performance reproducible on live tissue.
+
+RUBRIC_SCORES_START
+1: 4
+2: 4
+3: 3
+4: 3
+5: 3
+6: 4
+7: 4
+RUBRIC_SCORES_END
+

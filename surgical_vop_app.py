@@ -956,6 +956,132 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         st.session_state.vop_analysis_complete = True
         status_text.text("✅ Surgical VOP Assessment complete!")
+        
+        # AUTOMATIC TXT AND HTML REPORT GENERATION
+        try:
+            base_filename = f"VOP_Assessment_{original_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            txt_filename = f"{base_filename}.txt"
+            html_filename = f"{base_filename}.html"
+            
+            # Generate TXT report
+            with open(txt_filename, 'w', encoding='utf-8') as f:
+                f.write(f"Video: {original_filename}\n")
+                f.write(f"Pattern: {current_pattern.replace('_', ' ').title()}\n\n")
+                
+                if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                    full_response = enhanced_narrative.get('full_response', '')
+                    if full_response and "RUBRIC_SCORES_START" in full_response:
+                        rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
+                        lines = rubric_commentary.split('\n')
+                        for line in lines:
+                            f.write(line)
+                            if line.strip() and line.strip()[0].isdigit() and '.' in line:
+                                point_num = int(line.split('.')[0])
+                                score = extracted_scores.get(point_num, 3)
+                                if score >= 4.5:
+                                    adj = "exemplary"
+                                elif score >= 3.5:
+                                    adj = "proficient"
+                                elif score >= 2.5:
+                                    adj = "competent"
+                                elif score >= 1.5:
+                                    adj = "developing"
+                                else:
+                                    adj = "inadequate"
+                                f.write(f" {score}/5 {adj}")
+                            f.write("\n")
+                        f.write("\n")
+                    
+                    summative = enhanced_narrative.get('summative_assessment', '')
+                    if summative:
+                        f.write("Summative assessment:\n")
+                        f.write(summative)
+                        f.write("\n\n")
+            
+            # Generate HTML report with properly stacked images
+            with open(html_filename, 'w', encoding='utf-8') as f:
+                f.write("<!DOCTYPE html>\n<html>\n<head>\n")
+                f.write("<title>Surgical VOP Assessment Report</title>\n")
+                f.write("<style>\n")
+                f.write("body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }\n")
+                f.write("h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }\n")
+                f.write("h2 { color: #34495e; margin-top: 30px; }\n")
+                f.write(".rubric-point { margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; }\n")
+                f.write(".summative { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }\n")
+                f.write(".image-section { margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; }\n")
+                f.write(".image-section h3 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 10px; }\n")
+                f.write(".image-section img { max-width: 100%; max-height: 500px; width: auto; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }\n")
+                f.write("</style>\n</head>\n<body>\n")
+                
+                f.write(f"<h1>Surgical VOP Assessment Report</h1>\n")
+                f.write(f"<p><strong>Video:</strong> {original_filename}</p>\n")
+                f.write(f"<p><strong>Pattern:</strong> {current_pattern.replace('_', ' ').title()}</p>\n")
+                
+                if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                    full_response = enhanced_narrative.get('full_response', '')
+                    if full_response and "RUBRIC_SCORES_START" in full_response:
+                        rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
+                        lines = rubric_commentary.split('\n')
+                        current_point = ""
+                        for line in lines:
+                            if line.strip() and line.strip()[0].isdigit() and '.' in line:
+                                if current_point:
+                                    f.write(f"<div class='rubric-point'>{current_point}</div>\n")
+                                current_point = line
+                            elif line.strip() and current_point:
+                                current_point += " " + line
+                            elif line.strip():
+                                f.write(f"<p>{line}</p>\n")
+                        
+                        if current_point:
+                            f.write(f"<div class='rubric-point'>{current_point}</div>\n")
+                    
+                    summative = enhanced_narrative.get('summative_assessment', '')
+                    if summative:
+                        f.write("<h2>Summative Assessment</h2>\n")
+                        f.write(f"<div class='summative'>{summative}</div>\n")
+                
+                # Learner Final Product Image (first)
+                f.write("<h2>Final Product Comparison</h2>\n")
+                f.write("<div class='image-section'>\n")
+                f.write("<h3>Learner Final Product</h3>\n")
+                try:
+                    from surgical_report_generator import SurgicalVOPReportGenerator
+                    report_gen = SurgicalVOPReportGenerator()
+                    final_product_image = report_gen._get_final_product_image(video_path, frames)
+                    if final_product_image:
+                        import base64
+                        from io import BytesIO
+                        buffered = BytesIO()
+                        final_product_image.save(buffered, format="JPEG")
+                        img_str = base64.b64encode(buffered.getvalue()).decode()
+                        f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
+                    else:
+                        f.write("<p><em>No suitable final product image found</em></p>\n")
+                except Exception as e:
+                    f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
+                f.write("</div>\n")
+                
+                # Gold Standard Image (below)
+                f.write("<div class='image-section'>\n")
+                f.write("<h3>Gold Standard Reference</h3>\n")
+                try:
+                    gold_standard_path = f"gold_standard_{current_pattern}.jpg"
+                    if os.path.exists(gold_standard_path):
+                        with open(gold_standard_path, "rb") as img_file:
+                            img_data = base64.b64encode(img_file.read()).decode()
+                            f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
+                    else:
+                        f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
+                except Exception as e:
+                    f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
+                f.write("</div>\n")
+                
+                f.write("</body>\n</html>\n")
+            
+            st.success(f"✅ TXT and HTML reports auto-generated: {txt_filename}, {html_filename}")
+        except Exception as report_error:
+            st.warning(f"⚠️ Could not auto-generate reports: {str(report_error)}")
 
         # Cleanup temp video file
         try:
