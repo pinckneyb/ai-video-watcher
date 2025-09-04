@@ -931,6 +931,11 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             return
         
         # Store results in the proven format
+        # Derive original filename (strip temp_ prefix if present)
+        original_filename = os.path.basename(video_path)
+        if original_filename.startswith("temp_"):
+            original_filename = original_filename[len("temp_"):]
+
         st.session_state.assessment_results = {
             "full_transcript": full_transcript,  # Keep for debugging if needed
             "video_narrative": video_narrative,  # PASS 2: Video narrative
@@ -939,7 +944,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             "extracted_scores": extracted_scores,  # Store the extracted scores
             "video_path": video_path,  # Add video path for final product image extraction
             "video_info": {
-                "filename": os.path.basename(video_path),
+                "filename": original_filename,
                 "pattern": current_pattern,
                 "fps": fps,
                 "total_frames": len(frames),
@@ -951,6 +956,13 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         st.session_state.vop_analysis_complete = True
         status_text.text("✅ Surgical VOP Assessment complete!")
+
+        # Cleanup temp video file
+        try:
+            if os.path.basename(video_path).startswith("temp_") and os.path.exists(video_path):
+                os.remove(video_path)
+        except Exception as cleanup_err:
+            print(f"Warning: failed to remove temp file {video_path}: {cleanup_err}")
         
     except Exception as e:
         st.error(f"Error during analysis: {str(e)}")

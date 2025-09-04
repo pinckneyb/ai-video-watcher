@@ -5,6 +5,7 @@ Creates professional assessment reports for surgical residents.
 
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image as RLImage
+from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -116,17 +117,9 @@ class SurgicalVOPReportGenerator:
         # Overall assessment and summative feedback
         story.extend(self._create_summative_assessment_section(overall_result, assessment_data))
         
-        # Page break before image comparison
+        # Visual references after summative comment
         story.append(PageBreak())
-        
-        # Image comparison section
-        story.extend(self._create_image_comparison_section(assessment_data))
-        
-        # New page for detailed narrative analysis
-        story.append(PageBreak())
-        
-        # Detailed narrative analysis section
-        story.extend(self._create_detailed_narrative_section(assessment_data))
+        story.extend(self._create_visual_references_after_summative(assessment_data))
         
         # Footer
         story.extend(self._create_footer())
@@ -267,7 +260,8 @@ class SurgicalVOPReportGenerator:
         
         # Handle enhanced_narrative as dictionary or string
         if isinstance(enhanced_narrative, dict):
-            narrative_text = enhanced_narrative.get("summative_assessment", enhanced_narrative.get("full_response", ""))
+            # Use full_response only; avoid including summative content in rubric points
+            narrative_text = enhanced_narrative.get("full_response", "")
         else:
             narrative_text = enhanced_narrative
         
@@ -297,7 +291,9 @@ class SurgicalVOPReportGenerator:
             elif collecting and (any(line_clean.startswith(f"{j}.") for j in range(1, 8) if j != pid) or
                                 line_clean.startswith("Point ") or
                                 line_clean.startswith("Rubric ") or
-                                line_clean.startswith("RUBRIC_SCORES")):
+                                line_clean.startswith("RUBRIC_SCORES") or
+                                'summative' in line_clean.lower() or
+                                'final assessment' in line_clean.lower()):
                 break
             
             # If collecting, add substantial content
@@ -363,7 +359,7 @@ class SurgicalVOPReportGenerator:
                         substantial_paras.append(para_text)
                 current_para = []
             else:
-                if not line_clean.startswith(('RUBRIC', 'Score:')):
+                if not line_clean.startswith(('RUBRIC', 'Score:')) and ('summative' not in line_clean.lower()):
                     current_para.append(line_clean)
         
         # Check last paragraph
@@ -443,8 +439,8 @@ class SurgicalVOPReportGenerator:
         }
         return interpretations.get(score, "Unknown")
     
-    def _create_image_comparison_section(self, assessment_data: Dict[str, Any]) -> List:
-        """Create side-by-side comparison with gold standard image."""
+    def _create_visual_references_after_summative(self, assessment_data: Dict[str, Any]) -> List:
+        """Place learner final product (unaltered) full-width, then gold standard with header kept on same page."""
         story = []
         
         try:
@@ -462,36 +458,24 @@ class SurgicalVOPReportGenerator:
             
             gold_standard_path = gold_standard_images.get(pattern_id)
             
-            # Extract final product image first (at top)
-            story.append(Paragraph("<b>Learner Performance</b>", self.styles['Normal']))
-            story.append(Spacer(1, 6))
-            
-            final_product_img = self._extract_final_product_image_with_pad_detection(assessment_data, 3*inch)
-            story.append(final_product_img)
-            story.append(Spacer(1, 20))
+            # Learner final product (unaltered) full page width
+            learner_header = Paragraph("<b>Learner Final Product</b>", self.styles['Normal'])
+            learner_img = self._extract_final_product_image_raw(assessment_data, 6*inch)
+            story.append(KeepTogether([learner_header, Spacer(1, 6), learner_img, Spacer(1, 20)]))
             
             # Add gold standard image below
             if gold_standard_path and os.path.exists(gold_standard_path):
-                story.append(Paragraph("<b>Gold Standard Reference</b>", self.styles['Normal']))
-                story.append(Spacer(1, 6))
-                
+                gold_header = Paragraph("<b>Gold Standard Reference</b>", self.styles['Normal'])
                 try:
                     gold_img = RLImage(gold_standard_path)
-                    # Get original dimensions
                     pil_img = Image.open(gold_standard_path)
                     original_width, original_height = pil_img.size
-                    
-                    # Calculate dimensions to match final product width
                     aspect_ratio = original_width / original_height
-                    gold_width = 3 * inch
+                    gold_width = 6 * inch
                     gold_height = gold_width / aspect_ratio
-                    
                     gold_img.drawHeight = gold_height
                     gold_img.drawWidth = gold_width
-                    
-                    story.append(gold_img)
-                    story.append(Spacer(1, 20))
-                    
+                    story.append(KeepTogether([gold_header, Spacer(1, 6), gold_img, Spacer(1, 20)]))
                 except Exception as e:
                     story.append(Paragraph(f"Error loading gold standard image: {e}", self.styles['Normal']))
             else:
@@ -501,6 +485,42 @@ class SurgicalVOPReportGenerator:
             story.append(Paragraph(f"Error creating image comparison: {e}", self.styles['Normal']))
         
         return story
+
+    def _extract_final_product_image_raw(self, assessment_data: Dict[str, Any], target_width: float):
+        """Select a frame near the end and return unaltered image scaled to target width."""
+        try:
+            video_path = assessment_data.get('video_path')
+            if not video_path:
+                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+            from video_processor import VideoProcessor
+            import cv2
+            vp = VideoProcessor()
+            if not vp.load_video(video_path):
+                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+            # Choose a frame near the end (last 5%)
+            duration = vp.duration
+            start = max(0.0, duration * 0.95)
+            end = duration
+            cap = cv2.VideoCapture(vp.video_path)
+            if not cap.isOpened():
+                return Paragraph("Could not open video", self.styles['Normal'])
+            fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+            frame_idx = int(((start + end) / 2.0) * fps)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            ret, frame = cap.read()
+            cap.release()
+            if not ret or frame is None:
+                return Paragraph("Could not read frame for final product", self.styles['Normal'])
+            pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            ar = pil.height / pil.width
+            target_height = int(target_width * ar)
+            resized = pil.resize((int(target_width), target_height), Image.Resampling.LANCZOS)
+            buf = io.BytesIO()
+            resized.save(buf, format='JPEG', quality=95)
+            buf.seek(0)
+            return RLImage(buf, width=target_width, height=target_height)
+        except Exception as e:
+            return Paragraph(f"Error extracting final product image: {str(e)}", self.styles['Normal'])
     
     def _generate_summative_feedback(self, scores: Dict[int, int], avg_score: float, assessment_data: Dict[str, Any]) -> str:
         """Extract summative feedback from AI-generated enhanced narrative."""
