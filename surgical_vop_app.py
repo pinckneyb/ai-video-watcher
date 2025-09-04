@@ -15,6 +15,7 @@ from pathlib import Path
 # Import our modules from the main app
 from video_processor import VideoProcessor, FrameBatchProcessor
 from gpt4o_client import GPT4oClient
+from gpt5_vision_client import GPT5VisionClient
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, extract_video_info, sanitize_filename
@@ -293,7 +294,7 @@ RUBRIC_SCORES_END"""
                 st.warning("💡 **Solution**: Wait a moment and try again, or reduce concurrency")
             elif "quota_exceeded" in str(api_error).lower():
                 st.error("💡 **Solution**: Check your OpenAI API quota and billing")
-            return ""
+                return ""
         
     except Exception as e:
         st.error(f"❌ **Unexpected Error**: {e}")
@@ -338,7 +339,7 @@ def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, i
                         continue
         else:
             st.warning("GPT-5 response did not include proper scoring format - scores will default to 3")
-            
+        
     except Exception as e:
         st.error(f"Error extracting scores from narrative: {e}")
     
@@ -490,7 +491,7 @@ def main():
                 else:
                     st.warning("⚠️ Pattern not detected from filename")
                     default_index = 0
-                st.session_state.detected_patterns = {uploaded_file.name: detected_pattern} if detected_pattern else {}
+                    st.session_state.detected_patterns = {uploaded_file.name: detected_pattern} if detected_pattern else {}
             
             # Pattern selection (with override capability)
             selected_pattern = st.selectbox(
@@ -553,7 +554,7 @@ def main():
             st.session_state.saved_api_key = api_key
             save_api_key(api_key)
             st.success("✅ API key saved for future assessments!")
-        
+    
         # STOP button
         st.subheader("🛑 App Control")
         if st.button("🛑 STOP Application", type="secondary", help="Gracefully stop the application"):
@@ -561,7 +562,6 @@ def main():
     
     # Main content area
     if uploaded_file and st.session_state.selected_pattern and api_key:
-        
         col1, col2 = st.columns([2, 1])
         
         with col1:
@@ -618,7 +618,7 @@ def main():
                 # Start analysis
                 if st.button("🚀 Start VOP Assessment", type="primary"):
                     start_vop_analysis(temp_video_path, api_key, fps, batch_size, max_concurrent_batches)
-        
+            
         with col2:
             st.header("📋 Assessment Progress")
             
@@ -631,10 +631,127 @@ def main():
                 display_assessment_results(rubric_engine)
             else:
                 st.info("Click 'Start VOP Assessment' to begin evaluation")
-    
+        
     else:
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
+
+
+def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches):
+    """Process batches concurrently using GPT-5 for descriptive analysis"""
+    import concurrent.futures
+    import threading
+    import time
+    
+    context_lock = threading.Lock()
+    successful_batches = 0
+    batch_times = []
+    
+    def process_single_batch_gpt5(batch, profile, batch_idx, total_batches, context_lock):
+        """Process a single batch with GPT-5"""
+        start_time = time.time()
         
+        try:
+            with context_lock:
+                current_context = gpt5_client.context_state
+            
+            print(f"DEBUG: Processing batch {batch_idx} with {len(batch)} frames")
+            
+            # PASS 1: Surgical description of frames
+            analysis, descriptions = gpt5_client.pass1_surgical_description(
+                batch, current_context
+            )
+            
+            with context_lock:
+                gpt5_client.context_state = gpt5_client.context_state
+            
+            batch_time = time.time() - start_time
+            print(f"DEBUG: Batch {batch_idx} completed in {batch_time:.2f}s")
+            
+            return {
+                'success': True,
+                'batch_idx': batch_idx,
+                'batch_time': batch_time,
+                'analysis': analysis
+            }
+            
+        except Exception as e:
+            batch_time = time.time() - start_time
+            error_msg = f"Batch {batch_idx} failed: {str(e)}"
+            print(f"ERROR: {error_msg}")
+            print(f"ERROR: Exception type: {type(e).__name__}")
+            return {
+                'success': False,
+                'batch_idx': batch_idx,
+                'batch_time': batch_time,
+                'error': error_msg
+            }
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_batches) as executor:
+        future_to_batch = {}
+        for i, batch in enumerate(batches):
+            future = executor.submit(
+                process_single_batch_gpt5,
+                batch, profile, i, total_batches, context_lock
+            )
+            future_to_batch[future] = i
+        
+        completed = 0
+        for future in concurrent.futures.as_completed(future_to_batch):
+            result = future.result()
+            completed += 1
+            
+            if result['success']:
+                successful_batches += 1
+                batch_times.append(result['batch_time'])
+            
+            # Update progress
+            progress = completed / total_batches
+            progress_bar.progress(progress)
+            status_text.text(f"Processed {completed}/{total_batches} batches...")
+    
+    return {
+        'successful_batches': successful_batches,
+        'batch_times': batch_times
+    }
+
+
+def _process_batches_sequentially_gpt5(batches, gpt5_client, profile, progress_bar, status_text, total_batches):
+    """Process batches sequentially using GPT-5 for descriptive analysis"""
+    successful_batches = 0
+    batch_times = []
+    
+    for i, batch in enumerate(batches):
+        start_time = time.time()
+        
+        try:
+            print(f"DEBUG: Processing batch {i} with {len(batch)} frames")
+            
+            # PASS 1: Surgical description of frames
+            analysis, descriptions = gpt5_client.pass1_surgical_description(
+                batch, gpt5_client.context_state
+            )
+            
+            batch_time = time.time() - start_time
+            successful_batches += 1
+            batch_times.append(batch_time)
+            print(f"DEBUG: Batch {i} completed in {batch_time:.2f}s")
+            
+        except Exception as e:
+            batch_time = time.time() - start_time
+            batch_times.append(batch_time)
+            error_msg = f"Batch {i} failed: {str(e)}"
+            print(f"ERROR: {error_msg}")
+            print(f"ERROR: Exception type: {type(e).__name__}")
+        
+        # Update progress
+        progress = (i + 1) / total_batches
+        progress_bar.progress(progress)
+        status_text.text(f"Processed {i + 1}/{total_batches} batches...")
+    
+    return {
+        'successful_batches': successful_batches,
+        'batch_times': batch_times
+    }
 
 
 def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: str = None):
@@ -644,9 +761,9 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
     status_text = st.empty()
     
     try:
-        # Initialize components using proven architecture
+        # Initialize components using single GPT-5 approach
         video_processor = VideoProcessor()
-        gpt4o_client = GPT4oClient(api_key=api_key)
+        gpt5_client = GPT5VisionClient(api_key=api_key)
         rubric_engine = RubricEngine()
         
         # Load video
@@ -662,6 +779,17 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         if not frames:
             st.error("No frames extracted from video")
             return
+        
+        # Convert frames to base64 for GPT-5 processing
+        status_text.text("Converting frames to base64...")
+        base64_frames = video_processor.frames_to_base64(frames)
+        
+        # Add base64 data to frames
+        for i, frame in enumerate(frames):
+            frame['base64'] = base64_frames[i]
+        
+        print(f"DEBUG: Converted {len(frames)} frames to base64")
+        print(f"DEBUG: First frame base64 length: {len(frames[0]['base64'])}")
         
         st.info(f"Video duration: {video_processor.duration} seconds")
         st.info(f"Target FPS: {fps}")
@@ -686,16 +814,13 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         st.info(f"Processing {len(frames)} frames in {total_batches} batches...")
         
-        # Use concurrent processing if specified
+        # Process batches using GPT-5 for descriptive analysis
         if max_concurrent_batches > 1:
             st.info(f"⚡ Using concurrent processing: {max_concurrent_batches} batches simultaneously")
             
-            # Import the proven concurrent processing function
-            from app import process_batches_concurrently
-            
             start_time = time.time()
-            performance_metrics = process_batches_concurrently(
-                batches, gpt4o_client, surgical_profile, progress_bar, status_text, total_batches, max_concurrent_batches
+            performance_metrics = _process_batches_concurrently_gpt5(
+                batches, gpt5_client, surgical_profile, progress_bar, status_text, total_batches, max_concurrent_batches
             )
             end_time = time.time()
             processing_time = end_time - start_time
@@ -708,53 +833,111 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             st.info(f"📊 Success rate: {success_rate:.1f}% ({performance_metrics.get('successful_batches', 0)}/{total_batches} batches)")
             st.info(f"⚡ Speed: {avg_batch_time:.1f}s average per batch")
             
-            # Store performance data for future optimization
-            if 'vop_performance_history' not in st.session_state:
-                st.session_state.vop_performance_history = []
-            
-            st.session_state.vop_performance_history.append({
-                'concurrent_level': max_concurrent_batches,
-                'success_rate': success_rate,
-                'processing_time': processing_time,
-                'total_batches': total_batches,
-                'timestamp': datetime.now().isoformat()
-            })
-            
         else:
-            # Use sequential processing
-            from app import process_batches_sequentially
-            process_batches_sequentially(batches, gpt4o_client, surgical_profile, progress_bar, status_text, total_batches)
+            # Use sequential processing with GPT-5
+            _process_batches_sequentially_gpt5(batches, gpt5_client, surgical_profile, progress_bar, status_text, total_batches)
         
-        # Get complete analysis using proven narrative building
-        full_transcript = gpt4o_client.get_full_transcript()
-        event_timeline = gpt4o_client.get_event_timeline()
+        # Check if we have frame descriptions from PASS 1
+        if not gpt5_client.frame_descriptions:
+            st.error("❌ PASS 1 failed: No frame descriptions generated")
+            return
         
-        # Create enhanced narrative using GPT-5
-        status_text.text("Creating final surgical assessment with GPT-5...")
-        enhanced_narrative = create_surgical_vop_narrative(
-            full_transcript, 
-            event_timeline, 
-            api_key,
-            current_pattern,
-            rubric_engine
-        )
+        st.success(f"✅ PASS 1 complete: Generated {len(gpt5_client.frame_descriptions)} frame descriptions")
+        
+        # PASS 2: Create video narrative from frame descriptions
+        status_text.text("PASS 2: Creating video narrative with flow analysis...")
+        
+        # Add meaningful progress indicator for PASS 2
+        progress_bar = st.progress(0)
+        progress_text = st.empty()
+        
+        try:
+            progress_text.text("🔄 Assembling frame descriptions...")
+            progress_bar.progress(0.2)
+            
+            # Show progress as we process
+            progress_text.text("🔄 Analyzing temporal flow and motion...")
+            progress_bar.progress(0.5)
+            
+            video_narrative = gpt5_client.pass2_video_narrative(gpt5_client.frame_descriptions)
+            
+            progress_text.text("🔄 Generating comprehensive narrative...")
+            progress_bar.progress(0.8)
+            
+            if not video_narrative or video_narrative.startswith("Error"):
+                st.error(f"❌ PASS 2 failed: {video_narrative}")
+                return
+            
+            progress_bar.progress(1.0)
+            progress_text.text("✅ Video narrative complete!")
+            st.success("✅ PASS 2 complete: Video narrative generated")
+            
+        except Exception as e:
+            st.error(f"❌ PASS 2 failed with exception: {str(e)}")
+            return
+        finally:
+            # Clear progress indicators after a brief delay
+            time.sleep(1)
+            progress_bar.empty()
+            progress_text.empty()
+        
+        # Export Pass 2 narrative as TXT file immediately (no need to wait for Pass 3)
+        try:
+            video_dir = os.path.dirname(video_path)
+            video_name = os.path.splitext(os.path.basename(video_path))[0]
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            txt_filename = f"VOP_Narrative_{video_name}_{timestamp}.txt"
+            txt_path = os.path.join(video_dir, txt_filename)
+            
+            with open(txt_path, 'w', encoding='utf-8') as f:
+                f.write(f"SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE\n")
+                f.write(f"Video: {os.path.basename(video_path)}\n")
+                f.write(f"Pattern: {current_pattern}\n")
+                f.write(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"{'='*60}\n\n")
+                f.write("COMPLETE VIDEO NARRATIVE:\n")
+                f.write(f"{'='*60}\n")
+                f.write(video_narrative)
+                f.write(f"\n\n{'='*60}\n")
+                f.write("END OF NARRATIVE")
+            
+            st.success(f"✅ Pass 2 narrative exported to: {txt_filename}")
+            
+        except Exception as e:
+            st.warning(f"⚠️ Could not export TXT file: {str(e)}")
+        
+        # PASS 3: Rubric assessment based on video narrative
+        status_text.text("PASS 3: Applying rubric assessment to video narrative...")
+        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine)
+        
+        if not enhanced_narrative.get('success', False):
+            st.error(f"❌ PASS 3 failed: {enhanced_narrative.get('error', 'Unknown error')}")
+            return
+        
+        st.success("✅ PASS 3 complete: Rubric assessment generated")
+        
+        # Get complete analysis data
+        full_transcript = gpt5_client.get_full_transcript()
+        event_timeline = gpt5_client.get_event_timeline()
         
         # Extract scores from enhanced narrative
-        extracted_scores = extract_rubric_scores_from_narrative(enhanced_narrative)
-        
-        # Set extracted scores in session state
-        if extracted_scores:
+        if enhanced_narrative.get('success', False):
+            extracted_scores = enhanced_narrative.get('rubric_scores', {})
             st.session_state.rubric_scores = extracted_scores
+            st.session_state.summative_feedback = enhanced_narrative.get('summative_assessment', '')
             st.success(f"✅ Extracted {len(extracted_scores)} rubric scores from GPT-5 assessment")
         else:
-            st.warning("⚠️ Could not extract scores from GPT-5 - manual scoring required")
+            st.error(f"Assessment failed: {enhanced_narrative.get('error', 'Unknown error')}")
+            return
         
         # Store results in the proven format
         st.session_state.assessment_results = {
             "full_transcript": full_transcript,  # Keep for debugging if needed
-            "enhanced_narrative": enhanced_narrative,  # This is what we'll display
+            "video_narrative": video_narrative,  # PASS 2: Video narrative
+            "enhanced_narrative": enhanced_narrative,  # PASS 3: Final assessment
             "event_timeline": event_timeline,
             "extracted_scores": extracted_scores,  # Store the extracted scores
+            "video_path": video_path,  # Add video path for final product image extraction
             "video_info": {
                 "filename": os.path.basename(video_path),
                 "pattern": current_pattern,
@@ -793,11 +976,23 @@ def display_assessment_results(rubric_engine: RubricEngine):
         success_rate = (metrics.get('successful_batches', 0) / metrics.get('total_batches', 1)) * 100
         st.success(f"📊 Processing: {success_rate:.1f}% success rate")
     
-    # Display GPT-5 enhanced narrative (primary assessment)
+    # Display video narrative (PASS 2)
+    st.subheader("📹 Video Narrative Analysis")
+    if results.get("video_narrative"):
+        st.text_area("Complete Video Narrative", results["video_narrative"], height=200, disabled=True)
+    
+    # Display GPT-5 enhanced narrative (PASS 3 - primary assessment)
     st.subheader("🏥 Final Surgical Assessment")
     if results.get("enhanced_narrative"):
-        # Format the enhanced narrative for better readability
-        narrative = results["enhanced_narrative"]
+        # Handle enhanced narrative as dictionary
+        enhanced_data = results["enhanced_narrative"]
+        
+        if isinstance(enhanced_data, dict):
+            # Extract summative assessment from dictionary
+            narrative = enhanced_data.get("summative_assessment", enhanced_data.get("full_response", ""))
+        else:
+            # Fallback for string format
+            narrative = enhanced_data
         
         # Clean up the text and add proper spacing
         formatted_narrative = narrative.replace('\n\n', '\n\n---\n\n')
@@ -893,12 +1088,12 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 
                 # Offer download
                 with open(report_path, "rb") as pdf_file:
-                    st.download_button(
+                        st.download_button(
                         label="📥 Download PDF Report",
-                        data=pdf_file.read(),
+                            data=pdf_file.read(),
                         file_name=report_filename,
                         mime="application/pdf"
-                    )
+                        )
                     
             except Exception as e:
                 st.error(f"Error generating PDF report: {e}")

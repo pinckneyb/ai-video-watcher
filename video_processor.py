@@ -257,6 +257,29 @@ class VideoProcessor:
             except:
                 pass
     
+    def frames_to_base64(self, frames: List[dict]) -> List[str]:
+        """
+        Convert frames to base64 strings for API transmission.
+        
+        Args:
+            frames: List of frame metadata dictionaries
+            
+        Returns:
+            List of base64 encoded frame strings
+        """
+        import base64
+        import io
+        
+        base64_frames = []
+        for frame_data in frames:
+            # Convert PIL image to base64
+            img_buffer = io.BytesIO()
+            frame_data['frame_pil'].save(img_buffer, format='JPEG', quality=85)
+            img_str = base64.b64encode(img_buffer.getvalue()).decode()
+            base64_frames.append(img_str)
+        
+        return base64_frames
+    
     def __del__(self):
         """Destructor to ensure cleanup."""
         self.cleanup()
@@ -283,24 +306,3 @@ class FrameBatchProcessor:
             batches.append(batch)
         return batches
     
-    def frames_to_base64(self, frames: List[dict]) -> List[str]:
-        """
-        Convert frames to base64 strings for API transmission.
-        
-        Args:
-            frames: List of frame metadata dictionaries
-            
-        Returns:
-            List of base64 encoded frame strings
-        """
-        import base64
-        
-        base64_frames = []
-        for frame_data in frames:
-            # Convert PIL image to base64
-            img_buffer = io.BytesIO()
-            frame_data['frame_pil'].save(img_buffer, format='JPEG', quality=85)
-            img_str = base64.b64encode(img_buffer.getvalue()).decode()
-            base64_frames.append(img_str)
-        
-        return base64_frames

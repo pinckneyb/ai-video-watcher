@@ -178,13 +178,21 @@ class SurgicalVOPReportGenerator:
         
         story.append(Paragraph("Assessment Result", self.styles['CustomHeading']))
         
-        # Result box
-        if overall_result['pass']:
-            result_text = f"<b>PASS</b> - Average Score: {overall_result['average_score']:.1f}/5.0"
-            result_color = colors.darkgreen
+        # Result box - just score and adjective
+        score = overall_result['average_score']
+        if score >= 4.5:
+            adjective = "excellent"
+        elif score >= 3.5:
+            adjective = "proficient"
+        elif score >= 2.5:
+            adjective = "competent"
+        elif score >= 1.5:
+            adjective = "developing"
         else:
-            result_text = f"<b>FAIL</b> - {overall_result['reason']}"
-            result_color = colors.darkred
+            adjective = "inadequate"
+            
+        result_text = f"<b>{score:.1f} - {adjective}</b>"
+        result_color = colors.black
         
         result_data = [[Paragraph(result_text, self.styles['ScoreStyle'])]]
         result_table = Table(result_data, colWidths=[6*inch])
@@ -257,9 +265,15 @@ class SurgicalVOPReportGenerator:
         if not enhanced_narrative:
             return f"Summary: Detailed assessment requires enhanced narrative from GPT-5 analysis of complete video."
         
+        # Handle enhanced_narrative as dictionary or string
+        if isinstance(enhanced_narrative, dict):
+            narrative_text = enhanced_narrative.get("summative_assessment", enhanced_narrative.get("full_response", ""))
+        else:
+            narrative_text = enhanced_narrative
+        
         # The GPT-5 enhanced narrative should contain assessments for each rubric point
         # Look for content structured by rubric point numbers or titles
-        lines = enhanced_narrative.split('\n')
+        lines = narrative_text.split('\n')
         
         # Strategy 1: Look for explicit rubric point sections
         rubric_content = []
@@ -294,9 +308,9 @@ class SurgicalVOPReportGenerator:
         if rubric_content and len(rubric_content) > 1:
             # Combine the content, excluding the header line
             content = " ".join(rubric_content[1:])
-            if len(content) > 300:
-                content = content[:300] + "..."
-            return f"Summary: {content}"
+            # Remove any existing "Summary:" or "summary:" prefixes
+            content = content.replace("Summary:", "").replace("summary:", "").strip()
+            return content
         
         # Strategy 2: Look for content related to this rubric point by keywords
         keywords = {
@@ -332,9 +346,9 @@ class SurgicalVOPReportGenerator:
         if relevant_paras:
             # Pick the longest/most substantial paragraph
             best_para = max(relevant_paras, key=len)
-            if len(best_para) > 300:
-                best_para = best_para[:300] + "..."
-            return f"Summary: {best_para}"
+            # Remove any existing "Summary:" or "summary:" prefixes
+            best_para = best_para.replace("Summary:", "").replace("summary:", "").strip()
+            return best_para
         
         # Strategy 3: Extract general procedural content
         substantial_paras = []
@@ -361,11 +375,11 @@ class SurgicalVOPReportGenerator:
         if substantial_paras:
             # Take the first substantial paragraph as general assessment
             para = substantial_paras[0]
-            if len(para) > 300:
-                para = para[:300] + "..."
-            return f"Summary: {para}"
+            # Remove any existing "Summary:" or "summary:" prefixes
+            para = para.replace("Summary:", "").replace("summary:", "").strip()
+            return para
         
-        return f"Summary: Assessment of {title.lower()} based on video analysis shows {self._get_score_interpretation(score).lower()} performance level."
+        return f"Assessment of {title.lower()} based on video analysis shows {self._get_score_interpretation(score).lower()} performance level."
     
     def _create_summative_assessment_section(self, overall_result: Dict[str, Any], assessment_data: Dict[str, Any]) -> List:
         """Create summative assessment with final score and holistic feedback."""
@@ -495,8 +509,14 @@ class SurgicalVOPReportGenerator:
         if not enhanced_narrative:
             return "Comprehensive summative feedback requires enhanced narrative generation from AI analysis."
         
+        # Handle enhanced_narrative as dictionary or string
+        if isinstance(enhanced_narrative, dict):
+            narrative_text = enhanced_narrative.get("summative_assessment", enhanced_narrative.get("full_response", ""))
+        else:
+            narrative_text = enhanced_narrative
+        
         # Look for conclusion, summary, or assessment sections in the narrative
-        lines = enhanced_narrative.split('\n')
+        lines = narrative_text.split('\n')
         summative_content = []
         
         # Find paragraphs that seem like conclusions or overall assessments
@@ -549,8 +569,14 @@ class SurgicalVOPReportGenerator:
         enhanced_narrative = assessment_data.get('enhanced_narrative', '')
         
         if enhanced_narrative:
+            # Handle enhanced_narrative as dictionary or string
+            if isinstance(enhanced_narrative, dict):
+                narrative_text = enhanced_narrative.get("summative_assessment", enhanced_narrative.get("full_response", ""))
+            else:
+                narrative_text = enhanced_narrative
+            
             # Clean up and format the narrative
-            narrative_text = enhanced_narrative.replace('RUBRIC_SCORES_START', '').replace('RUBRIC_SCORES_END', '')
+            narrative_text = narrative_text.replace('RUBRIC_SCORES_START', '').replace('RUBRIC_SCORES_END', '')
             
             # Remove scoring section
             lines = narrative_text.split('\n')
