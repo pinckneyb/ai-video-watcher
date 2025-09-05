@@ -455,17 +455,6 @@ For each rubric point, write ONE OR TWO SENTENCES that:
 RUBRIC POINTS:
 {json.dumps(rubric_data['points'], indent=2)}
 
-SUMMATIVE ASSESSMENT:
-Write a concise, holistic assessment (2-3 paragraphs maximum) that:
-- Focuses on MOTION and FLOW of the overall procedure
-- Discusses rhythm, efficiency, and surgical confidence
-- Comments on hand coordination and instrument management
-- Addresses overall procedural competence and areas for improvement
-- NEVER repeats individual rubric point assessments
-- NO timestamps, NO uncertainty language
-- Break into paragraphs if longer than 4 sentences
-- Keep concise and actionable
-
 MANDATORY SCORING:
 RUBRIC_SCORES_START
 1: X
@@ -476,6 +465,18 @@ RUBRIC_SCORES_START
 6: X
 7: X
 RUBRIC_SCORES_END
+
+SUMMATIVE_ASSESSMENT_START
+Write a concise, holistic assessment (2-3 paragraphs maximum) that:
+- Focuses on MOTION and FLOW of the overall procedure
+- Discusses rhythm, efficiency, and surgical confidence
+- Comments on hand coordination and instrument management
+- Addresses overall procedural competence and areas for improvement
+- NEVER repeats individual rubric point assessments
+- NO timestamps, NO uncertainty language
+- Break into paragraphs if longer than 4 sentences
+- Keep concise and actionable
+SUMMATIVE_ASSESSMENT_END
 
 Provide your complete assessment:"""
         
@@ -540,17 +541,6 @@ For each rubric point, write ONE OR TWO SENTENCES that:
 RUBRIC POINTS:
 {json.dumps(rubric_data['points'], indent=2)}
 
-SUMMATIVE ASSESSMENT:
-Write a concise, holistic assessment (2-3 paragraphs maximum) that:
-- Focuses on MOTION and FLOW of the overall procedure
-- Discusses rhythm, efficiency, and surgical confidence
-- Comments on hand coordination and instrument management
-- Addresses overall procedural competence and areas for improvement
-- NEVER repeats individual rubric point assessments
-- NO timestamps, NO uncertainty language
-- Break into paragraphs if longer than 4 sentences
-- Keep concise and actionable
-
 MANDATORY SCORING:
 RUBRIC_SCORES_START
 1: X
@@ -561,6 +551,18 @@ RUBRIC_SCORES_START
 6: X
 7: X
 RUBRIC_SCORES_END
+
+SUMMATIVE_ASSESSMENT_START
+Write a concise, holistic assessment (2-3 paragraphs maximum) that:
+- Focuses on MOTION and FLOW of the overall procedure
+- Discusses rhythm, efficiency, and surgical confidence
+- Comments on hand coordination and instrument management
+- Addresses overall procedural competence and areas for improvement
+- NEVER repeats individual rubric point assessments
+- NO timestamps, NO uncertainty language
+- Break into paragraphs if longer than 4 sentences
+- Keep concise and actionable
+SUMMATIVE_ASSESSMENT_END
 
 Provide your complete assessment:"""
         
@@ -649,10 +651,13 @@ Provide your complete assessment:"""
                             except ValueError:
                                 continue
             
-            # Extract summative assessment - look for actual summative content after scores
+            # Extract summative assessment using new delimiters
             summative = ""
-            if "RUBRIC_SCORES_END" in response:
-                # Look for content after the scores section
+            if "SUMMATIVE_ASSESSMENT_START" in response and "SUMMATIVE_ASSESSMENT_END" in response:
+                # Extract content between the new delimiters
+                summative = response.split("SUMMATIVE_ASSESSMENT_START")[1].split("SUMMATIVE_ASSESSMENT_END")[0].strip()
+            elif "RUBRIC_SCORES_END" in response:
+                # Fallback: Look for content after scores
                 after_scores = response.split("RUBRIC_SCORES_END")[1].strip()
                 
                 # Look for "Summative assessment:" or similar markers
@@ -666,7 +671,7 @@ Provide your complete assessment:"""
                 if not summative and after_scores:
                     summative = after_scores
             else:
-                # Fallback to original method
+                # Final fallback
                 summative_start = response.find("SUMMATIVE ASSESSMENT:") if "SUMMATIVE ASSESSMENT:" in response else response.find("Summative Assessment:")
                 if summative_start != -1:
                     summative = response[summative_start:].replace("SUMMATIVE ASSESSMENT:", "").replace("Summative Assessment:", "").strip()

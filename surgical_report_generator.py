@@ -830,24 +830,33 @@ class SurgicalVOPReportGenerator:
                 })
             
             # Create AI prompt for frame selection
-            prompt = f"""You are selecting the best final product image from {len(frame_data)} candidate frames near the end of a surgical suturing video.
+            prompt = f"""You are an expert at identifying the best final product image from surgical suturing videos.
 
-TASK: Choose the frame that best shows "a clear image of finished suturing without hands, gloves, or instruments."
+CRITICAL TASK: Select the frame that shows ONLY the completed sutures on the practice pad with NO hands, gloves, or instruments visible anywhere in the frame.
 
-CRITERIA FOR BEST FINAL PRODUCT IMAGE:
-1. Shows completed sutures clearly visible
-2. NO hands or surgical gloves (blue/green gloves) in the image
-3. NO instruments (scissors, forceps, needle drivers) visible
-4. Clear view of the suturing pad/practice surface with finished work
-5. Good image quality (sharp, well-lit)
+ABSOLUTE REQUIREMENTS - The selected frame MUST have:
+1. COMPLETED SUTURES clearly visible on the practice pad
+2. ZERO hands/fingers/gloves (any color) anywhere in the frame
+3. ZERO surgical instruments (scissors, forceps, needle drivers, etc.) anywhere in the frame
+4. CLEAR view of the finished suturing work
+5. FULL practice pad visible showing the final result
 
-FRAMES TO EVALUATE:
-{[f"Frame {f['index']}: timestamp {f['timestamp']:.1f}s, tier {f['tier']}" for f in frame_data]}
+REJECT any frame that contains:
+- Any part of hands or gloves (blue, green, or any color)
+- Any surgical instruments
+- Any needles or suture material being manipulated
+- Hands reaching toward or away from the field
+- Instruments partially visible at edges
 
-Analyze each frame and respond with ONLY the frame index number (0-{len(frame_data)-1}) that best meets the criteria.
-If no frame is suitable, respond with "NONE".
+You have {len(frame_data)} frames to choose from. Examine each carefully.
 
-Your response:"""
+FRAMES:
+{[f"Frame {f['index']}: {f['timestamp']:.1f}s ({f['tier']})" for f in frame_data]}
+
+Respond with ONLY the frame number (0-{len(frame_data)-1}) that shows the cleanest final product.
+If ALL frames contain hands/instruments, respond with "NONE".
+
+Frame number:"""
 
             # Prepare messages with all frame images
             messages = [
@@ -869,9 +878,10 @@ Your response:"""
             
             # Make API call
             response = client.chat.completions.create(
-                model="gpt-4o",  # Use GPT-4o for vision analysis
+                model="gpt-5",  # Use GPT-5 for superior semantic understanding
                 messages=messages,
-                max_tokens=50,
+                max_completion_tokens=50,
+                reasoning_effort="high",
                 temperature=0.1
             )
             

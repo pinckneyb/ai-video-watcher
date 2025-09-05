@@ -1034,49 +1034,67 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 if enhanced_narrative and isinstance(enhanced_narrative, dict):
                     full_response = enhanced_narrative.get('full_response', '')
                     if full_response and "RUBRIC_SCORES_START" in full_response:
-                        rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
-                        lines = rubric_commentary.split('\n')
-                        current_point = ""
-                        for line in lines:
-                            if line.strip() and line.strip()[0].isdigit() and '.' in line:
-                                if current_point:
-                                    f.write(f"<div class='rubric-point'>{current_point}</div>\n")
-                                current_point = line
-                            elif line.strip() and current_point:
-                                current_point += " " + line
-                            elif line.strip():
-                                f.write(f"<p>{line}</p>\n")
+                        # Get rubric assessments (everything before scores)
+                        rubric_content = full_response.split("RUBRIC_SCORES_START")[0].strip()
                         
-                        if current_point:
-                            # Extract point number and add score
-                            point_num = None
-                            if current_point.strip() and current_point.strip()[0].isdigit():
-                                try:
-                                    point_num = int(current_point.split('.')[0])
-                                except:
-                                    pass
-                            
-                            if point_num and point_num in extracted_scores:
-                                score = extracted_scores[point_num]
-                                if score >= 4.5:
-                                    adj = "exemplary"
-                                elif score >= 3.5:
-                                    adj = "proficient"
-                                elif score >= 2.5:
-                                    adj = "competent"
-                                elif score >= 1.5:
-                                    adj = "developing"
-                                else:
-                                    adj = "inadequate"
-                                f.write(f"<div class='rubric-point'>{current_point} <strong>{score}/5 {adj}</strong></div>\n")
-                            else:
-                                f.write(f"<div class='rubric-point'>{current_point}</div>\n")
+                        # Display each rubric point with its score
+                        import re
+                        lines = rubric_content.split('\n')
+                        for line in lines:
+                            line = line.strip()
+                            if line and re.match(r'^\d+\.', line):  # Starts with number and period
+                                # Extract point number
+                                match = re.match(r'^(\d+)', line)
+                                if match:
+                                    point_num = int(match.group(1))
+                                    if point_num in extracted_scores:
+                                        score = extracted_scores[point_num]
+                                        if score >= 4.5:
+                                            adj = "exemplary"
+                                        elif score >= 3.5:
+                                            adj = "proficient"
+                                        elif score >= 2.5:
+                                            adj = "competent"
+                                        elif score >= 1.5:
+                                            adj = "developing"
+                                        else:
+                                            adj = "inadequate"
+                                        f.write(f"<div class='rubric-point'>{line} <strong>{score}/5 {adj}</strong></div>\n")
+                                    else:
+                                        f.write(f"<div class='rubric-point'>{line}</div>\n")
+                            elif line:  # Non-numbered lines (continuation of rubric points)
+                                f.write(f"<p>{line}</p>\n")
                     
+                    # Add average score
+                    if extracted_scores:
+                        avg_score = sum(extracted_scores.values()) / len(extracted_scores)
+                        if avg_score >= 4.5:
+                            avg_adj = "exemplary"
+                        elif avg_score >= 3.5:
+                            avg_adj = "proficient"
+                        elif avg_score >= 2.5:
+                            avg_adj = "competent"
+                        elif avg_score >= 1.5:
+                            avg_adj = "developing"
+                        else:
+                            avg_adj = "inadequate"
+                        
+                        f.write("<br>\n")
+                        f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5 {avg_adj}</strong></div>\n")
+                    
+                    # Add summative comment
                     summative = enhanced_narrative.get('summative_assessment', '')
                     if summative:
-                        f.write("<br><br>\n")  # Clear break after rubric points
-                        f.write("<h2>Summative Assessment</h2>\n")
-                        f.write(f"<div class='summative'>{summative}</div>\n")
+                        # Remove redundant "summative assessment" prefixes
+                        clean_summative = summative
+                        prefixes_to_remove = ["Summative assessment:", "SUMMATIVE ASSESSMENT:", "Summative Assessment:"]
+                        for prefix in prefixes_to_remove:
+                            if clean_summative.startswith(prefix):
+                                clean_summative = clean_summative[len(prefix):].strip()
+                                break
+                        
+                        f.write("<br>\n")
+                        f.write(f"<div class='summative-comment'><strong>Summative Comment:</strong> {clean_summative}</div>\n")
                 
                 # Learner Final Product Image (first)
                 f.write("<h2>Final Product Comparison</h2>\n")
