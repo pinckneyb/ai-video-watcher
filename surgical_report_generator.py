@@ -998,7 +998,7 @@ class SurgicalVOPReportGenerator:
                 
                 # Use the enhanced extraction method
                 assessment_data = {'video_path': video_path}
-                return self._extract_final_product_image_with_pad_detection(assessment_data, 400)
+                return self._extract_final_product_image_enhanced_full(assessment_data, 400)
                 
         except Exception as e:
             print(f"Error getting final product image: {e}")

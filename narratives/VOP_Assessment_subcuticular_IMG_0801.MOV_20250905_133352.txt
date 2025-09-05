@@ -1,0 +1,25 @@
+Video: subcuticular_IMG_0801.MOV
+Pattern: Subcuticular
+
+Rubric assessments:
+
+1. Consistent dermal bites (running path): Bite size and spacing were generally uniform with perpendicular needle orientation, but the path was not a continuous intradermal run. Multiple trans‑epidermal “setup” passes and interruptions break the subcuticular track, lowering consistency. 2/5 developing
+
+2. Opposing entry/exit symmetry: Bites were taken 3–5 mm from the edge with consistent perpendicular approach, and the opposing entries mirrored exits to create a straight, balanced line. Symmetry was preserved even during hand swaps, reflecting controlled placement. 4/5 proficient
+
+3. No unintended surface breaches: The technique repeatedly penetrated the epidermis (vertical mattress start and several outside‑in passes), violating the subcuticular requirement to stay within the dermis. These repeated surface breaches are incompatible with a true subcuticular closure. 1/5 inadequate
+
+4. Gentle tissue handling: Forceps were used lightly to present and evert, instruments did not crowd the wound, and knots were seated without blanching. Tissue handling remained measured and respectful with minimal crush behavior. 4/5 proficient
+
+5. Square, secure knots: Instrument ties appeared square and snug along the incision axis, but they were external, not buried, and tails were left long. For a subcuticular closure this finish is inappropriate, so knot management is below standard despite basic security. 2/5 developing
+
+6. Flat, well-approximated skin: Edges were well approximated with mild eversion and no obvious gapping. However, the profile favored eversion rather than the flat, planar apposition expected for a subcuticular, so it only meets standard. 3/5 competent
+
+7. Economy of time and motion: The cadence was steady with efficient regrips, disciplined slack control, and hands stayed near the work with minimal wandering. Minor inefficiencies (retrieving a loose needle and briefly setting the needle down) were present but did not meaningfully disrupt flow. 4/5 proficient
+
+Summative assessment:
+
+Your flow and instrument management are disciplined: perpendicular needle driving, controlled regrips, consistent bite spacing, and tidy suture control establish a confident rhythm. Tissue handling is gentle, and the field is kept clear with minimal wasted motion, supporting steady progress along the incision.
+
+However, this is not a subcuticular closure. The vertical mattress anchor, repeated trans‑epidermal setup bites, and external knots with long tails defeat the purpose of an intradermal run. For a true subcuticular on my service, start with a buried intradermal anchor, maintain a constant intradermal plane with equal depth and spacing on both sides (no epidermal breaches), keep tension linear to avoid ridging, and finish with a buried knot or Aberdeen termination. Eliminate percutaneous “helper” passes, avoid eversion excess, and keep the needle loaded and in play rather than setting it down to tighten up the economy even further.
+

@@ -1048,7 +1048,29 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                                 f.write(f"<p>{line}</p>\n")
                         
                         if current_point:
-                            f.write(f"<div class='rubric-point'>{current_point}</div>\n")
+                            # Extract point number and add score
+                            point_num = None
+                            if current_point.strip() and current_point.strip()[0].isdigit():
+                                try:
+                                    point_num = int(current_point.split('.')[0])
+                                except:
+                                    pass
+                            
+                            if point_num and point_num in extracted_scores:
+                                score = extracted_scores[point_num]
+                                if score >= 4.5:
+                                    adj = "exemplary"
+                                elif score >= 3.5:
+                                    adj = "proficient"
+                                elif score >= 2.5:
+                                    adj = "competent"
+                                elif score >= 1.5:
+                                    adj = "developing"
+                                else:
+                                    adj = "inadequate"
+                                f.write(f"<div class='rubric-point'>{current_point} <strong>{score}/5 {adj}</strong></div>\n")
+                            else:
+                                f.write(f"<div class='rubric-point'>{current_point}</div>\n")
                     
                     summative = enhanced_narrative.get('summative_assessment', '')
                     if summative:
@@ -1080,7 +1102,13 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write("<div class='image-section'>\n")
                 f.write("<h3>Gold Standard Reference</h3>\n")
                 try:
-                    gold_standard_path = f"gold_standard_{current_pattern}.jpg"
+                    # Use correct gold standard image filenames
+                    gold_standard_mapping = {
+                        'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
+                        'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
+                        'subcuticular': 'subcuticular_example.png'
+                    }
+                    gold_standard_path = gold_standard_mapping.get(current_pattern, f"gold_standard_{current_pattern}.jpg")
                     if os.path.exists(gold_standard_path):
                         with open(gold_standard_path, "rb") as img_file:
                             img_data = base64.b64encode(img_file.read()).decode()
