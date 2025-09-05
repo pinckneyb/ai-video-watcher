@@ -649,12 +649,29 @@ Provide your complete assessment:"""
                             except ValueError:
                                 continue
             
-            # Extract summative assessment
-            summative_start = response.find("SUMMATIVE ASSESSMENT:") if "SUMMATIVE ASSESSMENT:" in response else response.find("Summative Assessment:")
-            if summative_start != -1:
-                summative = response[summative_start:].replace("SUMMATIVE ASSESSMENT:", "").replace("Summative Assessment:", "").strip()
+            # Extract summative assessment - look for actual summative content after scores
+            summative = ""
+            if "RUBRIC_SCORES_END" in response:
+                # Look for content after the scores section
+                after_scores = response.split("RUBRIC_SCORES_END")[1].strip()
+                
+                # Look for "Summative assessment:" or similar markers
+                summative_markers = ["Summative assessment:", "SUMMATIVE ASSESSMENT:", "Summative Assessment:"]
+                for marker in summative_markers:
+                    if marker in after_scores:
+                        summative = after_scores.split(marker)[1].strip()
+                        break
+                
+                # If no marker found, but we have content after scores, use that
+                if not summative and after_scores:
+                    summative = after_scores
             else:
-                summative = response
+                # Fallback to original method
+                summative_start = response.find("SUMMATIVE ASSESSMENT:") if "SUMMATIVE ASSESSMENT:" in response else response.find("Summative Assessment:")
+                if summative_start != -1:
+                    summative = response[summative_start:].replace("SUMMATIVE ASSESSMENT:", "").replace("Summative Assessment:", "").strip()
+                else:
+                    summative = response
             
             return {
                 "rubric_scores": scores,

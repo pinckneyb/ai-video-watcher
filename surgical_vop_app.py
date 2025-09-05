@@ -881,13 +881,22 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             progress_bar.empty()
             progress_text.empty()
         
-        # Export Pass 2 narrative as TXT file immediately (no need to wait for Pass 3)
+                    # Export Pass 2 narrative as TXT file immediately (no need to wait for Pass 3)
         try:
-            video_dir = os.path.dirname(video_path)
-            video_name = os.path.splitext(os.path.basename(video_path))[0]
+            # Create organized folders
+            os.makedirs("narratives", exist_ok=True)
+            os.makedirs("html_reports", exist_ok=True)
+            os.makedirs("temp_videos", exist_ok=True)
+            
+            # Use original filename, not temp filename
+            original_filename = os.path.basename(video_path)
+            if original_filename.startswith("temp_"):
+                original_filename = original_filename[5:]  # Remove temp_ prefix
+            
+            video_name = os.path.splitext(original_filename)[0]
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             txt_filename = f"VOP_Narrative_{video_name}_{timestamp}.txt"
-            txt_path = os.path.join(video_dir, txt_filename)
+            txt_path = os.path.join("narratives", txt_filename)
             
             with open(txt_path, 'w', encoding='utf-8') as f:
                 f.write(f"SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE\n")
@@ -959,9 +968,14 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         # AUTOMATIC TXT AND HTML REPORT GENERATION
         try:
-            base_filename = f"VOP_Assessment_{original_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            txt_filename = f"{base_filename}.txt"
-            html_filename = f"{base_filename}.html"
+            # Use original filename without temp_ prefix
+            clean_filename = original_filename
+            if clean_filename.startswith("temp_"):
+                clean_filename = clean_filename[5:]
+            
+            base_filename = f"VOP_Assessment_{clean_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            txt_filename = os.path.join("narratives", f"{base_filename}.txt")
+            html_filename = os.path.join("html_reports", f"{base_filename}.html")
             
             # Generate TXT report
             with open(txt_filename, 'w', encoding='utf-8') as f:

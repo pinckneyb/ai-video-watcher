@@ -1,0 +1,34 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_simple_interrupted_IMG_3186.MOV
+Pattern: simple_interrupted
+Analysis Date: 2025-09-05 13:00:02
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The session opens with setup and orientation on a silicone suture pad secured to a wooden board. Two rows of simple interrupted sutures are already in place centrally and on the right, while a left-sided vertical incision remains open for practice.
+
+0–29 s: The operator establishes a consistent bimanual technique. The right hand uses Adson-style forceps to probe and stabilize near the incision, while the left hand brings in a ring-handled needle driver. A curved needle attached to monofilament is identified, retrieved, and methodically loaded. Grips are refined repeatedly until the needle sits in the driver at roughly the proximal-to-middle third of the arc, oriented perpendicular to the skin. Throughout, the forceps stay peripheral, avoiding tissue crush while helping position the work.
+
+30–59 s: The loading sequence is finalized. The needle driver repeatedly repositions the needle so the curve will follow a natural arc across the left wound. Forceps assist by briefly holding the needle tip during fine adjustments. By the end of this segment, the instruments move from the right-lower field toward the left incision, with the driver lateral to the wound and forceps medial, setting up a controlled working triangle. The left lip of the incision is everted in preparation for the first pass, but penetration is not yet performed.
+
+60–74 s: The scene briefly shifts to suture housekeeping. Scissors enter from the left while the right-hand forceps tent knots and suture limbs; tails are trimmed flush along previously placed sutures without disturbing the knots. The wound edges remain well approximated.
+
+75–104 s: Attention returns to the open left incision. The right hand maintains control of the near wound edge with Adson forceps, grasping the dermis a few millimeters from the cut edge to create gentle eversion. The left hand presents the loaded needle at the inferior end of the left incision. The needle tip is aligned perpendicular to the epidermis and advanced with a wrist-driven rotation that respects the needle’s curvature. The operator commits to an outside-in bite on the near (left) lip only. The far edge is not yet engaged, and no knots are tied at this stage.
+
+105–149 s: The work migrates superiorly along the same left wound lip, and the rhythm settles in: forceps lift and evert, the driver delivers the needle through the dermis 3–4 mm from the edge, and then releases and re-grasps closer to the tip to complete each pass. On several bites, the right hand briefly captures the emerging needle tip to guide it smoothly through the tissue before releasing it back for reloading. Each pass ends with the suture pulled through and controlled above the field to keep the wound clear. After each near-edge pass, the needle is reloaded for a potential contralateral (far-edge) bite, but the far edge is consistently deferred.
+
+150–179 s: The sequence continues at the superior third of the incision, still focused on consistent near-edge technique. The driver’s grasp remains at about two-thirds from the tip, maintaining perpendicular entry and an arcing drive. The forceps stay immediately adjacent to the entry site to stabilize the dermis without crushing. Bites are small-to-moderate depth, placed close to the superior corner with careful spacing. Again, only the left lip is penetrated and the suture is drawn through; no approximation across the wound is completed and no knots are set.
+
+180–224 s: The operator refines efficiency and hand-to-hand coordination. After driving the needle through the left edge, the right hand sometimes retrieves the needle tip to complete passage, followed by reorientation and transfer back to the needle driver. The suture tail arcs superiorly; thread management is tidy, kept out of the operative corridor. The approach angles remain consistent: the driver lateral-left, forceps medial/superior, instruments converging over the bite site. The work remains at the superior aspect of the left incision, with repeated near-edge passes and reloads, practicing precise depth, spacing, and eversion.
+
+225–254 s: There is an interlude on the right suture row. The left hand switches to scissors while the right hand uses forceps to tent knots. A suture limb is cut close to the knot, and the cut material is withdrawn, consistent with staged suture removal on the right-side row. Briefly, two needle drivers appear opposing each other in the center—suggestive of instrument tie practice—but no knot is completed and no needle pass occurs. Suture strands are tensioned and managed to maintain a clean field.
+
+255–269 s: The operator returns to the left incision, now at the superior-left corner. With the right hand on forceps and the left on the needle driver, another near-edge bite is placed. The entry is again perpendicular and follows the curve; the forceps provide eversion and counter-traction. After passage, the suture is drawn through and directed superiorly to avoid clutter. Scissors enter momentarily to trim the strand—likely managing excess length after the pass rather than tying—keeping the field organized for subsequent steps.
+
+270–271 s: The sequence pauses. Only the right hand hovers at the superior-right with the needle held above the field, no tissue engagement or tension applied. Previously placed sutures maintain approximation centrally and to the right; the left incision still shows only single-lip passes without cross-approximation.
+
+Overall flow and technique: Across the session, the operator cycles through deliberate phases—loading and orientation; wound-edge preparation with precise forceps eversion; perpendicular, wrist-driven needle entry; controlled regrasping; and clean suture pull-through with disciplined thread management. The left hand consistently operates the needle driver from the lateral side, while the right hand stabilizes tissue with forceps just medial to the entry point. The far edge is intentionally deferred, making this a focused drill on near-edge bites, spacing, and needle handling rather than full-thickness closure and knot security. Intermittent housekeeping—tail trimming and later suture removal on the right—demonstrates attention to field maintenance. The rhythm is unhurried and methodical: approach, evert, drive, regrip, retrieve, pull-through, reload. The session concludes in a neutral pause, with instruments hovering and the field organized for the next learning objective.
+
+============================================================
+END OF NARRATIVE

@@ -527,8 +527,15 @@ class SurgicalVOPReportGenerator:
             # Sort by quality score (highest first)
             scored_frames.sort(key=lambda x: x[2], reverse=True)
             
+            # DEBUG: Print frame selection info
+            print(f"DEBUG FINAL PRODUCT IMAGE SELECTION:")
+            print(f"  Total candidate frames: {len(scored_frames)}")
+            for i, (ts, frame, score, tier) in enumerate(scored_frames[:5]):  # Show top 5
+                print(f"  Frame {i+1}: timestamp={ts:.1f}s, score={score:.3f}, tier={tier}")
+            
             # Get the best frame and return full image (no cropping)
             best_timestamp, best_frame, best_score, best_tier = scored_frames[0]
+            print(f"  SELECTED: timestamp={best_timestamp:.1f}s, score={best_score:.3f}, tier={best_tier}")
             
             # Convert to PIL Image - FULL IMAGE, NO CROPPING
             pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))

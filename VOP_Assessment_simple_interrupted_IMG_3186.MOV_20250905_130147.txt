@@ -1,0 +1,47 @@
+Video: simple_interrupted_IMG_3186.MOV
+Pattern: Simple Interrupted
+
+1. Perpendicular needle passes: Entries were consistently perpendicular with a smooth wrist-driven arc on the near lip, showing respect for needle curvature. Because the far side was never engaged, exits and symmetric bites were not demonstrated, leaving risk of shear and mismatched bites.  2/5 developing
+
+2. Gentle tissue handling: The Adsons were applied to dermis a few millimeters from the edge with light, single grasps to evert, avoiding crush or tearing while the needle was regripped thoughtfully. Overall handling remained atraumatic and controlled. 4/5 proficient
+
+3. Square, secure knots: The existing knots lay flat and maintained approximation during tail trimming, indicating adequate security. No new knots were tied in this session, so only baseline competence is demonstrated. 3/5 competent
+
+4. Appropriate approximation/tension: Existing rows showed edges that met without blanching or gapping, reflecting acceptable tension and approximation. The active incision remained unclosed, so closure tension was not executed there. 3/5 competent
+
+5. Even spacing (0.5–1.0 cm): Near-edge practice bites were small-to-moderate but did not establish a closed line with uniform 0.5–1.0 cm intervals; the standard for even spacing was not met. This remains below closure-ready spacing discipline. 2/5 developing
+
+6. Edge eversion (flat/slight acceptable): Consistent counter-traction and perpendicular entry produced flat-to-slight eversion without inversion. Edge control was reliable across the practice passes. 4/5 proficient
+
+7. Economy of time and motion: A stable working triangle and tidy thread management kept hands close to the field with minimal wandering. Repeated reloads without contralateral passes or knot tying added unnecessary cycles and slowed progress. 3/5 competent
+
+Summative assessment:
+1. Perpendicular needle passes: Entries were consistently perpendicular with a smooth wrist-driven arc on the near lip, showing respect for needle curvature. Because the far side was never engaged, exits and symmetric bites were not demonstrated, leaving risk of shear and mismatched bites. 
+
+2. Gentle tissue handling: The Adsons were applied to dermis a few millimeters from the edge with light, single grasps to evert, avoiding crush or tearing while the needle was regripped thoughtfully. Overall handling remained atraumatic and controlled.
+
+3. Square, secure knots: The existing knots lay flat and maintained approximation during tail trimming, indicating adequate security. No new knots were tied in this session, so only baseline competence is demonstrated.
+
+4. Appropriate approximation/tension: Existing rows showed edges that met without blanching or gapping, reflecting acceptable tension and approximation. The active incision remained unclosed, so closure tension was not executed there.
+
+5. Even spacing (0.5–1.0 cm): Near-edge practice bites were small-to-moderate but did not establish a closed line with uniform 0.5–1.0 cm intervals; the standard for even spacing was not met. This remains below closure-ready spacing discipline.
+
+6. Edge eversion (flat/slight acceptable): Consistent counter-traction and perpendicular entry produced flat-to-slight eversion without inversion. Edge control was reliable across the practice passes.
+
+7. Economy of time and motion: A stable working triangle and tidy thread management kept hands close to the field with minimal wandering. Repeated reloads without contralateral passes or knot tying added unnecessary cycles and slowed progress.
+
+RUBRIC_SCORES_START
+1: 2
+2: 4
+3: 3
+4: 3
+5: 2
+6: 4
+7: 3
+RUBRIC_SCORES_END
+
+Summative assessment:
+Your bimanual control is steady, your approach angle is disciplined, and you consistently deliver a smooth, wrist-driven arc that respects the needle’s curvature. Forceps application is precise and atraumatic, and thread housekeeping keeps the field clean, enabling repeatable, deliberate needle handling.
+
+This remained a single-lip drill; now you must demonstrate full closure. Drive the near bite, regrasp at the tip, continue the arc across in one motion, avoid grabbing the needle with Adsons, set uniform bite width and spacing, approximate, tie square and flat with balanced tension, and cut appropriate tails. Deliver three to five complete stitch-and-knot cycles without interruption to show efficiency, symmetry, and closure readiness for live tissue.
+
