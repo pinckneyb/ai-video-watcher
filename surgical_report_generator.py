@@ -502,40 +502,32 @@ class SurgicalVOPReportGenerator:
             if not success:
                 return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
             
-            # Multi-tier sampling strategy for best final product image
+            # PROPER SOLUTION: Multi-tier sampling with enhanced selection for clean final product
             duration = processor.duration
             candidate_frames = []
             
-            # Tier 1: Last 3% of video (most likely to show final product without hands)
-            self._sample_video_segment_enhanced(processor, duration * 0.97, duration, 10, candidate_frames, "final_3pct")
+            # Tier 1: Last 1% of video (most likely to show final product)
+            self._sample_video_segment_enhanced(processor, duration * 0.99, duration, 20, candidate_frames, "final_1pct")
             
-            # Tier 2: Last 7% of video (backup)
-            self._sample_video_segment_enhanced(processor, duration * 0.93, duration * 0.97, 8, candidate_frames, "final_7pct")
+            # Tier 2: Last 3% of video
+            self._sample_video_segment_enhanced(processor, duration * 0.97, duration * 0.99, 15, candidate_frames, "final_3pct")
             
-            # Tier 3: Last 15% of video (final fallback)
-            self._sample_video_segment_enhanced(processor, duration * 0.85, duration * 0.93, 6, candidate_frames, "final_15pct")
+            # Tier 3: Last 5% of video (backup)
+            self._sample_video_segment_enhanced(processor, duration * 0.95, duration * 0.97, 10, candidate_frames, "final_5pct")
             
             if not candidate_frames:
                 return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
             
-            # Score all frames with enhanced criteria (hand/instrument avoidance)
-            scored_frames = []
-            for timestamp, frame_data, tier in candidate_frames:
-                quality_score = self._score_frame_quality_enhanced(frame_data, tier)
-                scored_frames.append((timestamp, frame_data, quality_score, tier))
+            # Use AI semantic understanding to select best final product image
+            # Pass API key through assessment data
+            assessment_data_with_key = assessment_data.copy()
+            if 'api_key' not in assessment_data_with_key:
+                assessment_data_with_key['api_key'] = os.getenv('OPENAI_API_KEY')
             
-            # Sort by quality score (highest first)
-            scored_frames.sort(key=lambda x: x[2], reverse=True)
+            best_frame, best_timestamp = self._ai_select_final_product_frame(candidate_frames, assessment_data_with_key)
             
-            # DEBUG: Print frame selection info
-            print(f"DEBUG FINAL PRODUCT IMAGE SELECTION:")
-            print(f"  Total candidate frames: {len(scored_frames)}")
-            for i, (ts, frame, score, tier) in enumerate(scored_frames[:5]):  # Show top 5
-                print(f"  Frame {i+1}: timestamp={ts:.1f}s, score={score:.3f}, tier={tier}")
-            
-            # Get the best frame and return full image (no cropping)
-            best_timestamp, best_frame, best_score, best_tier = scored_frames[0]
-            print(f"  SELECTED: timestamp={best_timestamp:.1f}s, score={best_score:.3f}, tier={best_tier}")
+            if best_frame is None:
+                return Paragraph("AI could not select suitable final product frame", self.styles['Normal'])
             
             # Convert to PIL Image - FULL IMAGE, NO CROPPING
             pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
@@ -808,6 +800,161 @@ class SurgicalVOPReportGenerator:
         except Exception as e:
             print(f"Error sampling video segment: {e}")
 
+    def _ai_select_final_product_frame(self, candidate_frames, assessment_data):
+        """Use AI to semantically evaluate and select the best final product frame."""
+        try:
+            from openai import OpenAI
+            import base64
+            import cv2
+            
+            # Get API key from assessment data or environment
+            api_key = assessment_data.get('api_key') or os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                print("No API key available for AI frame selection, using fallback")
+                return candidate_frames[-1][1], candidate_frames[-1][0]  # Use last frame as fallback
+            
+            client = OpenAI(api_key=api_key)
+            
+            # Convert candidate frames to base64 for AI analysis
+            frame_data = []
+            for i, (timestamp, frame, tier) in enumerate(candidate_frames):
+                # Convert frame to base64
+                _, buffer = cv2.imencode('.jpg', frame)
+                frame_b64 = base64.b64encode(buffer).decode('utf-8')
+                
+                frame_data.append({
+                    'index': i,
+                    'timestamp': timestamp,
+                    'tier': tier,
+                    'base64': frame_b64
+                })
+            
+            # Create AI prompt for frame selection
+            prompt = f"""You are selecting the best final product image from {len(frame_data)} candidate frames near the end of a surgical suturing video.
+
+TASK: Choose the frame that best shows "a clear image of finished suturing without hands, gloves, or instruments."
+
+CRITERIA FOR BEST FINAL PRODUCT IMAGE:
+1. Shows completed sutures clearly visible
+2. NO hands or surgical gloves (blue/green gloves) in the image
+3. NO instruments (scissors, forceps, needle drivers) visible
+4. Clear view of the suturing pad/practice surface with finished work
+5. Good image quality (sharp, well-lit)
+
+FRAMES TO EVALUATE:
+{[f"Frame {f['index']}: timestamp {f['timestamp']:.1f}s, tier {f['tier']}" for f in frame_data]}
+
+Analyze each frame and respond with ONLY the frame index number (0-{len(frame_data)-1}) that best meets the criteria.
+If no frame is suitable, respond with "NONE".
+
+Your response:"""
+
+            # Prepare messages with all frame images
+            messages = [
+                {
+                    "role": "user", 
+                    "content": [
+                        {"type": "text", "text": prompt}
+                    ] + [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{f['base64']}",
+                                "detail": "high"
+                            }
+                        } for f in frame_data
+                    ]
+                }
+            ]
+            
+            # Make API call
+            response = client.chat.completions.create(
+                model="gpt-4o",  # Use GPT-4o for vision analysis
+                messages=messages,
+                max_tokens=50,
+                temperature=0.1
+            )
+            
+            ai_response = response.choices[0].message.content.strip()
+            print(f"DEBUG AI FRAME SELECTION: AI chose '{ai_response}'")
+            
+            # Parse AI response
+            if ai_response == "NONE":
+                print("AI found no suitable frames, using last available")
+                return candidate_frames[-1][1], candidate_frames[-1][0]
+            
+            try:
+                selected_index = int(ai_response)
+                if 0 <= selected_index < len(candidate_frames):
+                    selected_frame = candidate_frames[selected_index]
+                    print(f"AI selected frame {selected_index}: timestamp {selected_frame[0]:.1f}s, tier {selected_frame[2]}")
+                    return selected_frame[1], selected_frame[0]
+                else:
+                    print(f"AI returned invalid index {selected_index}, using fallback")
+                    return candidate_frames[-1][1], candidate_frames[-1][0]
+            except ValueError:
+                print(f"AI returned non-numeric response '{ai_response}', using fallback")
+                return candidate_frames[-1][1], candidate_frames[-1][0]
+                
+        except Exception as e:
+            print(f"Error in AI frame selection: {e}")
+            # Fallback to last frame
+            return candidate_frames[-1][1], candidate_frames[-1][0]
+
+    def _score_final_product_quality(self, frame, tier: str) -> float:
+        """Score frame specifically for final product selection - prioritizes clean suture images."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Base quality metrics
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
+            contrast = np.std(frame)
+            
+            # Normalize base metrics
+            sharpness_norm = min(sharpness / 1000, 1.0)
+            contrast_norm = min(contrast / 100, 1.0)
+            
+            # CRITICAL: Heavily penalize hands/instruments in ANY part of image
+            h, w = frame.shape[:2]
+            
+            # Check multiple regions for hands/instruments
+            regions_to_check = [
+                frame[int(h*0.2):int(h*0.8), int(w*0.2):int(w*0.8)],  # Center region
+                frame[int(h*0.1):int(h*0.9), int(w*0.1):int(w*0.9)],  # Wider region
+                frame  # Entire frame
+            ]
+            
+            total_penalty = 0.0
+            for region in regions_to_check:
+                glove_penalty = self._detect_surgical_gloves(region)  # Look for blue/green gloves
+                metallic_penalty = self._detect_metallic_objects(region)
+                total_penalty += (glove_penalty + metallic_penalty)
+            
+            # Average penalty across regions
+            avg_penalty = total_penalty / len(regions_to_check)
+            
+            # Tier bonus (prefer very end of video)
+            tier_bonus = {"final_1pct": 0.5, "final_3pct": 0.3, "final_5pct": 0.1}.get(tier, 0.0)
+            
+            # Final product score: heavily weight the absence of hands/instruments
+            final_score = (
+                sharpness_norm * 0.2 +
+                contrast_norm * 0.1 +
+                (1.0 - avg_penalty) * 0.6 +  # 60% weight on avoiding hands/instruments
+                tier_bonus
+            )
+            
+            # Debug output for frame selection
+            print(f"    Frame at {tier}: sharpness={sharpness_norm:.3f}, contrast={contrast_norm:.3f}, penalty={avg_penalty:.3f}, final_score={final_score:.3f}")
+            
+            return final_score
+            
+        except Exception as e:
+            print(f"Error scoring final product quality: {e}")
+            return 0.0
+
     def _score_frame_quality_enhanced(self, frame, tier: str) -> float:
         """Enhanced frame quality scoring with hand/instrument detection."""
         try:
@@ -873,6 +1020,48 @@ class SurgicalVOPReportGenerator:
             
         except Exception as e:
             print(f"Error calculating center penalty: {e}")
+            return 0.0
+
+    def _detect_surgical_gloves(self, region) -> float:
+        """Detect blue and green surgical gloves in the region."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to HSV for better color detection
+            hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
+            
+            # Define blue surgical glove ranges in HSV
+            lower_blue1 = np.array([100, 50, 50], dtype=np.uint8)  # Dark blue
+            upper_blue1 = np.array([130, 255, 255], dtype=np.uint8)
+            lower_blue2 = np.array([90, 30, 80], dtype=np.uint8)   # Light blue
+            upper_blue2 = np.array([110, 200, 220], dtype=np.uint8)
+            
+            # Define green surgical glove ranges in HSV  
+            lower_green1 = np.array([40, 40, 40], dtype=np.uint8)   # Dark green
+            upper_green1 = np.array([80, 255, 255], dtype=np.uint8)
+            lower_green2 = np.array([35, 25, 60], dtype=np.uint8)   # Light green
+            upper_green2 = np.array([85, 180, 200], dtype=np.uint8)
+            
+            # Create masks for all glove colors
+            blue_mask1 = cv2.inRange(hsv, lower_blue1, upper_blue1)
+            blue_mask2 = cv2.inRange(hsv, lower_blue2, upper_blue2)
+            green_mask1 = cv2.inRange(hsv, lower_green1, upper_green1)
+            green_mask2 = cv2.inRange(hsv, lower_green2, upper_green2)
+            
+            # Combine all glove masks
+            glove_mask = blue_mask1 + blue_mask2 + green_mask1 + green_mask2
+            
+            # Calculate percentage of region that contains glove colors
+            glove_pixels = np.sum(glove_mask > 0)
+            total_pixels = region.shape[0] * region.shape[1]
+            glove_percentage = glove_pixels / total_pixels if total_pixels > 0 else 0
+            
+            # Return penalty (0 = no gloves, 1 = lots of gloves)
+            return min(glove_percentage * 3.0, 1.0)  # Amplify penalty
+            
+        except Exception as e:
+            print(f"Error detecting surgical gloves: {e}")
             return 0.0
 
     def _detect_skin_tones(self, region) -> float:
@@ -977,14 +1166,11 @@ class SurgicalVOPReportGenerator:
                 # Sort by quality score (highest first)
                 scored_frames.sort(key=lambda x: x[2], reverse=True)
                 
-                # Return the best frame as PIL Image
+                # Return the best frame as PIL Image - NO CROPPING
                 best_frame = scored_frames[0][1]
                 pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
                 
-                # Intelligent cropping to focus on suture pad
-                cropped_image = self._intelligent_crop_suture_pad(pil_image)
-                
-                return cropped_image
+                return pil_image
             
             else:
                 # Fall back to video processing

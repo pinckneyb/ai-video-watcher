@@ -1074,6 +1074,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     
                     summative = enhanced_narrative.get('summative_assessment', '')
                     if summative:
+                        f.write("<br><br>\n")  # Clear break after rubric points
                         f.write("<h2>Summative Assessment</h2>\n")
                         f.write(f"<div class='summative'>{summative}</div>\n")
                 
