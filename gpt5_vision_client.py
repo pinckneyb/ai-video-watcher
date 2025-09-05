@@ -17,6 +17,30 @@ class GPT5VisionClient:
         self.frame_descriptions = []
         self.video_narrative = ""
         self.context_state = ""
+        
+        # Error tracking and monitoring
+        self.error_stats = {
+            'pass1_truncations': 0,
+            'pass1_api_errors': 0,
+            'pass1_total_batches': 0,
+            'pass1_successful_batches': 0,
+            'pass1_char_stats': [],  # Track character lengths
+            'pass2_truncations': 0,
+            'pass2_api_errors': 0,
+            'pass2_total_attempts': 0,
+            'pass2_successful_attempts': 0,
+            'pass2_input_char_stats': [],
+            'pass2_output_char_stats': [],
+            'pass3_api_errors': 0,
+            'pass3_total_attempts': 0,
+            'pass3_successful_attempts': 0,
+            'pass3_input_char_stats': [],
+            'pass3_output_char_stats': [],
+            'context_length_errors': 0,
+            'rate_limit_errors': 0,
+            'quota_exceeded_errors': 0,
+            'other_api_errors': 0
+        }
     
     def pass1_surgical_description(self, frames: List[Dict], context_state: str = "") -> Tuple[str, List[Dict]]:
         """
@@ -44,10 +68,14 @@ class GPT5VisionClient:
         print(f"DEBUG: Message structure - text length: {len(surgical_prompt)}, images: {len(base64_frames)}")
         print(f"DEBUG: First image URL preview: data:image/jpeg;base64,{base64_frames[0][:50]}..." if base64_frames else "No images")
         
+        # Track batch processing
+        self.error_stats['pass1_total_batches'] += 1
+        
         try:
             print(f"DEBUG: Sending {len(frames)} frames to GPT-5 for surgical description")
             print(f"DEBUG: Frame timestamps: {frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s")
             print(f"DEBUG: Base64 data length: {len(base64_frames[0]) if base64_frames else 'None'}")
+            print(f"📊 PASS 1 BATCH {self.error_stats['pass1_total_batches']}: Processing {len(frames)} frames")
             
             response = self.client.chat.completions.create(
                 model="gpt-5",
@@ -60,35 +88,76 @@ class GPT5VisionClient:
             print(f"DEBUG: GPT-5 response length: {len(frame_analysis)}")
             print(f"DEBUG: GPT-5 response preview: {frame_analysis[:200]}...")
             
-            # Limit individual description length to prevent overwhelming PASS 2
-            max_description_length = 1500  # Reasonable limit per batch
+            # INCREASED LIMIT: Allow longer descriptions for better quality
+            max_description_length = 3000  # Increased from 1500 for better quality
+            
+            # Track character statistics
+            original_length = len(frame_analysis)
+            self.error_stats['pass1_char_stats'].append(original_length)
+            
+            # Check for truncation
             if len(frame_analysis) > max_description_length:
-                print(f"WARNING: Description too long ({len(frame_analysis)} chars), truncating to {max_description_length}")
-                frame_analysis = frame_analysis[:max_description_length] + "\n\n[TRUNCATED - too long for processing]"
+                self.error_stats['pass1_truncations'] += 1
+                print(f"⚠️ PASS 1 TRUNCATION: Description {original_length} chars, truncating to {max_description_length}")
+                print(f"📊 TRUNCATION STATS: {self.error_stats['pass1_truncations']} of {self.error_stats['pass1_total_batches']} batches truncated")
+                frame_analysis = frame_analysis[:max_description_length] + "\n\n[TRUNCATED - exceeded 3000 char limit for batch processing]"
+            
+            # Track successful batch
+            self.error_stats['pass1_successful_batches'] += 1
             
             self.frame_descriptions.append({
                 'timestamp_range': f"{frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s",
                 'frame_count': len(frames),
-                'analysis': frame_analysis
+                'analysis': frame_analysis,
+                'original_char_length': original_length,
+                'final_char_length': len(frame_analysis),
+                'was_truncated': original_length > max_description_length
             })
             
             # Update context for next batch
             self.context_state = self._condense_context(frame_analysis, context_state)
             
+            print(f"✅ PASS 1 BATCH {self.error_stats['pass1_total_batches']} SUCCESS: {len(frame_analysis)} chars generated")
+            
             return frame_analysis, self.frame_descriptions
             
         except Exception as e:
+            # Track API errors with detailed categorization
+            self.error_stats['pass1_api_errors'] += 1
             error_msg = f"Error in GPT-5 frame analysis: {e}"
-            print(f"ERROR: {error_msg}")
+            
+            # Categorize error types
+            error_str = str(e).lower()
+            if "context_length_exceeded" in error_str or "maximum context length" in error_str:
+                self.error_stats['context_length_errors'] += 1
+                print(f"🚨 PASS 1 CONTEXT LENGTH ERROR: {e}")
+                print(f"📊 Context length errors: {self.error_stats['context_length_errors']}")
+            elif "rate_limit" in error_str:
+                self.error_stats['rate_limit_errors'] += 1
+                print(f"⏰ PASS 1 RATE LIMIT ERROR: {e}")
+                print(f"📊 Rate limit errors: {self.error_stats['rate_limit_errors']}")
+            elif "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                self.error_stats['quota_exceeded_errors'] += 1
+                print(f"💳 PASS 1 QUOTA ERROR: {e}")
+                print(f"📊 Quota errors: {self.error_stats['quota_exceeded_errors']}")
+            else:
+                self.error_stats['other_api_errors'] += 1
+                print(f"❌ PASS 1 OTHER ERROR: {e}")
+                print(f"📊 Other API errors: {self.error_stats['other_api_errors']}")
+            
             print(f"ERROR: Exception type: {type(e).__name__}")
             print(f"ERROR: Frame count: {len(frames)}")
             print(f"ERROR: Base64 frames count: {len(base64_frames)}")
+            print(f"📊 PASS 1 ERROR SUMMARY: {self.error_stats['pass1_api_errors']} errors of {self.error_stats['pass1_total_batches']} total batches")
             
             # Add error description to track
             self.frame_descriptions.append({
                 'timestamp_range': f"{frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s",
                 'frame_count': len(frames),
-                'analysis': f"ERROR: {error_msg}"
+                'analysis': f"ERROR: {error_msg}",
+                'original_char_length': 0,
+                'final_char_length': len(error_msg),
+                'was_truncated': False
             })
             
             return error_msg, self.frame_descriptions
@@ -104,11 +173,22 @@ class GPT5VisionClient:
             for desc in all_descriptions
         ])
         
-        # Check if descriptions are too long and truncate if necessary
-        max_descriptions_length = 30000  # More reasonable limit for GPT-5 with 1500 char descriptions
+        # INCREASED LIMIT: Allow much longer input for Pass 2
+        max_descriptions_length = 100000  # Increased from 30000 for better quality
+        
+        # Track Pass 2 statistics
+        self.error_stats['pass2_total_attempts'] += 1
+        original_descriptions_length = len(descriptions_text)
+        self.error_stats['pass2_input_char_stats'].append(original_descriptions_length)
+        
+        # Check for truncation
         if len(descriptions_text) > max_descriptions_length:
-            print(f"WARNING: Descriptions text too long ({len(descriptions_text)} chars), truncating to {max_descriptions_length}")
-            descriptions_text = descriptions_text[:max_descriptions_length] + "\n\n[TRUNCATED - too long for processing]"
+            self.error_stats['pass2_truncations'] += 1
+            print(f"⚠️ PASS 2 TRUNCATION: Input {original_descriptions_length:,} chars, truncating to {max_descriptions_length:,}")
+            print(f"📊 PASS 2 TRUNCATION STATS: {self.error_stats['pass2_truncations']} of {self.error_stats['pass2_total_attempts']} attempts truncated")
+            descriptions_text = descriptions_text[:max_descriptions_length] + "\n\n[TRUNCATED - exceeded 100,000 char limit for narrative processing]"
+        
+        print(f"📊 PASS 2 INPUT ANALYSIS: {original_descriptions_length:,} chars from {len(all_descriptions)} batch descriptions")
         
         narrative_prompt = self._build_video_narrative_prompt(descriptions_text)
         
@@ -133,8 +213,15 @@ class GPT5VisionClient:
             )
             
             self.video_narrative = response.choices[0].message.content
-            print(f"DEBUG: Video narrative length: {len(self.video_narrative)}")
+            narrative_length = len(self.video_narrative)
+            
+            # Track Pass 2 success and output statistics
+            self.error_stats['pass2_successful_attempts'] += 1
+            self.error_stats['pass2_output_char_stats'].append(narrative_length)
+            
+            print(f"✅ PASS 2 SUCCESS: Generated {narrative_length:,} character narrative")
             print(f"DEBUG: Video narrative preview: {self.video_narrative[:200]}...")
+            print(f"📊 PASS 2 STATS: Success rate {self.error_stats['pass2_successful_attempts']}/{self.error_stats['pass2_total_attempts']}")
             
             if not self.video_narrative or len(self.video_narrative.strip()) == 0:
                 print("ERROR: Video narrative is empty!")
@@ -144,11 +231,30 @@ class GPT5VisionClient:
             return self.video_narrative
             
         except Exception as e:
+            # Track Pass 2 API errors with detailed categorization
+            self.error_stats['pass2_api_errors'] += 1
             error_msg = f"Error in GPT-5 video narrative: {e}"
-            print(f"ERROR: {error_msg}")
+            
+            # Categorize error types
+            error_str = str(e).lower()
+            if "context_length_exceeded" in error_str or "maximum context length" in error_str:
+                self.error_stats['context_length_errors'] += 1
+                print(f"🚨 PASS 2 CONTEXT LENGTH ERROR: Input was {len(descriptions_text):,} chars")
+                print(f"🚨 This suggests our 100,000 char limit may still be too high for GPT-5")
+            elif "rate_limit" in error_str:
+                self.error_stats['rate_limit_errors'] += 1
+                print(f"⏰ PASS 2 RATE LIMIT ERROR: {e}")
+            elif "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                self.error_stats['quota_exceeded_errors'] += 1
+                print(f"💳 PASS 2 QUOTA ERROR: {e}")
+            else:
+                self.error_stats['other_api_errors'] += 1
+                print(f"❌ PASS 2 OTHER ERROR: {e}")
+            
             print(f"ERROR: Exception type: {type(e).__name__}")
             print(f"ERROR: Descriptions count: {len(all_descriptions)}")
-            print(f"ERROR: Descriptions text length: {len(descriptions_text)}")
+            print(f"ERROR: Descriptions text length: {len(descriptions_text):,}")
+            print(f"📊 PASS 2 ERROR SUMMARY: {self.error_stats['pass2_api_errors']} errors of {self.error_stats['pass2_total_attempts']} attempts")
             return error_msg
     
     def pass3_rubric_assessment(self, pattern_id: str, rubric_engine) -> Dict[str, Any]:
@@ -168,9 +274,14 @@ class GPT5VisionClient:
             }
         ]
         
+        # Track Pass 3 processing
+        self.error_stats['pass3_total_attempts'] += 1
+        narrative_length = len(self.video_narrative)
+        self.error_stats['pass3_input_char_stats'].append(narrative_length)
+        
         try:
             print(f"DEBUG: Starting rubric assessment for pattern: {pattern_id}")
-            print(f"DEBUG: Video narrative length: {len(self.video_narrative)}")
+            print(f"📊 PASS 3 INPUT: {narrative_length:,} character narrative for assessment")
             print(f"DEBUG: Video narrative preview: {self.video_narrative[:200]}...")
             
             response = self.client.chat.completions.create(
@@ -181,20 +292,48 @@ class GPT5VisionClient:
             )
             
             assessment_response = response.choices[0].message.content
-            print(f"DEBUG: Assessment response length: {len(assessment_response)}")
+            response_length = len(assessment_response)
+            
+            # Track Pass 3 success and output statistics
+            self.error_stats['pass3_successful_attempts'] += 1
+            self.error_stats['pass3_output_char_stats'].append(response_length)
+            
+            print(f"✅ PASS 3 SUCCESS: Generated {response_length:,} character assessment")
             print(f"DEBUG: Assessment response preview: {assessment_response[:200]}...")
             
             parsed_response = self._parse_assessment_response(assessment_response, rubric_engine)
-            print(f"DEBUG: Parsed assessment success: {parsed_response.get('success', False)}")
+            parse_success = parsed_response.get('success', False)
+            print(f"📊 PASS 3 PARSE SUCCESS: {parse_success}")
+            print(f"📊 PASS 3 STATS: Success rate {self.error_stats['pass3_successful_attempts']}/{self.error_stats['pass3_total_attempts']}")
             
             return parsed_response
             
         except Exception as e:
+            # Track Pass 3 API errors with detailed categorization
+            self.error_stats['pass3_api_errors'] += 1
             error_msg = f"Error in GPT-5 rubric assessment: {e}"
-            print(f"ERROR: {error_msg}")
+            
+            # Categorize error types
+            error_str = str(e).lower()
+            if "context_length_exceeded" in error_str or "maximum context length" in error_str:
+                self.error_stats['context_length_errors'] += 1
+                print(f"🚨 PASS 3 CONTEXT LENGTH ERROR: Input was {len(self.video_narrative):,} chars")
+                print(f"🚨 This suggests the narrative from Pass 2 may be too long for Pass 3")
+            elif "rate_limit" in error_str:
+                self.error_stats['rate_limit_errors'] += 1
+                print(f"⏰ PASS 3 RATE LIMIT ERROR: {e}")
+            elif "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                self.error_stats['quota_exceeded_errors'] += 1
+                print(f"💳 PASS 3 QUOTA ERROR: {e}")
+            else:
+                self.error_stats['other_api_errors'] += 1
+                print(f"❌ PASS 3 OTHER ERROR: {e}")
+            
             print(f"ERROR: Exception type: {type(e).__name__}")
             print(f"ERROR: Pattern ID: {pattern_id}")
             print(f"ERROR: Video narrative available: {bool(self.video_narrative)}")
+            print(f"ERROR: Video narrative length: {len(self.video_narrative):,} chars")
+            print(f"📊 PASS 3 ERROR SUMMARY: {self.error_stats['pass3_api_errors']} errors of {self.error_stats['pass3_total_attempts']} attempts")
             return {"error": error_msg, "success": False}
     
     def analyze_flow_and_technique(self, all_descriptions: List[Dict], profile: Dict[str, Any], 
@@ -317,12 +456,15 @@ RUBRIC POINTS:
 {json.dumps(rubric_data['points'], indent=2)}
 
 SUMMATIVE ASSESSMENT:
-Write a summative paragraph that:
-- Provides entirely actionable critiques from holistic review
-- NO reprise of individual rubric assessments
-- NO timestamps, NO uncertainty about visibility
-- Must be useful observations about technique execution
-- Focus on what the video narrative reveals about surgical skill
+Write a concise, holistic assessment (2-3 paragraphs maximum) that:
+- Focuses on MOTION and FLOW of the overall procedure
+- Discusses rhythm, efficiency, and surgical confidence
+- Comments on hand coordination and instrument management
+- Addresses overall procedural competence and areas for improvement
+- NEVER repeats individual rubric point assessments
+- NO timestamps, NO uncertainty language
+- Break into paragraphs if longer than 4 sentences
+- Keep concise and actionable
 
 MANDATORY SCORING:
 RUBRIC_SCORES_START
@@ -399,12 +541,15 @@ RUBRIC POINTS:
 {json.dumps(rubric_data['points'], indent=2)}
 
 SUMMATIVE ASSESSMENT:
-Write a summative paragraph that:
-- Provides entirely actionable critiques from holistic review
-- NO reprise of individual rubric assessments
-- NO timestamps, NO uncertainty about visibility
-- Must be useful observations about technique flow and execution
-- Focus on what the video analysis reveals about surgical skill
+Write a concise, holistic assessment (2-3 paragraphs maximum) that:
+- Focuses on MOTION and FLOW of the overall procedure
+- Discusses rhythm, efficiency, and surgical confidence
+- Comments on hand coordination and instrument management
+- Addresses overall procedural competence and areas for improvement
+- NEVER repeats individual rubric point assessments
+- NO timestamps, NO uncertainty language
+- Break into paragraphs if longer than 4 sentences
+- Keep concise and actionable
 
 MANDATORY SCORING:
 RUBRIC_SCORES_START
@@ -530,3 +675,83 @@ Provide your complete assessment:"""
         self.frame_descriptions = []
         self.video_narrative = ""
         self.context_state = ""
+    
+    def get_error_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive error statistics and analysis metrics"""
+        stats = self.error_stats.copy()
+        
+        # Calculate success rates
+        if stats['pass1_total_batches'] > 0:
+            stats['pass1_success_rate'] = (stats['pass1_successful_batches'] / stats['pass1_total_batches']) * 100
+            stats['pass1_truncation_rate'] = (stats['pass1_truncations'] / stats['pass1_total_batches']) * 100
+        else:
+            stats['pass1_success_rate'] = 0
+            stats['pass1_truncation_rate'] = 0
+            
+        if stats['pass2_total_attempts'] > 0:
+            stats['pass2_success_rate'] = (stats['pass2_successful_attempts'] / stats['pass2_total_attempts']) * 100
+            stats['pass2_truncation_rate'] = (stats['pass2_truncations'] / stats['pass2_total_attempts']) * 100
+        else:
+            stats['pass2_success_rate'] = 0
+            stats['pass2_truncation_rate'] = 0
+            
+        if stats['pass3_total_attempts'] > 0:
+            stats['pass3_success_rate'] = (stats['pass3_successful_attempts'] / stats['pass3_total_attempts']) * 100
+        else:
+            stats['pass3_success_rate'] = 0
+        
+        # Calculate character statistics
+        if stats['pass1_char_stats']:
+            stats['pass1_avg_chars'] = sum(stats['pass1_char_stats']) / len(stats['pass1_char_stats'])
+            stats['pass1_max_chars'] = max(stats['pass1_char_stats'])
+            stats['pass1_min_chars'] = min(stats['pass1_char_stats'])
+        
+        if stats['pass2_input_char_stats']:
+            stats['pass2_avg_input_chars'] = sum(stats['pass2_input_char_stats']) / len(stats['pass2_input_char_stats'])
+            stats['pass2_max_input_chars'] = max(stats['pass2_input_char_stats'])
+        
+        if stats['pass2_output_char_stats']:
+            stats['pass2_avg_output_chars'] = sum(stats['pass2_output_char_stats']) / len(stats['pass2_output_char_stats'])
+        
+        if stats['pass3_input_char_stats']:
+            stats['pass3_avg_input_chars'] = sum(stats['pass3_input_char_stats']) / len(stats['pass3_input_char_stats'])
+        
+        if stats['pass3_output_char_stats']:
+            stats['pass3_avg_output_chars'] = sum(stats['pass3_output_char_stats']) / len(stats['pass3_output_char_stats'])
+        
+        # Total error counts
+        stats['total_api_errors'] = (
+            stats['pass1_api_errors'] + 
+            stats['pass2_api_errors'] + 
+            stats['pass3_api_errors']
+        )
+        
+        stats['total_truncations'] = stats['pass1_truncations'] + stats['pass2_truncations']
+        
+        return stats
+    
+    def reset_error_statistics(self):
+        """Reset all error statistics - useful for testing different configurations"""
+        self.error_stats = {
+            'pass1_truncations': 0,
+            'pass1_api_errors': 0,
+            'pass1_total_batches': 0,
+            'pass1_successful_batches': 0,
+            'pass1_char_stats': [],
+            'pass2_truncations': 0,
+            'pass2_api_errors': 0,
+            'pass2_total_attempts': 0,
+            'pass2_successful_attempts': 0,
+            'pass2_input_char_stats': [],
+            'pass2_output_char_stats': [],
+            'pass3_api_errors': 0,
+            'pass3_total_attempts': 0,
+            'pass3_successful_attempts': 0,
+            'pass3_input_char_stats': [],
+            'pass3_output_char_stats': [],
+            'context_length_errors': 0,
+            'rate_limit_errors': 0,
+            'quota_exceeded_errors': 0,
+            'other_api_errors': 0
+        }
+        print("🔄 Error statistics reset - ready for new analysis")

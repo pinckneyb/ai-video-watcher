@@ -1,0 +1,59 @@
+Video: simple_interrupted_IMG_3186.MOV
+Pattern: Simple Interrupted
+
+1. Perpendicular needle passes 4/5 proficient
+Consistently loaded the needle at the proximal-to-mid third and entered at right angles, following the arc with in-wound regrips to maintain symmetry across edges. This reliable 90-degree technique minimizes shear and earns a high score with little to correct.
+
+2. Gentle tissue handling 4/5 proficient
+Edges were presented with light dermal grasps, forceps engaged the epidermal-dermal junction deliberately, and handoffs caught the needle tip within the lumen to avoid crush. Minor repeated touches near the apex aside, tissue handling was careful and atraumatic.
+
+3. Square, secure knots 2/5 developing
+Knots on the central wound were trimmed flush and new stitches on the left were left untied, so secure, flat square knots were not demonstrated. Cutting tails to the knot compromises security and the absence of tied throws keeps this below standard.
+
+4. Appropriate approximation/tension 4/5 proficient
+The previously repaired lines were neatly approximated, and tension checks were performed to avoid puckering while slack was managed during new passes so edges just met. This reflects good tension control without blanching or gaps.
+
+5. Even spacing (0.5–1.0 cm) 2/5 developing
+The line shows staged, untied bites at the apex and elsewhere without a reproducible interval along the wound, and the completed segments do not demonstrate a consistent 0.5–1.0 cm cadence. The lack of an evident spacing strategy places this below standard.
+
+6. Edge eversion (flat/slight acceptable) 4/5 proficient
+Eversion was intentionally created with dermal pickups and perpendicular bites, and the corner was controlled to avoid inversion. The edges remained flat to slightly everted throughout.
+
+7. Economy of time and motion 4/5 proficient
+Hands stayed in the working triangle with tidy strand management, and two-instrument reloading minimized torque and repositioning. Aside from brief rehearsals and housekeeping pauses, movements were purposeful and efficient.
+
+Summative assessment:
+1. Perpendicular needle passes
+Consistently loaded the needle at the proximal-to-mid third and entered at right angles, following the arc with in-wound regrips to maintain symmetry across edges. This reliable 90-degree technique minimizes shear and earns a high score with little to correct.
+
+2. Gentle tissue handling
+Edges were presented with light dermal grasps, forceps engaged the epidermal-dermal junction deliberately, and handoffs caught the needle tip within the lumen to avoid crush. Minor repeated touches near the apex aside, tissue handling was careful and atraumatic.
+
+3. Square, secure knots
+Knots on the central wound were trimmed flush and new stitches on the left were left untied, so secure, flat square knots were not demonstrated. Cutting tails to the knot compromises security and the absence of tied throws keeps this below standard.
+
+4. Appropriate approximation/tension
+The previously repaired lines were neatly approximated, and tension checks were performed to avoid puckering while slack was managed during new passes so edges just met. This reflects good tension control without blanching or gaps.
+
+5. Even spacing (0.5–1.0 cm)
+The line shows staged, untied bites at the apex and elsewhere without a reproducible interval along the wound, and the completed segments do not demonstrate a consistent 0.5–1.0 cm cadence. The lack of an evident spacing strategy places this below standard.
+
+6. Edge eversion (flat/slight acceptable)
+Eversion was intentionally created with dermal pickups and perpendicular bites, and the corner was controlled to avoid inversion. The edges remained flat to slightly everted throughout.
+
+7. Economy of time and motion
+Hands stayed in the working triangle with tidy strand management, and two-instrument reloading minimized torque and repositioning. Aside from brief rehearsals and housekeeping pauses, movements were purposeful and efficient.
+
+RUBRIC_SCORES_START
+1: 4
+2: 4
+3: 2
+4: 4
+5: 2
+6: 4
+7: 4
+RUBRIC_SCORES_END
+
+Summative assessment:
+Tie each simple interrupted stitch as you place it, seat each throw flat and truly square, and stop trimming tails flush—leave 3 mm for braided and 5–7 mm for monofilament to preserve knot security. Establish and execute a spacing plan: mark or mentally set the midpoint and use the rule of halves to produce uniform 0.5–1.0 cm intervals with equal bite depth and distance from the edge, then maintain that rhythm into the apex. For corner control, consider a half-buried vertical mattress or place a stay stitch to prevent tissue strangulation while preserving eversion. Reduce nonproductive hovering—once angle, depth, and bite width are set, commit to the pass—and always keep the needle secured in the driver (never hanging free) or parked safely in a neutral zone. Maintain the excellent perpendicular entry, in-wound regrips, and gentle dermal handling; those fundamentals are strong—now tighten knot security, spacing discipline, and sharps control to reach a truly teachable standard.
+

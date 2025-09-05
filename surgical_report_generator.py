@@ -460,7 +460,7 @@ class SurgicalVOPReportGenerator:
             
             # Learner final product (unaltered) full page width
             learner_header = Paragraph("<b>Learner Final Product</b>", self.styles['Normal'])
-            learner_img = self._extract_final_product_image_raw(assessment_data, 6*inch)
+            learner_img = self._extract_final_product_image_enhanced_full(assessment_data, 6*inch)
             story.append(KeepTogether([learner_header, Spacer(1, 6), learner_img, Spacer(1, 20)]))
             
             # Add gold standard image below
@@ -485,6 +485,70 @@ class SurgicalVOPReportGenerator:
             story.append(Paragraph(f"Error creating image comparison: {e}", self.styles['Normal']))
         
         return story
+
+    def _extract_final_product_image_enhanced_full(self, assessment_data: Dict[str, Any], target_width: float):
+        """Select best final product frame using enhanced algorithm but return full unaltered image."""
+        try:
+            video_path = assessment_data.get('video_path')
+            if not video_path:
+                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+            
+            from video_processor import VideoProcessor
+            import cv2
+            
+            processor = VideoProcessor()
+            success = processor.load_video(video_path)
+            
+            if not success:
+                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+            
+            # Multi-tier sampling strategy for best final product image
+            duration = processor.duration
+            candidate_frames = []
+            
+            # Tier 1: Last 3% of video (most likely to show final product without hands)
+            self._sample_video_segment_enhanced(processor, duration * 0.97, duration, 10, candidate_frames, "final_3pct")
+            
+            # Tier 2: Last 7% of video (backup)
+            self._sample_video_segment_enhanced(processor, duration * 0.93, duration * 0.97, 8, candidate_frames, "final_7pct")
+            
+            # Tier 3: Last 15% of video (final fallback)
+            self._sample_video_segment_enhanced(processor, duration * 0.85, duration * 0.93, 6, candidate_frames, "final_15pct")
+            
+            if not candidate_frames:
+                return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
+            
+            # Score all frames with enhanced criteria (hand/instrument avoidance)
+            scored_frames = []
+            for timestamp, frame_data, tier in candidate_frames:
+                quality_score = self._score_frame_quality_enhanced(frame_data, tier)
+                scored_frames.append((timestamp, frame_data, quality_score, tier))
+            
+            # Sort by quality score (highest first)
+            scored_frames.sort(key=lambda x: x[2], reverse=True)
+            
+            # Get the best frame and return full image (no cropping)
+            best_timestamp, best_frame, best_score, best_tier = scored_frames[0]
+            
+            # Convert to PIL Image - FULL IMAGE, NO CROPPING
+            pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
+            
+            # Calculate dimensions maintaining aspect ratio
+            aspect_ratio = pil_image.height / pil_image.width
+            target_height = int(target_width * aspect_ratio)
+            
+            # Resize to target width while maintaining aspect ratio
+            resized_image = pil_image.resize((int(target_width), target_height), Image.Resampling.LANCZOS)
+            
+            # Convert to bytes for ReportLab
+            img_buffer = io.BytesIO()
+            resized_image.save(img_buffer, format='JPEG', quality=95)
+            img_buffer.seek(0)
+            
+            return RLImage(img_buffer, width=target_width, height=target_height)
+            
+        except Exception as e:
+            return Paragraph(f"Error extracting enhanced final product image: {str(e)}", self.styles['Normal'])
 
     def _extract_final_product_image_raw(self, assessment_data: Dict[str, Any], target_width: float):
         """Select a frame near the end and return unaltered image scaled to target width."""
@@ -862,6 +926,127 @@ class SurgicalVOPReportGenerator:
         except Exception as e:
             print(f"Error detecting metallic objects: {e}")
             return 0.0
+    
+    def _get_final_product_image(self, video_path: str, frames: list = None):
+        """Get the best final product image using enhanced selection algorithm."""
+        try:
+            from PIL import Image
+            import cv2
+            import numpy as np
+            
+            # If frames are provided, use them; otherwise extract from video
+            if frames and len(frames) > 0:
+                # Use the enhanced algorithm on provided frames
+                candidate_frames = []
+                
+                # Sample from the last 20% of frames for final product
+                total_frames = len(frames)
+                start_idx = max(0, int(total_frames * 0.8))
+                
+                for i in range(start_idx, total_frames, max(1, (total_frames - start_idx) // 10)):
+                    if i < len(frames):
+                        frame_data = frames[i]
+                        # Convert base64 to image if needed
+                        if isinstance(frame_data, dict) and 'base64' in frame_data:
+                            import base64
+                            from io import BytesIO
+                            img_data = base64.b64decode(frame_data['base64'])
+                            frame = cv2.imdecode(np.frombuffer(img_data, np.uint8), cv2.IMREAD_COLOR)
+                        else:
+                            frame = frame_data
+                        
+                        if frame is not None:
+                            candidate_frames.append((i, frame, "final_frames"))
+                
+                if not candidate_frames:
+                    return None
+                
+                # Score all frames
+                scored_frames = []
+                for idx, frame, tier in candidate_frames:
+                    quality_score = self._score_frame_quality_enhanced(frame, tier)
+                    scored_frames.append((idx, frame, quality_score, tier))
+                
+                # Sort by quality score (highest first)
+                scored_frames.sort(key=lambda x: x[2], reverse=True)
+                
+                # Return the best frame as PIL Image
+                best_frame = scored_frames[0][1]
+                pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
+                
+                # Intelligent cropping to focus on suture pad
+                cropped_image = self._intelligent_crop_suture_pad(pil_image)
+                
+                return cropped_image
+            
+            else:
+                # Fall back to video processing
+                from video_processor import VideoProcessor
+                
+                processor = VideoProcessor()
+                success = processor.load_video(video_path)
+                
+                if not success:
+                    return None
+                
+                # Use the enhanced extraction method
+                assessment_data = {'video_path': video_path}
+                return self._extract_final_product_image_with_pad_detection(assessment_data, 400)
+                
+        except Exception as e:
+            print(f"Error getting final product image: {e}")
+            return None
+    
+    def _intelligent_crop_suture_pad(self, pil_image):
+        """Intelligently crop image to focus on suture pad area."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert PIL to OpenCV
+            opencv_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+            
+            # Find the practice pad boundaries
+            gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+            
+            # Use edge detection to find pad boundaries
+            edges = cv2.Canny(gray, 50, 150)
+            
+            # Find contours
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            if contours:
+                # Find the largest rectangular contour (likely the pad)
+                largest_contour = max(contours, key=cv2.contourArea)
+                
+                # Get bounding rectangle
+                x, y, w, h = cv2.boundingRect(largest_contour)
+                
+                # Add some padding around the detected area
+                padding = 20
+                x = max(0, x - padding)
+                y = max(0, y - padding)
+                w = min(opencv_image.shape[1] - x, w + 2 * padding)
+                h = min(opencv_image.shape[0] - y, h + 2 * padding)
+                
+                # Crop the image
+                cropped = opencv_image[y:y+h, x:x+w]
+                
+                # Convert back to PIL
+                return Image.fromarray(cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB))
+            
+            # If no good contour found, crop to center square
+            h, w = opencv_image.shape[:2]
+            size = min(h, w)
+            start_y = (h - size) // 2
+            start_x = (w - size) // 2
+            
+            cropped = opencv_image[start_y:start_y+size, start_x:start_x+size]
+            return Image.fromarray(cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB))
+            
+        except Exception as e:
+            print(f"Error in intelligent cropping: {e}")
+            return pil_image  # Return original if cropping fails
 
     def _intelligent_crop_suturing_area(self, image) -> Image.Image:
         """Intelligently crop to focus on the suturing area with practice pad detection."""

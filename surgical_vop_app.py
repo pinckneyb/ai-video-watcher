@@ -515,8 +515,8 @@ def main():
         
         # Analysis settings
         st.subheader("⚙️ Analysis Settings")
-        fps = st.slider("Analysis FPS", 1.0, 5.0, 5.0, 0.5)
-        batch_size = st.slider("Batch Size", 5, 15, 10, 1, help="Number of frames processed together in each batch")
+        fps = st.slider("Analysis FPS", 1.0, 5.0, 1.0, 0.5)
+        batch_size = st.slider("Batch Size", 5, 15, 15, 1, help="Number of frames processed together in each batch")
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
