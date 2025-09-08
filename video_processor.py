@@ -115,7 +115,7 @@ class VideoProcessor:
         if fps <= 0:
             raise ValueError(f"Invalid FPS: {fps}")
         
-        end_time = end_time if end_time else self.duration
+        end_time = end_time if end_time else max(0, self.duration - 1.0)  # Use 1 second before end as final frame
         
         print(f"Extracting frames: start={start_time}, end={end_time}, fps={fps}, duration={self.duration}")
         

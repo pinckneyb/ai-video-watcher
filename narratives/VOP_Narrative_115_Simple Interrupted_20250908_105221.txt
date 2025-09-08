@@ -1,0 +1,49 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_115_Simple Interrupted.m4v
+Pattern: simple_interrupted
+Analysis Date: 2025-09-08 10:52:21
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+Opening and setup (0–44 s)
+The video begins with the right-sided incision as the active worksite and a centrally located incision already closed with a running stitch. The left hand leads with a needle driver while the right hand positions Adson forceps to control the near wound edge, providing gentle eversion and a clear corridor for the first bite. The needle is loaded at the proximal-to-mid third of its curve and aligned perpendicular to the skin. After a few regrips to perfect the angle, the driver rotates the needle through the near edge and across the wound, following its arc smoothly. The right hand manages the free strand, keeping it out of the needle’s path. The central running repair is left undisturbed.
+
+Advancing the first stitches and managing tension (45–74 s)
+With the needle now through, the left hand regrips near the swage to pull the suture through cleanly while the right hand controls slack and keeps the strand lateral to the field. Bite spacing and depth look consistent, and the edges approximate by steady traction on the suture rather than forceful pinching. The sequence pauses for housekeeping: scissors are brought in from the left to trim a tail near a knot on the right incision, then the needle is re-secured in the driver for the next pass. The right hand intermittently stabilizes tissue or suture but avoids crushing the skin edges.
+
+Placing another stitch and trimming (75–104 s)
+The right hand holds the forceps at the rightmost incision to steady the edge and/or suture while the left hand presents the needle driver orthogonally to the skin. The needle is loaded at the mid-to-proximal third and advanced in a controlled, arcing motion; the assisting hand occasionally re-enters with forceps to optimize exposure or gently tension the tail. Between passes the needle is reloaded to maintain a perpendicular trajectory. After passage, the suture is drawn through, slack is cleared, and the field remains organized with strands kept distal to avoid entanglement.
+
+Tensioning and instrument tying (105–149 s)
+With a pass completed, the left hand withdraws the driver momentarily while the right hand tensions the suture to seat the edges. The driver then returns not to drive a needle but to perform instrument ties: the right hand stabilizes the short tail with forceps while the driver manipulates the long limb to lay down square throws over the right incision. The knot is seated directly over the wound line under opposing traction, then scissors trim the ends to short stumps. The driver briefly repositions to hold the needle again at the proximal third, preparing for the next stitch.
+
+Reloading, planning, and continued interrupted closures (150–194 s)
+The next cycle begins with reloading and aligning the needle for another forehand bite. The right hand occasionally marks or indicates the planned entry/exit points and briefly uses scissors to tidy older tails. Forceps intermittently lift or steady the near edge without aggressive traction. The needle is oriented perpendicular to the incision, bites are taken symmetrically, and the right hand transitions from forceps to scissors as needed. A knot is completed and cut, leaving evenly spaced interrupted sutures along the right wound. Throughout, the driver typically operates superior/central to the wound while the opposite hand works lateral/inferior, maintaining a compact working triangle.
+
+Tension management, trimming, and staging the next stitch (195–224 s)
+With several stitches placed, attention shifts to managing suture tails and preparing for subsequent throws. The left hand “parks” the needle above the next intended site while the right hand tensions the free strand to keep the field clear and the knot visible. Scissors are attached and used briefly to cut tails close to knots; when not in use, instruments are set aside to the left. There is no new needle passage here—this interval is about exposure, tidy knots, and efficient transitions.
+
+Brief pause, then poised to continue (225–254 s)
+For a short stretch the right hand intermittently enters the field while the left remains mostly off-screen. Instruments rest on the table to the left. By the end of this segment, the right hand brings in a needle driver over the rightmost incision, aligning to begin another stitch, but no penetration occurs. The next sequence returns to trimming: forceps present a suture tail, the driver provides counter-tension over the knot, and scissors cut close to the knot without disturbing tissue.
+
+Marking and organizing for precise placement (255–284 s)
+Attention turns to planning: a skin marker is used to dot the intended bite points along the right laceration while the left hand stabilizes with the needle driver. The right hand lifts suture tails and briefly uses forceps to bring the needle off the pad. An instrument exchange at midline follows—forceps hand-to-driver transfer—so the left hand secures the needle in the holder, gripping it two-thirds from the tip and orienting the curve perpendicular/oblique to the incision, ready for the next pass. No actual tissue penetration is performed here; it’s a setup phase for accuracy and organization.
+
+Final trimming and knot-line housekeeping (285–314 s)
+The next intervals focus on finishing work along the right row. The right hand with forceps stabilizes individual suture tails; the left hand approaches from above with scissors to trim them at knot level. The left hand may keep a needle driver hovering over each knot to steady it while the right alternates between pickups and scissors. Movements stay small and deliberate over each knot, progressing along the row. The central running repair remains essentially untouched; this is a cleanup pass to standardize tail lengths and neaten the closure.
+
+Tensioning and tidying the suture lines (315–329 s)
+Bimanual work continues over the central and right repairs, mostly repositioning and lightly tensioning suture strands. The needle remains in the driver but is not used to take new bites. The right hand alternates between a blue-handled instrument/pen and forceps to guide strands and clear the field. Tools are occasionally parked briefly off to the side, then return as needed. No further tissue penetration or knot tying is performed—this is about final presentation and ensuring a tidy field.
+
+Closure complete and instruments off (330–335 s)
+A gloved right hand briefly hovers over the right half of the pad with a needle driver but does not engage tissue; other instruments rest quietly to the left. An arm sweeps across once without contacting the pad, and the field goes still, indicating work is complete.
+
+Overall flow and technique
+- The case progresses in repeating, disciplined cycles typical of simple interrupted skin closure: load and align the needle perpendicular to the edge; take a symmetric bite following the curve; pull through with controlled tension; perform instrument ties while the assistant hand stabilizes the short tail; trim tails close to the knot; move to the next site.
+- Hand positions evolve from an initial left-hand–dominant driver with right-hand forceps to occasional role swaps for instrument tying and trimming. Triangulation remains consistent: driver superior/central, assisting hand lateral/inferior, working within a tight corridor over the right incision.
+- The operator routinely pauses to organize the field—parking instruments, clearing suture slack, marking next bite points—before resuming placement. This produces an even cadence: brief bursts of precise movement punctuated by short organizational interludes.
+- The central incision’s running suture is largely a backdrop; the rightmost incision is systematically closed with spaced interrupted stitches, then refined with careful knot seating and uniform tail trimming. The final minutes are devoted to tidying and verification rather than additional suturing, ending with a quiet, organized field.
+
+============================================================
+END OF NARRATIVE

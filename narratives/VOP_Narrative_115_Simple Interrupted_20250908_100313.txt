@@ -1,0 +1,36 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_115_Simple Interrupted.m4v
+Pattern: simple_interrupted
+Analysis Date: 2025-09-08 10:03:13
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video opens on a synthetic skin pad with three linear wounds: the center already closed with a running suture, the right wound the focus of work, and the left wound untouched. Instruments are arranged laterally off the field. From the outset, the operator moves with a measured pace, building a right‑sided interrupted line one stitch at a time and then alternates through tying, trimming, and occasional reloading.
+
+At 0–14 s, both hands enter in opposition across the right incision. The left hand, with a needle driver loaded on the mid–distal body of a curved needle, approaches perpendicular to the surface. The right hand uses fine forceps to evert the near edge 1–3 mm from the margin, exposing an entry point. Several micro‑adjustments of needle grip and angle set up a controlled, orthogonal bite without yet passing through.
+
+Through 15–29 s, the left hand maintains control of the driver and needle while the right hand alternates briefly to scissors, then returns to managing the free strand. The needle orientation is refined over the right wound; this is a positioning phase, keeping the field clear and the suture tail organized for an efficient pass.
+
+From 30–59 s, the needle is driven through the right incision in a steady rhythm. The driver is held near the proximal third, the tip enters perpendicular, and the wrist follows the needle’s curvature cleanly. After each pass the needle is reloaded for the next bite while the opposite hand manages slack, keeping the strand out of the field. Bites are symmetric near the edge with appropriate depth; approximation occurs without aggressive tissue handling.
+
+At 60–74 s, there’s a brief pause to tidy. The left hand maintains light traction on the suture with the driver while the right hand brings in scissors to trim a tail at the knot. Instruments are then parked laterally. Immediately after, 75–89 s, the sequence shifts to tying: the left hand uses the needle driver to execute instrument throws while the right hand stabilizes the suture and, at times, the wound edge. Loops are formed across the wound axis and cinched vertically, seating the knot without distorting the edges.
+
+Between 90–134 s, finishing maneuvers repeat in a smooth cadence. One hand maintains tension at the knot while the other enters with scissors to cut tails; then the driver is used again to form additional throws on subsequent stitches. The work remains concentrated over the right wound; the central running line is undisturbed. The operator alternates throws to produce square knots, presents tails for cutting, and moves down the line in an organized fashion.
+
+By 135–149 s, a tie is completed and cut, and attention turns back to placement. The right hand positions the curved needle with forceps assistance; the left-hand driver regrips at the junction of the anterior third/posterior two‑thirds, setting a perpendicular approach for the next bite. Over 150–179 s, hands alternate roles fluidly—forceps expose while the needle holder advances toward the right wound, a marker briefly appears to plan spacing, and the needle is aligned for a standard entry.
+
+At 180–194 s, the left-hand driver performs the pass while the right hand everts the edge with Adson forceps. After passage, the driver releases the needle to control the suture for tensioning, and scissors trim the tail—an efficient pass–tie–cut cycle. From 195–224 s, the operator focuses on securing existing stitches: the driver serves as a post for instrument ties, the free strand is alternately pulled to square and seat knots, and tails are trimmed to length. The knots stack neatly, and tools are set aside between stitches to keep the field open.
+
+The next segment, 225–269 s, shows preparation for another right‑sided stitch. The right hand picks up the needle driver and orients the needle perpendicular over the wound, while the opposite hand intermittently uses forceps to stabilize tissue and a marker to plan entry points. An instrument exchange occurs mid‑sequence to optimize hand dominance: the right hand assumes the driver, the left takes the forceps. This is a deliberate planning phase—no penetration yet, but everything is aligned for the next bite.
+
+At 270–284 s, the flow changes intentionally from placement to removal practice on the right‑most line. The right hand brings in a blue‑handled stitch cutter to cut near knots with the blade directed away from the wound; the other hand controls tension with forceps and extracts several stitches along the track. Wound edges are not manipulated—attention is purely on safe, controlled suture removal.
+
+From 285–314 s, the operator tidies what remains: forceps control suture near the knots while scissors trim residual tails. The left hand intermittently stabilizes the knot with a driver so the right hand can cut close without loosening the throws. The work stays tight to the right‑most line, instruments coordinated and parallel to protect the tissue.
+
+Over 315–329 s, there are no new tissue bites. The left-hand driver intermittently grasps the suture or the needle to snug and lay down existing throws over the right and, briefly, the middle line. The right hand alternates a blue‑handled pick and fine forceps, entering and exiting as needed to manage tails. It feels like a closing choreography—final tensioning, checking knot stacks, and clearing the field.
+
+The sequence ends at 330–335 s with the field largely quiet: instruments rest to the left, a blue‑sleeved forearm passes transiently across the pad, and no further manipulation occurs. Overall, the procedure progresses from careful set‑up and needle positioning to a steady rhythm of passage, tying, and trimming on the right incision, punctuated by a deliberate switch to suture removal practice, and finishes with methodical final adjustments. Hand positions evolve from opposing exposure and perpendicular needle entry, to compact, coordinated instrument ties, to safe cutting and removal—always keeping instruments close, movements economical, and the wound line centered and visible.
+
+============================================================
+END OF NARRATIVE

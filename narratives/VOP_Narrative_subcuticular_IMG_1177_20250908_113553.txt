@@ -1,0 +1,61 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_subcuticular_IMG_1177.mov
+Pattern: subcuticular
+Analysis Date: 2025-09-08 11:35:53
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+Opening and setup (0.0–14.0 s)
+The sequence opens with a clean, methodical setup. The right hand controls a needle driver; the left hand works with fine tissue forceps. The curved needle is mounted at the proximal-to-mid third, concavity facing the operator, and presented perpendicular to the synthetic pad’s surface. The left hand gently everts and steadies a wound edge while the right hand commits to the first bite, following the needle’s arc through the dermis. The left then meets and guides the emerging tip to protect tissue and smooth the exit.
+
+Completing the first pass and equalizing suture (15.0–29.0 s)
+With the initial penetration made, the right hand advances the needle through the tract and across, then releases and parks it so the suture can be pulled through under control. The left forceps maintain light control of the edge; the operator equalizes strand lengths in preparation for tying. The needle holder will later become the tying instrument.
+
+Repositioning and target refinement (30.0–44.0 s)
+Before committing to another pass, there’s a brief pause to refine angle and approach. The right-hand driver repeatedly approaches the near lip of the incision to test orientation; the left hand stabilizes the pad and manages the free strand. A second instrument briefly appears, then is withdrawn. No tissue penetration occurs here—this is a recalibration phase to ensure perpendicular entry and a clean, curved path.
+
+First side-only bite, setting up the stitch (45.0–59.0 s)
+Now the technique is crisp and deliberate. The right-hand driver presents the needle perpendicular to the surface and takes an inside-to-outside bite through just the left wound edge while the left hand, with forceps, everts and stabilizes that margin. The driver advances along the needle’s curve without flattening the arc, then re-grasps closer to the tip to complete the exit. The stitch through the first edge is laid; the opposite edge remains untouched, setting up for the reciprocal bite.
+
+Corner work at the apex (60.0–74.0 s)
+Attention shifts to the inferior V-shaped corner. The right hand loads the needle for a right-to-left passage while the left hand carefully controls the apex with forceps. An apical bite is taken consistent with the start of a corner (half-buried mattress) stitch: entry near the right side of the apex, passage beneath the apical tissue, and emergence toward the left. The maneuvers protect the delicate corner from tearing. No knot is tied yet.
+
+Transition to tying; loop control (75.0–89.0 s)
+With passes complete at one site, the needle rests off-field and the right hand converts the needle driver into a tying tool. The left hand maintains tension on the standing limb and occasionally steadies the edge. The right hand forms a loop, passes the driver through, grasps the free end, and draws it through—beginning a square knot sequence. Throws alternate to lock the knot down the centerline, all without crowding the wound edges.
+
+Pull-through, reload, and prepare the opposite edge (90.0–104.0 s)
+The right hand pulls the suture through a completed pass, leaving an appropriate tail. Using the left forceps for assistance, the needle is reloaded on its body with the curve set for the next bite. The driver positions the needle to enter the opposing edge; the left hand reengages to present and evert the margin. Field is kept tidy; scissors remain unused.
+
+Clearing slack and precise setup (105.0–119.0 s)
+Slack is cleared and the working strand is directed superior-right to avoid entanglement. The needle is held about one-third from the swage, oriented perpendicular, and brought to the right wound edge, ready to pass toward the center. The left hand intermittently lifts the opposite edge, preparing the tissue for a symmetric bite.
+
+Pass, pull-through, and reload for the next entry (120.0–134.0 s)
+A controlled pass is completed and the suture is drawn through smoothly, removing slack and leaving the tail on the far side. The driver releases and promptly reloads the needle at the proximal third, reorienting the curve so the next entry will again meet the tissue perpendicularly. The left forceps keep the opposite margin steady and slightly everted while the right hand brings the driver back over the midline to set up the subsequent bite.
+
+Pass and immediate instrument tie (135.0–149.0 s)
+The right hand drives the arc through, re-grasps to deliver the tip, then pulls the needle through. With both limbs accessible, the driver transitions into instrument tying. The left hand may briefly manage the short tail or tissue edge while the right hand forms alternating throws, seats the knot at midline, and uses the driver as a gentle knot pusher to approximate the edges without crushing.
+
+Resetting and positioning for another bite (150.0–164.0 s)
+Suture is withdrawn cleanly through the previous tract. The left hand uses forceps to control the wound edge and, briefly, to present the needle. The right hand regrips the needle at roughly two-thirds from the tip, adjusts to a perpendicular approach, and advances toward the next entry point. The looped suture is managed away from the field; instruments stay coordinated and close at the intended bite site.
+
+Instrument tie—building a square knot (165.0–179.0 s)
+The focus shifts back to securing the stitch. The right-hand driver forms loops on the long limb and crosses the incision to capture the short tail held by the left hand. Alternating throws are created to build a square knot. Tension is balanced: the long limb draws away from the wound as the short limb is guided down, centering the knot without over-tightening.
+
+Switch to hand ties; minor safety lapse (180.0–194.0 s)
+The driver is set down and the operator completes additional throws with two-hand ties over the incision center. The rhythm is smooth, alternating hand positions to lay each throw neatly. In these frames, the left hand briefly holds the needle attached to the free end during tying—a minor sharps-safety lapse that risks needle deformation—before the sequence continues.
+
+Final two-hand tying and seating the knot (195.0–209.0 s)
+Two-hand tying continues efficiently. The left hand maintains steady counter-tension on the standing limb while the right hand forms and advances successive throws. The knot seats squarely at midline, and the wound edges lie approximated with minimal gapping. Instruments remain out of the way, keeping the tying field clear.
+
+Securement and cut (210.0–224.0 s)
+The right hand returns to the needle driver to execute the final instrument throws, alternating directions to lock the knot. The left hand controls the opposite strand to keep tension balanced. With the knot secure, the right hand picks up the scissors, trims the tails close to the knot, and sets the instruments aside. The incision is closed with a centered, tidy knot and properly approximated edges.
+
+Coda—field at rest (225.0 s)
+In the final still, one gloved hand holds the suture strand while the needle driver lies idle to the right. No tissue manipulation or active instrument use is underway—an interstitial moment that reads as a pause after closure, or a quiet reset before placing the next stitch.
+
+Overall flow and technique
+Across the sequence, the operator maintains a consistent, opposing-hand workflow: right-hand needle driving with perpendicular entries and curved, wrist-following arcs; left-hand forceps for gentle eversion and presentation of the edge. The rhythm becomes cyclical and efficient—load, drive, re-grasp, deliver, pull-through, reload—then transition to tying with a mix of instrument and hand throws, centering each knot and managing tension evenly. Suture slack is kept out of the field; the driver doubles as a knot pusher to seat throws without undue pressure. Brief recalibration moments precede critical passes (especially at the corner), and the final act—alternating throws and a clean cut—completes a controlled, didactic demonstration of simple interrupted closure with attention to corner management.
+
+============================================================
+END OF NARRATIVE

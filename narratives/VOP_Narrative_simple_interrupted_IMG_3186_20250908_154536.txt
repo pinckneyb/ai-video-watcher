@@ -1,0 +1,35 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_simple_interrupted_IMG_3186.MOV
+Pattern: simple_interrupted
+Analysis Date: 2025-09-08 15:45:36
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The session opens at the far‑left vertical slit, which is still untouched. The edges are prepared: the left hand uses Adson forceps to evert the margin while the right hand trims a small wedge at the inferior corner and then brings in a needle driver, presenting a curved needle perpendicular to the skin. Several brief passes of setup follow without penetrating the tissue; the driver hovers from the left side while the opposing forceps move in from the right, ready to stabilize the edge.
+
+Attention then shifts to the right‑side incision, which already carries a neat row of simple interrupted sutures. Work concentrates at the lower end. The right hand repeatedly brings a needle driver over the inferior portion, orienting the curved needle for a right‑to‑left pass, while the left hand appears intermittently with scissors or pickups to manage suture tails. The existing stitches maintain approximation, and the operator alternates between loading the needle and tensioning the most inferior stitch. No new bites are taken; the line remains with four completed interruptions while the tails are adjusted and tightened.
+
+The central incision is tidied next. The right hand lifts the inferior‑left edge with Adsons, exposing knots and tails, while the left hand trims and arranges along the lower two sutures. A needle driver briefly appears above the lower central line, loaded and ready, but no needle passage follows. This line, too, remains with four completed sutures.
+
+Work returns to the left slit for a longer sequence of first‑stitch placement. Initially, the driver in the left hand approaches the lower third while the right hand’s forceps evert the opposing margin. The needle is held two‑thirds from the tip, perpendicular to the surface, and presented for an outside‑in bite on the near edge. These early passes focus on taking a clean purchase of the near edge—withdraw, reload, and re‑aim—without yet crossing to the far side or tying. The operator then repositions higher up: the forceps grasp near the superior apex to evert and stabilize, and the driver brings the needle in from the lateral side to arc across the top of the slit. At the superior end, the needle passes through one edge and then the opposite; the suture is drawn through, and with the edges everted and aligned, the strand is tied using instrument ties. By the time this sequence at the top is secured, the left slit has its first completed simple interrupted stitch at the superior end.
+
+With that anchor in place, the instruments stay near the top of the left slit to begin the next stitch. The right hand’s Adsons pick up the dermis for eversion while the driver reloads the needle, again perpendicular to the skin, aiming to place a balanced, symmetric bite. Entry and exit punctures are created, and the strand is pulled through and tensioned, but no knot is thrown during these frames. Hand positions remain consistent with good technique: forceps stabilize and evert; the driver follows the needle’s curve; spacing is maintained so instrument tips can meet at the wound without crowding.
+
+The field shifts back to the right‑side incision for suture management. The right hand works directly over the wound to tension and pucker the edges as needed while manipulating existing knots and tails; the left hand with needle driver or scissors stays peripheral. No new tissue bites are taken. The lower end is prepared as though another stitch may be placed, with forceps lifting the inferior‑right edge and the driver hovering just superior‑left of the target, but the pass is not executed in these views. The right‑side line continues to show four completed interrupted sutures.
+
+One more brief return to the left slit shows further progress on the next stitch: the needle is driven through the near edge, the thread delivered, and traction applied to clear the arc. The left hand maintains eversion while the right hand elevates the thread above the pad. This pass is tensioned but remains untied during these frames.
+
+The final image returns to the right‑side incision. The right hand holds the curved needle near the swage, oriented to sweep leftward and downward, hovering above the superior portion of the line. Four evenly spaced interrupted sutures are visible; the needle is positioned to begin the next bite, but tissue contact has not yet occurred.
+
+Technique and hand position remain consistent throughout: the needle is held around two‑thirds from the tip, presented perpendicular to the skin, and driven in a smooth arc; the forceps evert rather than crush; and instrument spacing allows precise convergence over the wound. Work proceeds in short, focused bursts on one incision at a time, with occasional returns to previously sutured lines for tightening and tail management.
+
+By the end:
+- Right incision: four completed simple interrupted sutures are present, with preparation seen for an additional stitch but none placed.
+- Central incision: four completed simple interrupted sutures remain, trimmed and orderly.
+- Left incision: one completed simple interrupted stitch secures the superior end; an additional pass has been placed and tensioned elsewhere on the slit but is not yet tied.
+
+Total completed sutures visible across the pad at the conclusion: nine.
+
+============================================================
+END OF NARRATIVE

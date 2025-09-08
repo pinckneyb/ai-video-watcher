@@ -1,0 +1,74 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_subcuticular_IMG_1177.mov
+Pattern: subcuticular
+Analysis Date: 2025-09-08 12:03:30
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+Chronological narrative of the procedure
+
+0.0–14.0s: The work begins on the long central vertical incision. The right hand advances a needle driver from the patient’s right toward the inferior end of this line while the left hand, with forceps, everts and stabilizes the left wound edge. The needle is held at its proximal-to-mid third, perpendicular to the surface, and is aimed into the left edge at the inferior end to start the first simple interrupted stitch.
+
+15.0–29.0s: With the left forceps still controlling the near (left) edge and the right hand on the driver, the needle is completed through both edges in an arc. The team transitions immediately into instrument tying at the lower third of the central incision: the driver manipulates the long end while the left hand controls the short end, squaring the first throw over the coapting edges.
+
+30.0–44.0s: The right hand continues instrument ties to secure that first interrupted stitch at the lower third. The left hand alternates between holding a suture strand and gently supporting the near edge with fingertips for precise approximation. By the end of this segment, a single knot is seated at the lower third of the long central incision; no other lines are touched.
+
+45.0–59.0s: Moving slightly superior along the same central incision, the left hand returns to Adson forceps on the left margin while the right hand, with the needle holder, takes the next bite from the right edge across to the left. The needle is grasped about two-thirds from the tip, driven perpendicular to the pad, and traverses the lower half–to–mid portion of the central wound. This establishes a new stitch (second simple interrupted) with the suture now spanning the gap; tying has not yet occurred in these frames.
+
+60.0–74.0s: Still on the central incision (notably with a small V-shaped opening at the inferior end), the same stitch is completed across the inferior right and inferior left edges: outside-in on the right, regrasp, then inside-out on the left, while the left forceps maintain eversion. The thread lies across the wound ready to tie; scissors remain idle to the right.
+
+75.0–89.0s: The team ties this second stitch. The right hand uses the needle holder to form loops and capture the short end; the left hand intermittently steadies the left edge with forceps and manages the opposing strand. Successive throws are seated squarely as the strands are pulled in opposite directions across the central line.
+
+90.0–104.0s: Attention shifts slightly superior on the same central incision for another stitch. The left hand forceps repeatedly lift the left mid-incision edge; the right hand drives the needle, grasped at the proximal third and perpendicular to the skin, to complete the first bite. The free suture is drawn through and organized in preparation for the opposite bite.
+
+105.0–119.0s: One interrupted stitch is already present at the mid-lower portion of the central incision. The right hand manages the long end, drawing it superiorly/rightward to clear slack while the left forceps work the left edge. The needle is reloaded at the proximal third and presented perpendicular to enter the right edge; the right-hand driver approaches from the lower-right, crossing over the wound to take the next bite for a new, more superior stitch. The scissors lie off to the right and are unused.
+
+120.0–134.0s: The mid-portion stitch is cinched and confirmed, leaving one knot visible at midline. The left hand maintains eversion with forceps on the left lip while the right hand repositions the needle on the right edge to initiate the next stitch nearby (inferior/mid segment relative to the newly tied stitch). Throughout, only the central incision is manipulated; the lateral slits remain untouched.
+
+Shift to a different central incision (shorter line)
+
+135.0–149.0s: The focus moves to a second, shorter central vertical incision on the same pad. A simple interrupted stitch already spans this short incision, and these frames show its tightening and securing with instrument throws. The left hand uses Adson forceps to maintain slight eversion at the knot site while the right hand (needle driver) alternates between managing the needle/suture and completing the throws.
+
+150.0–164.0s: With one completed stitch sitting at the mid-portion of this short incision, the right hand reloads the needle at the proximal third, oriented to pass perpendicular to the pad. The left forceps evert the left margin while the right-hand driver approaches from the right to enter the right edge near the superior portion, beginning the next (superior) simple interrupted stitch.
+
+165.0–179.0s: No new tissue passes are made; instead, the operator transitions to tying the stitch placed near the superior half of the short incision. The left forceps stabilize/approximate the edges while the right hand uses the needle holder to form and seat instrument ties. The needle tip is kept away from the wound during this tying phase.
+
+180.0–194.0s: Tying continues over the short central incision. The right hand initially holds the needle driver while forming a loop, then both hands shift to manual knot tying. The instruments rest to the right; tension is applied symmetrically across the line to coapt the edges. No new bites are taken.
+
+195.0–209.0s: The same knot is further secured with additional throws. The needle remains attached to the suture but is not used; the needle holder and scissors rest on the field. The hands alternate traction across the short central incision to square and set the knot; the lateral incisions remain inactive.
+
+210.0–224.0s: Final instrument ties are placed to finish securing the stitch on the short incision. The right hand uses the driver to manipulate the loops and then to cut the tails while the left hand holds the free end just left of midline. The result is a neatly seated knot; no additional passes are made.
+
+Active suture line tracking and progression summary
+
+- Active line, early phase: The long central vertical incision is the sole focus from 0.0 to 134.0s. Across this interval the team works from inferior toward superior:
+  - First simple interrupted stitch is placed and tied at the lower third (0.0–44.0s).
+  - A second stitch is placed slightly superior (lower half to mid) and tied (45.0–89.0s).
+  - A third stitch is initiated more superiorly; one mid stitch is visible and tightened, and preparation for the next bite is shown (90.0–134.0s).
+  - Pattern: laddering superiorly along the same central line; only this incision is ever manipulated.
+
+- Shift in active line: At 135.0s the focus moves to a different, shorter central vertical incision. The lateral slits remain untouched.
+
+- Active line, late phase (short central incision): From 135.0 to 224.0s:
+  - One existing stitch at the mid-portion is tightened and secured (135.0–149.0s).
+  - A new superior stitch is placed (150.0–164.0s) and tied down over multiple segments with a mix of instrument and hand throws (165.0–209.0s).
+  - Final throws are seated and the tails are cut (210.0–224.0s).
+  - Pattern: two interrupted stitches on this shorter incision—one mid (pre-existing in these frames) and one added superiorly.
+
+Hand position evolution and spatial consistency
+
+- Throughout both sequences, hands work in opposition across the active central incision:
+  - Left hand predominantly uses forceps to grasp and evert the left wound edge, especially during needle passage and while seating knots.
+  - Right hand operates the needle driver, approaching from the patient’s right, with the needle held at the proximal third to mid-curve and oriented perpendicular to the skin for standard outside-in/inside-out bites.
+  - During tying, the right hand alternates driver-facilitated instrument throws and, later, pure hand ties; strands are drawn in opposite directions across the incision to square knots.
+  - Scissors rest to the right and are only used at the very end to trim tails.
+
+Technique consistency
+
+- Simple interrupted suturing is used throughout, with careful tissue eversion via forceps, perpendicular needle entry, and controlled arc passage through dermal layers. Knot tying progresses from instrument ties to occasional hand ties to finish. Suture management is deliberate: the right hand often lifts and organizes the long end superiorly/rightward between passes to avoid snagging, while the left hand controls the short end and tissue. At no time are the lateral incisions engaged.
+
+Overall, the video shows a methodical series of simple interrupted stitches placed along one central incision (long), working from the inferior third upward, followed by a deliberate shift to a second, shorter central incision where one existing stitch is secured and a new superior stitch is placed, tied, and trimmed. The active suture line is always the central incision—first the long one, then the short one—with hands and instruments consistently opposing each other across that line to create well-everted, squarely tied closures.
+
+============================================================
+END OF NARRATIVE

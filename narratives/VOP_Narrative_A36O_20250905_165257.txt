@@ -1,0 +1,39 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_A36O.mp4
+Pattern: simple_interrupted
+Analysis Date: 2025-09-05 16:52:57
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video opens with a calm setup phase as the surgeon establishes hand dominance and instrument control. From 0–14 s, the right hand works with a gold‑ring needle driver over the center of the field while the left hand positions tissue forceps at the wound. The needle is in the driver around its mid‑body/proximal third, and the suture trails superiorly and clear of the wound. No tissue is engaged yet; this is deliberate positioning and retrieval. Through 15–29 s, the left forceps begin to present the near (left) wound edge while the right hand refines the needle’s grasp so the tip and driver are perpendicular to the incision. The instruments approach from opposite sides and converge over the near-edge entry site; the suture arc is kept elevated to prevent drag.
+
+At 30–44 s the left hand briefly controls the needle itself, handing it off to the right needle holder for a proper load. Small regrips and assisted angle adjustments align pitch and yaw. The right hand rotates the holder, bringing the needle to a true perpendicular to the wound line; the suture remains untangled above the field. From 45–59 s and 60–74 s, this refinement continues: the right hand unlocks and re-locks the ratchet in micro-adjustments, shifting its grasp to the proximal–middle third of the curve. The left forceps hover near the near edge, ready to provide countertraction once penetration begins. The tip is brought to the target entry point at 90 degrees to the skin plane, the driver angling in from the right at about 30–45 degrees. By 75–89 s, the final approach is set: the forceps stabilize the near margin without crushing, the driver holds the needle securely and perpendicular, and both hands create a clear working triangle over the incision.
+
+The first pass begins at 90–104 s. The left forceps gently evert and steady the near (left) edge; the right hand drives the needle at a right angle, advancing by pronation–supination to follow the needle’s arc. The suture is controlled superiorly and does not sweep across the wound. Through 105–119 s, the driver maintains the arc; as the tip emerges, the left forceps shift from tissue to the needle, grasping just behind the tip to control exit and prevent tearing. The right hand regrips closer to the body when needed to continue the curve smoothly. By 120–134 s, the needle exits on the opposite (far) side. The left hand captures the tip; the right hand repositions on the body to complete pull‑through, drawing suture until an appropriate tail is left on the original entry side. The pass is perpendicular and symmetric, with good bite depth on both edges.
+
+With one limb now on the far side, the surgeon immediately prepares the return bite to bring both ends to the same side for tying. At 135–149 s, the needle is reloaded at the proximal–middle body, orientation checked, and the entry is taken on the far (superior) edge several millimeters from the margin. The driver again follows the needle’s curvature from far to near. The left forceps position just ahead of the emerging tip, catching it to finish the exit on the near side. Suture management remains meticulous—no dragging over the wound, and the field stays organized.
+
+There’s a brief reset at 150–164 s. The right hand fine‑tunes the grasp and angle for the next action; the left forceps provide light countertraction/elevation at the near edge as the point is brought to the skin, touching but not yet penetrating. This interlude shows the same disciplined rhythm: regrip, align, present the tissue, confirm the perpendicular approach.
+
+The sequence shifts to tying at 165–179 s. The needle is out of view while the right hand uses the driver to form loops around its shank; the left hand controls the standing part with the forceps. The driver passes through the loop to seize the short end, beginning the first throw of an instrument tie. Motions are economical: the left hand stays relatively stationary to maintain tension; the right hand performs the wrap and retrieval. Only the start of the knot is shown here.
+
+Following this knot work, the surgeon returns to needle control and reloads for the next stitch. Between 180–194 s and 195–209 s, the left forceps intermittently grasp the needle tip to help the right hand re-seat the needle on its body, again targeting a perpendicular trajectory. The suture is kept superiorly clear. By the end of this block, the needle is locked at the proximal–middle third and aimed to enter the near edge.
+
+At 210–224 s, the second stitch’s first pass is performed near‑to‑far. The left forceps gently lift the near edge to present the entry point; the right hand drives the needle smoothly through the arc, maintaining a 90‑degree skin approach. As the tip appears on the far side, the left hand steps in to grasp and control it, completing the pass while preserving edge alignment.
+
+The remainder of the video shows repeated, careful preparation for subsequent bites without capturing additional penetrations. From 225–239 s, the left hand alternates between holding the needle for loading and stabilizing the right wound edge; the right hand uses the ratcheted driver to secure the needle at the correct grasp point and adjust orientation to perpendicular. At 240–254 s, the left forceps initially cradle the needle; the right hand locks in the proper hold, performs small rotations to square the needle to the incision, and parks the suture strand away from the field. In 255–269 s and 270–284 s, this controlled loading sequence repeats: the left hand supports and positions the needle and suture loop while the right hand regrips to the distal‑to‑mid body, bringing the tip to the right‑side entry site. The field remains uncluttered, with hands opposed and working at a comfortable distance.
+
+Through 285–299 s, the right driver continues to refine grasp and angle; the left forceps stabilize the needle as needed and then move off to maintain a clear view of the target edge. By 300–303 s, the needle is properly mounted—jaws perpendicular to the curve, tip aligned nearly perpendicular to the incision—and both hands converge at the near edge with the forceps providing gentle eversion. The scissors remain parked; the suture stands elevated and free. The clip ends with the needle poised to take the next bite.
+
+Overall, the suturing demonstrates a steady, repeatable rhythm:
+- Load and orient the needle precisely at the proximal–middle third.
+- Present and gently evert the target edge with the non‑dominant forceps.
+- Drive by rotation, following the needle’s arc at a true right angle to the skin.
+- Receive the tip with the forceps for controlled exit, then regrip as needed to complete pull‑through.
+- Manage the suture to keep it off the wound and out of the instruments.
+- Tie with deliberate instrument throws, maintaining tension and visualization.
+This cadence is maintained throughout, with each cycle of reloading, alignment, and execution preparing for the next precise, perpendicular bite. The hands remain outside the wound, visualization is protected, and the suture line stays organized—an efficient, methodical approach to simple interrupted closure.
+
+============================================================
+END OF NARRATIVE

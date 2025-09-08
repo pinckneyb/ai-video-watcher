@@ -1,0 +1,46 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_215_Simple Interrupted.m4v
+Pattern: simple_interrupted
+Analysis Date: 2025-09-05 18:35:04
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+Opening and setup (0.0–14.0 s)
+The sequence opens with a clean bimanual setup over a synthetic skin pad. The left hand establishes control with a needle driver, holding the curved needle at the proximal third to mid‑body, perpendicular to the surface. The right hand works with fine tissue forceps from the opposite side. The forceps gently grasp the dermis a few millimeters from the edge to evert and present the near margin while the driver follows the needle’s curvature with a controlled pronation–supination arc. The needle is regrasped on the body after initial penetration to continue its smooth passage, with the suture trailing cleanly to the left. The hands settle into parallel, symmetric working positions centered over the incision, demonstrating clear triangulation and field control.
+
+First stitch on a lateral wound (15.0–44.0 s)
+The focus shifts to a rightmost incision where the left hand continues to drive the needle and the right hand alternates between pickups and controlling the free end. Bites are taken perpendicular to the edge at a consistent distance and depth, with the forceps providing eversion and precise guidance at entry and exit. After the needle traverses both edges, the left regrips and redirects for the second half of the pass. The suture is drawn through while maintaining a short, controlled tail. The driver is then briefly set aside, and scissors are introduced from the left to finalize the first simple interrupted knot: throws are seated centrally over the incision and excess tails are trimmed. Throughout, instruments stay lateral when idle, keeping the wound visible and unobstructed.
+
+Transition to the central incision: planning and first passes (45.0–74.0 s)
+Attention returns to the central slit. The left hand holds the needle driver above the near edge, refining the angle so the needle sits perpendicular with the curve aligned to arc across. The right hand lightly picks up the dermal edge to evert, then repositions toward the far side to receive the needle. The driver advances the needle in a smooth arc; minor regrips refine depth and trajectory. The right hand retrieves the needle at exit and helps pull the strand through, leaving a controlled tail and managing slack to prevent drag on the edges. Scissors briefly appear to tidy a tail, then withdraw.
+
+Instrument exchange, reloading, and strand control (75.0–89.0 s)
+There is a short interlude to reorganize. The right hand holds the needle and suture while the left releases the driver and briefly brings in scissors to trim a tail near the central marks. The left then reintroduces the needle driver, and the right passes the needle back, reloading it at the proximal third and reestablishing the perpendicular orientation. No tissue bites are taken here; it’s precise setup for the next pass.
+
+Building the central closure: bite, pass, and retrieve (90.0–104.0 s)
+With roles stabilized, the left hand (needle driver) and right hand (forceps) work in close opposition over the central wound. The forceps evert the edge just ahead of the needle tip. The driver maintains a vertical posture to preserve needle curvature through the dermis, and the right hand stays close to the tip to control the exit point. The bite lands contiguous with prior stitches, advancing the line while keeping the suture from sawing across the edges.
+
+Securing knots with instrument ties (105.0–134.0 s)
+The needle is parked safely away and the left hand uses the driver primarily as a tying instrument. The right hand acts as a post with the standing limb, occasionally stabilizing a wound edge as needed. The left forms successive throws—alternating direction to square the knot—and reaches across to grasp the short end, advancing each throw down the line without gapping. The standing part lies superiorly; the short tail is managed inferiorly. Once seated, the driver shifts leftward in preparation for the next stitch.
+
+Seat, reset, and reload (135.0–149.0 s)
+Knots are snugged with the driver held upright at midline while the opposite limb is tensioned laterally, then the instruments transition seamlessly back to suturing. The left hand uses forceps to gently evert the next target edge; the right reloads the needle on the driver, aligning the curve for the anticipated arc. Reloading is meticulous: jaws perpendicular to the needle axis, grasp at the proximal-to-mid third, no contact with the point.
+
+Continuing placement with steady rhythm (150.0–179.0 s)
+The next stitch proceeds with the left hand driving and the right hand everting, catching the needle tip at exit and handing it back for reloading. The suture loop is kept clear to avoid tangling. Briefly, hand dominance flips: the right hand takes the needle driver and performs a forehand pass from right to left while the left hand uses forceps to lift the dermis. Despite the switch, the technique remains consistent—perpendicular entry, controlled arc, gentle eversion, and smooth pull‑through—maintaining a stable working triangle and alignment with prior stitches.
+
+Reestablishing left-hand driver dominance; preparation for subsequent bites (180.0–209.0 s)
+The left hand resumes control of the needle driver while the right hand manages the needle mid‑body to fine‑tune orientation and maintain light tension on the active strand. The instruments operate in a tight central zone, alternating across the midline with short, efficient movements. A brief pause allows the right hand to bring in scissors to trim a tail; both hands then reset to their standard positions. Throughout, the previously placed sutures keep the edges approximated as the team prepares for the next pass.
+
+Drive, follow, and clear the field (210.0–239.0 s)
+A controlled, two‑edge passage follows: the driver advances the needle through one margin in a pronation–supination arc and out the opposite edge. The forceps are near the exit to grasp the tip, draw the needle through, and transfer it back to the driver for reloading. Eversion is maintained with delicate dermal bites placed at consistent spacing from the edge. After each pass, the right hand sweeps the suture away from the wound, keeping loops lateral and the field open. The sequence repeats with the same measured cadence, building a neat series of stitches along the central incision.
+
+Knot management and tail trimming (240.0–268.0 s)
+With another stitch completed, the left hand keeps the driver near‑vertical as a stabilizing post while the right hand tensions the standing limb and then executes instrument ties. Throws are alternated to square and seat the knot directly over the incision without crushing the edges. The right hand switches to scissors to cut the tail close to the knot, then returns to control strands while additional tails along the line are groomed. Final frames show both hands withdrawing, leaving a central wound precisely approximated by evenly spaced knots with neatly trimmed tails; the lateral incisions remain undisturbed.
+
+Overall flow and technique
+Across the entire sequence, the suturing displays a deliberate rhythm: plan the bite, evert with the forceps, drive the needle perpendicular in a smooth arc, regrip as needed, follow the needle out with the forceps, pull the suture through under control, then tie and trim before moving to the next site. Hand positions evolve fluidly—occasionally switching driver dominance—yet the core principles remain constant: gentle tissue handling, consistent bite depth and spacing, perpendicular needle entry, reloading at the proximal third, and vigilant suture management to keep the field clear. The result is a steady, efficient progression from initial setup to a cleanly closed central incision with well‑seated knots and tidy tails.
+
+============================================================
+END OF NARRATIVE

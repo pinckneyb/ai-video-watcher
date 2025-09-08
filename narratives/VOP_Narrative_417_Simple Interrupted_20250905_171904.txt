@@ -1,0 +1,46 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_417_Simple Interrupted.m4v
+Pattern: simple_interrupted
+Analysis Date: 2025-09-05 17:19:04
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video follows a methodical series of simple interrupted sutures on a synthetic skin pad with several parallel lacerations. Across the session the operator cycles through the core phases of interrupted closure—retrieving or loading the needle, organizing the two limbs, tying with consistent square‑knot technique, trimming, and then resetting for the next stitch—while moving from the lower‑left wound to other left‑sided and central incisions. The hands, instruments, and suture are kept organized throughout, with the right (green‑gloved) hand most often managing the long limb and the left hand driving the needle or serving as the tying post.
+
+0–14 s: The case opens at the inferior‑left slit. The right hand works with a ring‑handled needle driver, presenting the curved needle at the near edge with a mid‑body grasp and a perpendicular approach. A ring‑handled clamp placed vertically along the left pad margin holds the tail under gentle tension, establishing a clear post and keeping the field tidy. No penetration is shown here; instead, the operator is setting up alignment, spacing, and traction.
+
+15–44 s: The next moments pick up after a bite has already been placed and the suture traverses the wound. The left hand moves centrally with a needle driver while the right manages the long limb, wrapping it for instrument ties. The driver captures the short/tail limb and pulls it through to lay the first throw, then alternating wrap direction to build a square knot. The needle itself stays lateral and out of harm’s way while the throws are formed and seated down to the tissue surface. The rhythm is steady: wrap, retrieve the short limb, diverge hands to snug each throw flat, then repeat.
+
+45–59 s: Still over the lower‑central short incision, the right hand controls both limbs while the left driver assists. The knot is completed and seated neatly at the incision without gapping, tension balanced by alternating traction on each limb. Instruments are then parked off to the left, marking a brief pause before the next task.
+
+60–74 s: Attention remains on the lower‑left wound. The right hand, again with a needle driver, re‑grasps near the needle to draw the remaining suture through from a prior pass and create a long working end to the right. A second instrument on the left side intermittently stabilizes the near edge, but no new bite is taken. The main goal in this beat is strand management: extracting slack, separating the limbs, and preparing for secure tying.
+
+75–89 s: The left hand holds a needle driver near the incision and even briefly re‑loads the needle to a perpendicular posture—but then uses that driver as the tying instrument. The right hand brings the long limb across the lower field, and together they form and seat additional throws. The knot lays adjacent to the left side of the slit, with the driver serving as the post and the right hand providing lateral tension to set the throw flat.
+
+90–104 s: The sequence culminates in final knot security and trimming. The left driver crosses the suture line to capture the short end, the right maintains standing tension from the upper‑right, and alternating instrument positions yield a balanced square knot over the lower‑left incision. After both hands clear, scissors briefly re‑enter from the right to trim the tails, leaving a compact knot with short ends.
+
+105–119 s: With the lower‑left stitch secured, the right hand introduces fine pickups to retrieve and present the needle from within the same wound. The left hand takes control with a vertical, ring‑handled driver, grasping the needle at about the proximal‑mid curve with a firm, perpendicular hold. The right hand then clears slack by drawing the free strand laterally, readying the field for the next pass.
+
+120–134 s: The focus is on suture management and knot security of another previously placed stitch on this lower‑left site. The left‑hand driver acts as the post. The right hand wraps the long limb, the driver captures and brings the short tail across, and the limbs are pulled in opposite directions to seat a flat throw across the wound. Edges are approximated primarily by suture tension; no forceps‑based eversion is used here.
+
+135–149 s: The operator transitions to the more superior left incision, where earlier stitches are visible. The left hand initially manipulates the suture with a needle holder; the right hand alternates between fingertip tension, tissue forceps to steady the loop, and finally a gold‑handled needle holder to complete an instrument tie. The jaws double as a knot pusher to finish seating, and the team maintains the familiar cadence of alternating throws for square‑knot reliability.
+
+150–164 s: Preparation for another pass begins at the superior aspect of the left vertical laceration. A clamp is parked at the superior‑left quadrant, holding the standing limb to preserve tension and orientation. The right hand brings in the needle driver, gripping the needle near the midpoint; the left hand uses fine pickups to finesse the needle’s tip and align it perpendicular to the intended entry. No penetration is made here—the work is precise loading and positioning—then the needle and suture are drawn laterally to stage the next move.
+
+165–179 s: Over the left‑middle laceration, the right‑hand driver progressively re‑grips to the ideal point—about one‑third from the swaged end—rotating the needle until it presents square to the pad surface. The left hand controls the free strand and clears the line across the open laceration, maintaining a few millimeters of working height for a clean, perpendicular approach. The multiple small repositions are deliberate: the curvature and entry angle are tuned, but no bite is taken within these frames.
+
+180–194 s: The action shifts to the central vertical incision, already partially closed. The left hand parks the driver after guiding, while the right manages the suture and performs hand ties, seating another knot at the center of the repair. The needle, previously loaded and passed between sequences, is intentionally lateralized to the bottom‑right to avoid snaring the loop during tying. Approximation is maintained by balanced limb tension rather than by forceps on the edges.
+
+195–208 s: The camera returns to the left‑lateral incision, now closed with a line of simple interrupted stitches. In the opening frames, the right hand gives a final snug on a free strand near the most recent knot while a metallic instrument rests just left of the suture line. Then all hands clear, leaving a static field: the left repair shows multiple evenly spaced knots with short tails and slight, expected puckering; adjacent incisions remain open, awaiting subsequent attention.
+
+Across the full run, the technique evolves in a consistent, disciplined rhythm:
+- Setup and control: parked clamps or an off‑hand maintain a standing limb and clear the field; the needle is loaded perpendicular, typically gripped at the mid‑body or one‑third from the swage.
+- Retrieval and organization: slack is systematically removed, the needle is lateralized when tying, and the long limb is directed to the right for ergonomic instrument ties.
+- Knot construction: throws are laid with instrument ties (and later hand ties), alternating wrap direction to produce flat square knots; jaws are used as a knot pusher when needed.
+- Finishing: knots are seated directly on the skin surface with opposing traction, tails trimmed short, and the field reset for the next pass.
+
+The overall flow is unhurried and precise—load, present, tension, tie, trim, reload—moving from the lower‑left wound through the left‑sided repairs to the central incision, with careful suture management and consistent, perpendicular needle orientation guiding each step.
+
+============================================================
+END OF NARRATIVE

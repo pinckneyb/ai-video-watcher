@@ -209,8 +209,8 @@ class GPT5VisionClient:
             response = self.client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_completion_tokens=6000,
-                reasoning_effort="medium"  # Changed from "high" to "medium"
+                max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
+                reasoning_effort="high"  # Increased back to high for better synthesis
             )
             
             self.video_narrative = response.choices[0].message.content
@@ -258,7 +258,7 @@ class GPT5VisionClient:
             print(f"📊 PASS 2 ERROR SUMMARY: {self.error_stats['pass2_api_errors']} errors of {self.error_stats['pass2_total_attempts']} attempts")
             return error_msg
     
-    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine) -> Dict[str, Any]:
+    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine, final_product_image=None) -> Dict[str, Any]:
         """
         PASS 3: Compare video narrative to rubric for final assessment
         Focus on scoring against specific criteria
@@ -266,14 +266,33 @@ class GPT5VisionClient:
         if not self.video_narrative:
             return {"error": "No video narrative available for assessment"}
         
-        assessment_prompt = self._build_rubric_assessment_prompt(self.video_narrative, pattern_id, rubric_engine)
+        assessment_prompt = self._build_rubric_assessment_prompt(self.video_narrative, pattern_id, rubric_engine, final_product_image)
         
-        messages = [
-            {
-                "role": "user",
-                "content": assessment_prompt
-            }
-        ]
+        # Prepare messages with or without final product image
+        if final_product_image:
+            # Convert PIL image to base64
+            import base64
+            from io import BytesIO
+            buffered = BytesIO()
+            final_product_image.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": assessment_prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_str}", "detail": "high"}}
+                    ]
+                }
+            ]
+        else:
+            messages = [
+                {
+                    "role": "user",
+                    "content": assessment_prompt
+                }
+            ]
         
         # Track Pass 3 processing
         self.error_stats['pass3_total_attempts'] += 1
@@ -288,8 +307,8 @@ class GPT5VisionClient:
             response = self.client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_completion_tokens=8000,
-                reasoning_effort="medium"
+                max_completion_tokens=10000,  # Increased to handle longer narrative
+                reasoning_effort="high"  # Increased for better assessment quality
             )
             
             assessment_response = response.choices[0].message.content
@@ -357,8 +376,8 @@ class GPT5VisionClient:
             response = self.client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_completion_tokens=8000,
-                reasoning_effort="medium"
+                max_completion_tokens=10000,  # Increased to handle longer narrative
+                reasoning_effort="high"  # Increased for better assessment quality
             )
             
             return self._parse_flow_response(response.choices[0].message.content, rubric_engine)
@@ -376,15 +395,22 @@ class GPT5VisionClient:
 
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
-ANALYSIS REQUIREMENTS:
-Focus ONLY on surgically critical details:
+CRITICAL FOCUS: IDENTIFY THE ACTIVE SUTURE LINE
+Each video has exactly ONE suture line being worked on throughout the entire procedure. You must identify and focus ONLY on this single active incision - the one with hands and instruments nearby, where sutures are being added or completed. Ignore any other incision lines that are not being worked on.
 
-1. HAND POSITIONS: Where are hands positioned? What instruments are held?
-2. NEEDLE HANDLING: How is the needle grasped and positioned?
-3. TISSUE INTERACTION: What tissue is being manipulated? How are wound edges handled?
-4. SPATIAL RELATIONSHIPS: How are hands positioned relative to each other and the field?
+ANALYSIS REQUIREMENTS:
+Focus ONLY on surgically critical details of the ACTIVE suture line:
+
+1. ACTIVE SUTURE IDENTIFICATION: Which incision line is currently being worked on? Describe its location and characteristics.
+2. HAND POSITIONS: Where are hands positioned relative to the ACTIVE suture line? What instruments are held?
+3. NEEDLE HANDLING: How is the needle grasped and positioned for the ACTIVE suture?
+4. TISSUE INTERACTION: What tissue is being manipulated at the ACTIVE suture line? How are wound edges handled?
+5. SUTURE PROGRESSION: How many sutures are present at the ACTIVE line? Are new sutures being added?
+6. SUTURE COUNTING: Count the exact number of completed sutures visible in these frames on the active line.
+7. SPATIAL RELATIONSHIPS: How are hands positioned relative to the ACTIVE suture line and each other?
 
 OUTPUT: Concise, factual observations only. No color commentary. 150-300 words maximum.
+Focus internally on the active suture line, but describe the procedure naturally without mentioning "active suture line" or "focus" in your output.
 
 Analyze these {len(frames)} frames:"""
         
@@ -400,19 +426,37 @@ FRAME DESCRIPTIONS:
 
 TASK: Create a comprehensive narrative describing the complete surgical procedure.
 
-Focus on:
-1. How the procedure progresses over time
-2. What actions occurred between frames  
-3. How hand positions and techniques evolved
-4. The overall flow and rhythm of the suturing
+CRITICAL FOCUS: MAINTAIN ACTIVE SUTURE LINE CONTINUITY
+Throughout the narrative, you must track the single suture line being worked on. Each video has exactly ONE suture line being worked on throughout the entire procedure. Track the progression of sutures being added to this single active line.
 
-OUTPUT: Write a detailed chronological narrative that connects the frame observations into a coherent story of the surgical technique.
+Focus on:
+1. ACTIVE SUTURE LINE TRACKING: Which incision line is being worked on throughout the procedure? (This will be the same line throughout the entire video)
+2. SUTURE PROGRESSION: How many sutures are added to the active line? What is the pattern of suture placement?
+3. SUTURE COUNTING: Count the total number of completed sutures visible at the end of the procedure. Track how this number increases throughout the video.
+4. HAND POSITION EVOLUTION: How do hand positions change relative to the active suture line over time?
+5. TECHNIQUE CONSISTENCY: How does the suturing technique evolve on the active line?
+6. SPATIAL RELATIONSHIPS: How do hands and instruments move relative to the active suture line?
+7. FINAL STATE: Describe the final state of the suture line - how many completed sutures are visible?
+
+CRITICAL SUTURE COUNTING REQUIREMENT:
+You must carefully count and report the EXACT number of completed sutures visible in the final state of the procedure. Look at the final frame descriptions to see how many sutures are actually present. Do not make assumptions - count what you can actually see. This count is crucial for accurate assessment.
+
+MANDATORY SUTURE COUNT VERIFICATION:
+Before completing your narrative, you MUST:
+1. Count the total number of completed sutures visible in the final frames
+2. State this count explicitly in your narrative (e.g., "The procedure resulted in 4 completed sutures")
+3. Describe the final state of the suture line with the exact count
+4. Track how the suture count increases throughout the procedure
+
+OUTPUT: Write a comprehensive, detailed chronological narrative that connects the frame observations into a coherent story of the surgical technique. Include ALL important details from the frame descriptions. Be thorough and detailed - it's better to be comprehensive than to miss critical elements. Describe the procedure naturally without mentioning "active suture line" or internal focusing processes.
+
+NARRATIVE LENGTH REQUIREMENT: Generate a substantial narrative that captures the full complexity of the procedure. Aim for 8,000-12,000 characters to ensure no important details are lost.
 
 Create the video narrative:"""
         
         return prompt
     
-    def _build_rubric_assessment_prompt(self, video_narrative: str, pattern_id: str, rubric_engine) -> str:
+    def _build_rubric_assessment_prompt(self, video_narrative: str, pattern_id: str, rubric_engine, final_product_image=None) -> str:
         """Build prompt for PASS 3: Rubric assessment"""
         
         # Get rubric data
@@ -424,13 +468,28 @@ Create the video narrative:"""
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
 
-You are assessing a surgical video based on this comprehensive narrative:
+You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
-VIDEO NARRATIVE:
+OBSERVATION RECORD:
 {video_narrative}
 
+{"FINAL PRODUCT IMAGE: You also have access to the final product image showing the completed sutures. Use this image to verify your assessment of suture count, spacing, and final appearance. Count the actual number of completed sutures visible in this image." if final_product_image else ""}
+
 ASSESSMENT TASK:
-Evaluate this surgical performance against the specific rubric criteria. Base your assessment on the complete video narrative, not individual observations.
+Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
+
+CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
+Your assessment must focus ONLY on the single suture line that was worked on throughout the procedure. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
+
+PATTERN ASSESSMENT RULES:
+- You are assessing a {rubric_data['display_name']} suturing technique
+- Do NOT speculate about what pattern was being attempted or rename the technique
+- Assess the performance against the {rubric_data['display_name']} criteria only
+- If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
+- Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
+- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
+- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
+- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
 
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
@@ -454,6 +513,8 @@ RUBRIC ASSESSMENT FORMAT:
 For each rubric point (1-7), provide:
 1. A brief comment (1-2 sentences) describing what you observed
 2. A score (1-5) based on the strict guidelines above
+
+IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns or speculate about what was intended.
 
 Format each rubric point exactly like this:
 
@@ -500,21 +561,44 @@ Provide your complete assessment:"""
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
 
-You are now assessing a complete surgical video based on detailed frame-by-frame descriptions. These descriptions are from still images captured throughout the procedure. Your task is to:
+You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
-1. ANALYZE THE VIDEO FLOW: Use the frame descriptions to understand the overall flow and motion of the surgical procedure
-2. INTUIT MISSING ACTIONS: Fill in the gaps between frames to understand the complete technique
-3. ASSESS TECHNIQUE QUALITY: Apply the rubric criteria to evaluate the surgical performance
-
-FRAME-BY-FRAME DESCRIPTIONS:
+OBSERVATION RECORD:
 {descriptions_text}
 
+ASSESSMENT TASK:
+Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
+
+CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
+Your assessment must focus ONLY on the single suture line that was worked on throughout the procedure. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
+
+PATTERN ASSESSMENT RULES:
+- You are assessing a {rubric_data['display_name']} suturing technique
+- Do NOT speculate about what pattern was being attempted or rename the technique
+- Assess the performance against the {rubric_data['display_name']} criteria only
+- If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
+- Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
+- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
+- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
+- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
+
 VIDEO ASSESSMENT INSTRUCTIONS:
-- Analyze the sequence of descriptions to understand the flow of the procedure
-- Intuit what actions occurred between the captured frames
-- Assess the overall technique quality and consistency
-- Look for patterns, improvements, or deteriorations over time
-- Consider the spatial and temporal relationships between actions
+- Identify the single suture line that was worked on throughout the procedure (there is only one per video)
+- Assess the overall technique quality and consistency on this suture line only
+- Look for patterns, improvements, or deteriorations over time on this suture line
+- Consider the spatial and temporal relationships between actions on this suture line
+- Evaluate the flow and motion of the surgical procedure on this suture line
+- Do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally
+
+PATTERN ASSESSMENT RULES:
+- You are assessing a {rubric_data['display_name']} suturing technique
+- Do NOT speculate about what pattern was being attempted or rename the technique
+- Assess the performance against the {rubric_data['display_name']} criteria only
+- If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
+- Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
+- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
+- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
+- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
 
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
@@ -538,6 +622,8 @@ RUBRIC ASSESSMENT FORMAT:
 For each rubric point (1-7), provide:
 1. A brief comment (1-2 sentences) describing what you observed
 2. A score (1-5) based on the strict guidelines above
+
+IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns or speculate about what was intended.
 
 Format each rubric point exactly like this:
 

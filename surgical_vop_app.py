@@ -592,11 +592,20 @@ def main():
                 col_start, col_stop = st.columns([2, 1])
                 with col_start:
                     if st.button("🚀 Start Batch VOP Assessment", type="primary"):
-                        # Process each video with its detected pattern
+                        # Process each video using the existing working function
                         for i, (file, temp_path) in enumerate(zip(uploaded_file, temp_video_paths), 1):
                             file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
                             st.info(f"Processing {i}/{len(uploaded_file)}: {file.name} ({file_pattern})")
+                            
+                            # Use the existing working function
                             start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
+                            
+                            # Add a separator between videos
+                            if i < len(uploaded_file):
+                                st.divider()
+                        
+                        st.success(f"✅ Batch processing complete! Processed {len(uploaded_file)} videos.")
+                        
                 with col_stop:
                     if st.button("🛑 STOP Batch", type="secondary", help="Stop batch processing"):
                         st.warning("🛑 Batch processing stopped by user")
@@ -915,9 +924,25 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         except Exception as e:
             st.warning(f"⚠️ Could not export TXT file: {str(e)}")
         
-        # PASS 3: Rubric assessment based on video narrative
-        status_text.text("PASS 3: Applying rubric assessment to video narrative...")
-        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine)
+        # PASS 3: Rubric assessment based on video narrative with final product image
+        status_text.text("PASS 3: Applying rubric assessment to video narrative with final product image...")
+        
+        # Extract final product image for verification
+        final_product_image = None
+        try:
+            from surgical_report_generator import SurgicalVOPReportGenerator
+            report_gen = SurgicalVOPReportGenerator()
+            assessment_data_for_image = {'video_path': video_path, 'api_key': api_key}
+            report_gen._return_pil_for_html = True  # Flag to return PIL Image
+            final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
+            if final_product_image:
+                print("✅ Final product image extracted for Pass 3 assessment")
+            else:
+                print("⚠️ Could not extract final product image, proceeding without it")
+        except Exception as e:
+            print(f"⚠️ Error extracting final product image: {e}, proceeding without it")
+        
+        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine, final_product_image)
         
         if not enhanced_narrative.get('success', False):
             st.error(f"❌ PASS 3 failed: {enhanced_narrative.get('error', 'Unknown error')}")
@@ -1035,11 +1060,19 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     # Use the new structured format with rubric_comments
                     rubric_comments = enhanced_narrative.get('rubric_comments', {})
                     
+                    # Get rubric point titles for proper labeling
+                    pattern_data = rubric_engine.get_pattern_rubric(current_pattern)
+                    rubric_titles = {}
+                    if pattern_data and 'points' in pattern_data:
+                        for point in pattern_data['points']:
+                            rubric_titles[point['pid']] = point['title']
+                    
                     # Display rubric points in order
                     for point_num in range(1, 8):  # Points 1-7
                         if point_num in rubric_comments and point_num in extracted_scores:
                             comment = rubric_comments[point_num]
                             score = extracted_scores[point_num]
+                            title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
                             
                             # Determine adjective
                             if score >= 4.0:
@@ -1053,7 +1086,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                             else:
                                 adj = "inadequate"
                             
-                            f.write(f"<div class='rubric-point'>{point_num}. {comment} <strong>{score}/5 {adj}</strong></div>\n")
+                            f.write(f"<div class='rubric-point'>{point_num}. <strong>{title}</strong>: {comment} <strong>{score}/5 {adj}</strong></div>\n")
                     
                     # Add average score
                     if extracted_scores:
@@ -1089,7 +1122,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     assessment_data_for_image = {'video_path': video_path, 'api_key': api_key}
                     report_gen._return_pil_for_html = True  # Flag to return PIL Image for HTML
                     final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
-                    if final_product_image:
+                    if final_product_image and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
                         import base64
                         from io import BytesIO
                         buffered = BytesIO()
@@ -1194,6 +1227,43 @@ def display_assessment_results(rubric_engine: RubricEngine):
         enhanced_data = results["enhanced_narrative"]
         
         if isinstance(enhanced_data, dict):
+            # Display individual rubric point assessments with titles
+            rubric_comments = enhanced_data.get('rubric_comments', {})
+            extracted_scores = results.get("extracted_scores", {})
+            
+            if rubric_comments and extracted_scores:
+                st.subheader("📋 Individual Rubric Point Assessments")
+                
+                # Get rubric point titles for proper labeling
+                pattern_data = rubric_engine.get_pattern_rubric(st.session_state.selected_pattern)
+                rubric_titles = {}
+                if pattern_data and 'points' in pattern_data:
+                    for point in pattern_data['points']:
+                        rubric_titles[point['pid']] = point['title']
+                
+                # Display rubric points in order
+                for point_num in range(1, 8):  # Points 1-7
+                    if point_num in rubric_comments and point_num in extracted_scores:
+                        comment = rubric_comments[point_num]
+                        score = extracted_scores[point_num]
+                        title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
+                        
+                        # Determine adjective
+                        if score >= 4.0:
+                            adj = "exemplary"
+                        elif score >= 3.0:
+                            adj = "proficient"
+                        elif score >= 2.0:
+                            adj = "competent"
+                        elif score >= 1.0:
+                            adj = "developing"
+                        else:
+                            adj = "inadequate"
+                        
+                        st.markdown(f"**{point_num}. {title}** ({score}/5 {adj})")
+                        st.markdown(f"*{comment}*")
+                        st.markdown("---")
+            
             # Extract summative assessment from dictionary
             narrative = enhanced_data.get("summative_assessment", enhanced_data.get("full_response", ""))
         else:
