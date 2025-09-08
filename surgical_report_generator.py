@@ -487,7 +487,7 @@ class SurgicalVOPReportGenerator:
         return story
 
     def _extract_final_product_image_enhanced_full(self, assessment_data: Dict[str, Any], target_width: float):
-        """Select best final product frame using enhanced algorithm but return full unaltered image."""
+        """Select best final product frame using GPT-5 semantic evaluation."""
         try:
             video_path = assessment_data.get('video_path')
             if not video_path:
@@ -502,63 +502,113 @@ class SurgicalVOPReportGenerator:
             if not success:
                 return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
             
-            # BACKWARD SEARCH: Stop as soon as we find an optimal frame
             duration = processor.duration
-            
-            import cv2
             cap = cv2.VideoCapture(processor.video_path)
             if not cap.isOpened():
-                return Paragraph("Could not open video for backward search", self.styles['Normal'])
+                return Paragraph("Could not open video for frame extraction", self.styles['Normal'])
             
             fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
             
-            # Get API key for AI evaluation
+            # Get API key for GPT-5 evaluation
             api_key = assessment_data.get('api_key') or os.getenv('OPENAI_API_KEY')
             if not api_key:
                 cap.release()
-                return Paragraph("No API key available for AI frame selection", self.styles['Normal'])
+                return Paragraph("No API key available for GPT-5 frame evaluation", self.styles['Normal'])
             
+            # Test API key validity
             from openai import OpenAI
             client = OpenAI(api_key=api_key)
             
-            # Search backward frame by frame until we find an optimal one
-            search_duration = 5.0  # Search last 5 seconds max
-            sample_interval = 0.2  # Every 0.2 seconds
+            # Quick API test to see if key is valid
+            api_key_valid = False
+            try:
+                test_response = client.chat.completions.create(
+                    model='gpt-4o',
+                    messages=[{'role': 'user', 'content': 'test'}],
+                    max_completion_tokens=1
+                )
+                api_key_valid = True
+            except Exception as e:
+                print(f"⚠️ API key invalid, using fallback scoring: {e}")
+                api_key_valid = False
+            
+            # Sample images every 0.5 seconds going backward from 1 second before end
+            sample_interval = 0.5
+            max_attempts = 20
+            start_time = max(0, duration - 1.0)  # Start 1 second before end
             
             import numpy as np
+            import base64
+            from io import BytesIO
+            
             best_frame = None
             best_timestamp = None
-            frames_checked = 0
+            best_score = 0
             
-            for time_offset in np.arange(0, search_duration, sample_interval):
-                timestamp = duration - time_offset
+            print(f"🔍 GPT-5 Final Product Image Selection: Sampling {max_attempts} frames from {start_time:.1f}s backward")
+            
+            for attempt in range(max_attempts):
+                timestamp = start_time - (attempt * sample_interval)
                 if timestamp < 0:
                     break
-                    
+                
                 frame_number = int(timestamp * fps)
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
                 ret, frame = cap.read()
                 
-                if ret and frame is not None:
+                if not ret or frame is None:
+                    continue
+                
+                # Convert frame to base64 for GPT-5
+                _, buffer = cv2.imencode('.jpg', frame)
+                frame_b64 = base64.b64encode(buffer).decode('utf-8')
+                
+                # Evaluate frame with GPT-5 or fallback
+                if api_key_valid:
+                    try:
+                        score = self._evaluate_final_product_frame_gpt5(client, frame_b64, timestamp)
+                    except Exception as e:
+                        print(f"⚠️ GPT-5 evaluation failed: {e}")
+                        # Use simple heuristic scoring as fallback
+                        score = self._simple_frame_score(frame)
+                else:
+                    # Use simple heuristic scoring when API key is invalid
+                    score = self._simple_frame_score(frame)
+                
+                print(f"📊 Frame at {timestamp:.1f}s: Score {score}/10")
+                
+                if score > best_score:
+                    best_score = score
                     best_frame = frame
                     best_timestamp = timestamp
+                
+                # If we find a perfect score (10/10), use it immediately
+                if score >= 10:
+                    print(f"✅ Perfect frame found at {timestamp:.1f}s (score: {score}/10)")
                     break
             
             cap.release()
             
             # Handle results
             if best_frame is None:
-                print(f"⚠️ No optimal frame found in {frames_checked} frames from last {search_duration}s")
-                print("Using most recent frame as fallback")
-                # Get the very last frame as fallback
+                print("⚠️ No suitable frames found in 20 attempts")
+                # Fallback: try to get the last frame without GPT-5 evaluation
+                print("🔄 Falling back to last frame without AI evaluation")
                 cap = cv2.VideoCapture(processor.video_path)
-                cap.set(cv2.CAP_PROP_POS_FRAMES, int((duration - 0.1) * fps))
+                last_timestamp = max(0, duration - 1.0)
+                last_frame_number = int(last_timestamp * fps)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, last_frame_number)
                 ret, best_frame = cap.read()
                 cap.release()
-                best_timestamp = duration - 0.1
-                is_suboptimal = True
+                if ret and best_frame is not None:
+                    best_timestamp = last_timestamp
+                    best_score = 0  # Unknown score for fallback
+                    print(f"✅ Fallback frame selected at {best_timestamp:.1f}s")
+                else:
+                    print("❌ Fallback also failed")
+                    return None
             else:
-                is_suboptimal = False
+                print(f"🎯 Best frame selected at {best_timestamp:.1f}s with score {best_score}/10")
             
             # Convert to PIL Image - FULL IMAGE, NO CROPPING
             pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
@@ -583,8 +633,100 @@ class SurgicalVOPReportGenerator:
                 return RLImage(img_buffer, width=target_width, height=target_height)
             
         except Exception as e:
-            print(f"Error extracting enhanced final product image: {e}")
+            print(f"Error extracting GPT-5 final product image: {e}")
             return None  # Return None instead of Paragraph for HTML generation
+    
+    def _evaluate_final_product_frame_gpt5(self, client, frame_b64: str, timestamp: float) -> int:
+        """Use GPT-5 to evaluate a frame for final product suitability."""
+        try:
+            prompt = f"""You are evaluating a frame from a surgical suturing video for use as a "final product image" in an assessment report.
+
+FRAME TIMESTAMP: {timestamp:.1f} seconds
+
+EVALUATION CRITERIA (Score 0-10 total):
+1. CLEAR EVIDENCE OF FINISHED SUTURE (0-4 points):
+   - 4 points: Multiple completed sutures clearly visible with knots
+   - 3 points: Some completed sutures visible, good detail
+   - 2 points: Few sutures visible or unclear detail
+   - 1 point: Minimal suture evidence
+   - 0 points: No visible sutures
+
+2. ABSENCE OF HANDS/GLOVES (0-3 points):
+   - 3 points: No hands, gloves, or human presence visible
+   - 2 points: Minimal human presence (fingertips only)
+   - 1 point: Some human presence but not dominant
+   - 0 points: Hands/gloves clearly visible
+
+3. ABSENCE OF INSTRUMENTS (0-3 points):
+   - 3 points: No surgical instruments visible
+   - 2 points: Minimal instrument presence
+   - 1 point: Some instruments but not dominant
+   - 0 points: Instruments clearly visible
+
+TASK: Look at this image and give it a score from 0-10 based on the criteria above. Respond with ONLY the number (e.g., "7" or "10").
+
+SCORE:"""
+
+            response = client.chat.completions.create(
+                model="gpt-5",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{frame_b64}", "detail": "high"}}
+                        ]
+                    }
+                ],
+                max_completion_tokens=10,
+                reasoning_effort="low"
+            )
+            
+            score_text = response.choices[0].message.content.strip()
+            score = int(score_text) if score_text.isdigit() else 0
+            return max(0, min(10, score))  # Clamp between 0-10
+            
+        except Exception as e:
+            print(f"Error evaluating frame with GPT-5: {e}")
+            return 0
+    
+    def _simple_frame_score(self, frame) -> int:
+        """Simple heuristic scoring when GPT-5 evaluation fails."""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert to grayscale for analysis
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            
+            # Simple scoring based on image characteristics
+            score = 0
+            
+            # Check for image quality (not too dark, not too bright)
+            mean_brightness = np.mean(gray)
+            if 50 < mean_brightness < 200:
+                score += 2
+            
+            # Check for edges (indicates structure)
+            edges = cv2.Canny(gray, 50, 150)
+            edge_density = np.sum(edges > 0) / (edges.shape[0] * edges.shape[1])
+            if edge_density > 0.01:  # Some structure present
+                score += 2
+            
+            # Check for color variation (indicates detail)
+            color_std = np.std(frame.reshape(-1, 3), axis=0)
+            if np.mean(color_std) > 20:  # Good color variation
+                score += 2
+            
+            # Basic frame quality check
+            if frame.shape[0] > 200 and frame.shape[1] > 200:  # Reasonable size
+                score += 2
+            
+            return min(score, 8)  # Cap at 8 for heuristic scoring
+            
+        except Exception as e:
+            print(f"Error in simple frame scoring: {e}")
+            return 3  # Default moderate score
 
     def _extract_final_product_image_raw(self, assessment_data: Dict[str, Any], target_width: float):
         """Select a frame near the end and return unaltered image scaled to target width."""

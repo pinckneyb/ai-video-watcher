@@ -7,6 +7,7 @@ import streamlit as st
 import os
 import json
 import re
+import base64
 from typing import List, Dict, Any, Optional, Tuple
 import time
 from datetime import datetime
@@ -937,10 +938,14 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
             if final_product_image:
                 print("✅ Final product image extracted for Pass 3 assessment")
+                # Store in session state for HTML generation
+                st.session_state.final_product_image = final_product_image
             else:
                 print("⚠️ Could not extract final product image, proceeding without it")
+                st.session_state.final_product_image = None
         except Exception as e:
             print(f"⚠️ Error extracting final product image: {e}, proceeding without it")
+            st.session_state.final_product_image = None
         
         enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine, final_product_image)
         
@@ -1116,12 +1121,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write("<div class='image-section'>\n")
                 f.write("<h3>Learner Final Product</h3>\n")
                 try:
-                    from surgical_report_generator import SurgicalVOPReportGenerator
-                    report_gen = SurgicalVOPReportGenerator()
-                    # Use the enhanced AI-based final product image selection
-                    assessment_data_for_image = {'video_path': video_path, 'api_key': api_key}
-                    report_gen._return_pil_for_html = True  # Flag to return PIL Image for HTML
-                    final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
+                    # Use the final product image from session state
+                    final_product_image = st.session_state.get('final_product_image', None)
                     if final_product_image and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
                         import base64
                         from io import BytesIO
@@ -1148,7 +1149,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     gold_standard_path = gold_standard_mapping.get(current_pattern, f"gold_standard_{current_pattern}.jpg")
                     if os.path.exists(gold_standard_path):
                         with open(gold_standard_path, "rb") as img_file:
-                            img_data = base64.b64encode(img_file.read()).decode()
+                            import base64 as b64
+                            img_data = b64.b64encode(img_file.read()).decode()
                             f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
                     else:
                         f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")

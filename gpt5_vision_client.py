@@ -473,7 +473,7 @@ You have just observed a complete surgical video of suturing technique. The foll
 OBSERVATION RECORD:
 {video_narrative}
 
-{"FINAL PRODUCT IMAGE: You also have access to the final product image showing the completed sutures. Use this image to verify your assessment of suture count, spacing, and final appearance. Count the actual number of completed sutures visible in this image." if final_product_image else ""}
+{"FINAL PRODUCT IMAGE VERIFICATION: You have access to the final product image showing the completed sutures. You MUST use this image to verify your assessment. Look at this image carefully and count the actual number of completed sutures visible. Do NOT rely solely on the narrative - use this visual evidence to confirm suture counts and spacing. If the narrative says one thing but the image shows another, trust the image over the narrative." if final_product_image else ""}
 
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
@@ -490,6 +490,7 @@ PATTERN ASSESSMENT RULES:
 - COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
 - VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
 - MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
+- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
 
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
@@ -516,6 +517,8 @@ For each rubric point (1-7), provide:
 
 IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns or speculate about what was intended.
 
+CRITICAL INSTRUCTION: Before assessing any rubric point, look at the final product image (if available) and count the actual number of completed sutures visible. Use this visual evidence to verify your assessment. Do not make assumptions based on the narrative alone.
+
 Format each rubric point exactly like this:
 
 RUBRIC_POINT_1:
@@ -533,7 +536,14 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a concise, holistic assessment (2-3 paragraphs maximum) that focuses on MOTION and FLOW of the overall procedure, discusses rhythm and efficiency, comments on hand coordination, and addresses overall competence and areas for improvement. Do NOT repeat individual rubric point assessments.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
+- Overall procedural flow and rhythm
+- Hand coordination and technique efficiency  
+- General competence level and surgical judgment
+- Key strengths and areas needing improvement
+- Overall assessment of the learner's performance
+
+Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
@@ -581,6 +591,7 @@ PATTERN ASSESSMENT RULES:
 - COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
 - VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
 - MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
+- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
 
 VIDEO ASSESSMENT INSTRUCTIONS:
 - Identify the single suture line that was worked on throughout the procedure (there is only one per video)
@@ -599,6 +610,7 @@ PATTERN ASSESSMENT RULES:
 - COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
 - VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
 - MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
+- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
 
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
@@ -625,6 +637,8 @@ For each rubric point (1-7), provide:
 
 IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns or speculate about what was intended.
 
+CRITICAL INSTRUCTION: Before assessing any rubric point, look at the final product image (if available) and count the actual number of completed sutures visible. Use this visual evidence to verify your assessment. Do not make assumptions based on the narrative alone.
+
 Format each rubric point exactly like this:
 
 RUBRIC_POINT_1:
@@ -642,7 +656,14 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a concise, holistic assessment (2-3 paragraphs maximum) that focuses on MOTION and FLOW of the overall procedure, discusses rhythm and efficiency, comments on hand coordination, and addresses overall competence and areas for improvement. Do NOT repeat individual rubric point assessments.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
+- Overall procedural flow and rhythm
+- Hand coordination and technique efficiency  
+- General competence level and surgical judgment
+- Key strengths and areas needing improvement
+- Overall assessment of the learner's performance
+
+Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
