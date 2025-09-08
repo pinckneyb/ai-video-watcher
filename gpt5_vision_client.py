@@ -6,6 +6,7 @@ Handles both image analysis and flow interpretation using GPT-5
 
 import base64
 import json
+import re
 from typing import List, Dict, Any, Tuple
 from openai import OpenAI
 
@@ -81,7 +82,7 @@ class GPT5VisionClient:
                 model="gpt-5",
                 messages=messages,
                 max_completion_tokens=4000,
-                reasoning_effort="medium"
+                reasoning_effort="low"
             )
             
             frame_analysis = response.choices[0].message.content
@@ -288,7 +289,7 @@ class GPT5VisionClient:
                 model="gpt-5",
                 messages=messages,
                 max_completion_tokens=8000,
-                reasoning_effort="high"
+                reasoning_effort="medium"
             )
             
             assessment_response = response.choices[0].message.content
@@ -357,7 +358,7 @@ class GPT5VisionClient:
                 model="gpt-5",
                 messages=messages,
                 max_completion_tokens=8000,
-                reasoning_effort="high"
+                reasoning_effort="medium"
             )
             
             return self._parse_flow_response(response.choices[0].message.content, rubric_engine)
@@ -440,43 +441,41 @@ STRICT SCORING GUIDELINES:
 
 CRITICAL SCORING PHILOSOPHY:
 - Score 2 should be your DEFAULT for safe, functional technique
-- Score 4 means you would use this video to teach other attendings
-- Score 5 means this is among the best technique you've seen in your entire career
+- Score 3 means the technique is competent but has room for improvement
+- Score 4 means you would use this video to teach other attendings - RARE
+- Score 5 means this is among the best technique you've seen in your entire career - EXTREMELY RARE
 - Assume EVERY technique has flaws until proven otherwise
 - You are training surgeons who will operate on real patients
+- BE CONSERVATIVE: Most learners should score 2-3, not 3-4
+- Only give 4+ if the technique is genuinely impressive and teachable
+- Only give 5 if it's truly exemplary and could serve as a gold standard
 
-RUBRIC ASSESSMENT:
-For each rubric point, write ONE OR TWO SENTENCES that:
-- Describe what you observed in the technique based on the video narrative
-- Explain why the performance earned its score
-- NO timestamps, NO references to inability to judge
-- The AI must judge from the evidence available
+RUBRIC ASSESSMENT FORMAT:
+For each rubric point (1-7), provide:
+1. A brief comment (1-2 sentences) describing what you observed
+2. A score (1-5) based on the strict guidelines above
 
-RUBRIC POINTS:
+Format each rubric point exactly like this:
+
+RUBRIC_POINT_1:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+RUBRIC_POINT_2:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+[Continue for all 7 points...]
+
+RUBRIC_POINT_7:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+SUMMATIVE_ASSESSMENT:
+[Write a concise, holistic assessment (2-3 paragraphs maximum) that focuses on MOTION and FLOW of the overall procedure, discusses rhythm and efficiency, comments on hand coordination, and addresses overall competence and areas for improvement. Do NOT repeat individual rubric point assessments.]
+
+RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
-
-MANDATORY SCORING:
-RUBRIC_SCORES_START
-1: X
-2: X
-3: X
-4: X
-5: X
-6: X
-7: X
-RUBRIC_SCORES_END
-
-SUMMATIVE_ASSESSMENT_START
-Write a concise, holistic assessment (2-3 paragraphs maximum) that:
-- Focuses on MOTION and FLOW of the overall procedure
-- Discusses rhythm, efficiency, and surgical confidence
-- Comments on hand coordination and instrument management
-- Addresses overall procedural competence and areas for improvement
-- NEVER repeats individual rubric point assessments
-- NO timestamps, NO uncertainty language
-- Break into paragraphs if longer than 4 sentences
-- Keep concise and actionable
-SUMMATIVE_ASSESSMENT_END
 
 Provide your complete assessment:"""
         
@@ -526,43 +525,41 @@ STRICT SCORING GUIDELINES:
 
 CRITICAL SCORING PHILOSOPHY:
 - Score 2 should be your DEFAULT for safe, functional technique
-- Score 4 means you would use this video to teach other attendings
-- Score 5 means this is among the best technique you've seen in your entire career
+- Score 3 means the technique is competent but has room for improvement
+- Score 4 means you would use this video to teach other attendings - RARE
+- Score 5 means this is among the best technique you've seen in your entire career - EXTREMELY RARE
 - Assume EVERY technique has flaws until proven otherwise
 - You are training surgeons who will operate on real patients
+- BE CONSERVATIVE: Most learners should score 2-3, not 3-4
+- Only give 4+ if the technique is genuinely impressive and teachable
+- Only give 5 if it's truly exemplary and could serve as a gold standard
 
-RUBRIC ASSESSMENT:
-For each rubric point, write ONE OR TWO SENTENCES that:
-- Describe what you observed in the technique and flow
-- Explain why the performance earned its score
-- NO timestamps, NO references to inability to judge
-- The AI must judge from the evidence available
+RUBRIC ASSESSMENT FORMAT:
+For each rubric point (1-7), provide:
+1. A brief comment (1-2 sentences) describing what you observed
+2. A score (1-5) based on the strict guidelines above
 
-RUBRIC POINTS:
+Format each rubric point exactly like this:
+
+RUBRIC_POINT_1:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+RUBRIC_POINT_2:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+[Continue for all 7 points...]
+
+RUBRIC_POINT_7:
+Comment: [Your 1-2 sentence assessment of this specific point]
+Score: [1-5]
+
+SUMMATIVE_ASSESSMENT:
+[Write a concise, holistic assessment (2-3 paragraphs maximum) that focuses on MOTION and FLOW of the overall procedure, discusses rhythm and efficiency, comments on hand coordination, and addresses overall competence and areas for improvement. Do NOT repeat individual rubric point assessments.]
+
+RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
-
-MANDATORY SCORING:
-RUBRIC_SCORES_START
-1: X
-2: X
-3: X
-4: X
-5: X
-6: X
-7: X
-RUBRIC_SCORES_END
-
-SUMMATIVE_ASSESSMENT_START
-Write a concise, holistic assessment (2-3 paragraphs maximum) that:
-- Focuses on MOTION and FLOW of the overall procedure
-- Discusses rhythm, efficiency, and surgical confidence
-- Comments on hand coordination and instrument management
-- Addresses overall procedural competence and areas for improvement
-- NEVER repeats individual rubric point assessments
-- NO timestamps, NO uncertainty language
-- Break into paragraphs if longer than 4 sentences
-- Keep concise and actionable
-SUMMATIVE_ASSESSMENT_END
 
 Provide your complete assessment:"""
         
@@ -636,53 +633,60 @@ Provide your complete assessment:"""
     def _parse_assessment_response(self, response: str, rubric_engine) -> Dict[str, Any]:
         """Parse GPT-5 assessment response"""
         try:
-            # Extract rubric scores
+            # Extract rubric scores and comments from structured format
             scores = {}
-            if "RUBRIC_SCORES_START" in response and "RUBRIC_SCORES_END" in response:
-                score_section = response.split("RUBRIC_SCORES_START")[1].split("RUBRIC_SCORES_END")[0]
-                for line in score_section.strip().split('\n'):
-                    if ':' in line:
-                        parts = line.split(':', 1)
-                        if len(parts) == 2:
+            rubric_comments = {}
+            
+            # Parse each RUBRIC_POINT_X section
+            for i in range(1, 8):  # Points 1-7
+                point_pattern = f"RUBRIC_POINT_{i}:"
+                if point_pattern in response:
+                    # Extract the section for this rubric point
+                    start_idx = response.find(point_pattern)
+                    if start_idx != -1:
+                        # Find the next RUBRIC_POINT or SUMMATIVE_ASSESSMENT
+                        next_point_idx = response.find(f"RUBRIC_POINT_{i+1}:", start_idx)
+                        summative_idx = response.find("SUMMATIVE_ASSESSMENT:", start_idx)
+                        
+                        end_idx = len(response)
+                        if next_point_idx != -1:
+                            end_idx = min(end_idx, next_point_idx)
+                        if summative_idx != -1:
+                            end_idx = min(end_idx, summative_idx)
+                        
+                        point_section = response[start_idx:end_idx]
+                        
+                        # Extract comment
+                        comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
+                        if comment_match:
+                            rubric_comments[i] = comment_match.group(1).strip()
+                        
+                        # Extract score
+                        score_match = re.search(r'Score:\s*(\d+)', point_section)
+                        if score_match:
                             try:
-                                rubric_id = int(parts[0].strip())
-                                score = int(parts[1].strip())
-                                scores[rubric_id] = score
+                                scores[i] = int(score_match.group(1))
                             except ValueError:
                                 continue
             
-            # Extract summative assessment using new delimiters
+            # Extract summative assessment
             summative = ""
-            if "SUMMATIVE_ASSESSMENT_START" in response and "SUMMATIVE_ASSESSMENT_END" in response:
-                # Extract content between the new delimiters
-                summative = response.split("SUMMATIVE_ASSESSMENT_START")[1].split("SUMMATIVE_ASSESSMENT_END")[0].strip()
-            elif "RUBRIC_SCORES_END" in response:
-                # Fallback: Look for content after scores
-                after_scores = response.split("RUBRIC_SCORES_END")[1].strip()
-                
-                # Look for "Summative assessment:" or similar markers
-                summative_markers = ["Summative assessment:", "SUMMATIVE ASSESSMENT:", "Summative Assessment:"]
-                for marker in summative_markers:
-                    if marker in after_scores:
-                        summative = after_scores.split(marker)[1].strip()
-                        break
-                
-                # If no marker found, but we have content after scores, use that
-                if not summative and after_scores:
-                    summative = after_scores
+            if "SUMMATIVE_ASSESSMENT:" in response:
+                summative_section = response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
+                # Clean up any remaining prefixes or formatting
+                summative = summative_section.split('\n')[0].strip() if summative_section else ""
             else:
-                # Final fallback
-                summative_start = response.find("SUMMATIVE ASSESSMENT:") if "SUMMATIVE ASSESSMENT:" in response else response.find("Summative Assessment:")
+                # Fallback - look for summative anywhere in response
+                summative_start = response.find("Summative assessment:")
                 if summative_start != -1:
-                    summative = response[summative_start:].replace("SUMMATIVE ASSESSMENT:", "").replace("Summative Assessment:", "").strip()
-                else:
-                    summative = response
+                    summative = response[summative_start + len("Summative assessment:"):].strip()
             
             return {
-                "rubric_scores": scores,
-                "summative_assessment": summative,
-                "full_response": response,
-                "success": True
+                'success': True,
+                'rubric_scores': scores,
+                'rubric_comments': rubric_comments,
+                'summative_assessment': summative,
+                'full_response': response
             }
             
         except Exception as e:

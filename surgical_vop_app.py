@@ -576,7 +576,7 @@ def main():
                 with st.expander("📊 Video Information", expanded=True):
                     temp_video_paths = []
                     for i, file in enumerate(uploaded_file, 1):
-                        temp_path = f"temp_{file.name}"
+                        temp_path = os.path.join("temp_videos", f"temp_{file.name}")
                         with open(temp_path, "wb") as f:
                             f.write(file.read())
                         temp_video_paths.append(temp_path)
@@ -605,7 +605,7 @@ def main():
                 # Single file
                 with st.expander("📊 Video Information", expanded=True):
                     # Save video temporarily for analysis
-                    temp_video_path = f"temp_{uploaded_file.name}"
+                    temp_video_path = os.path.join("temp_videos", f"temp_{uploaded_file.name}")
                     with open(temp_video_path, "wb") as f:
                         f.write(uploaded_file.read())
                     
@@ -992,13 +992,13 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                             if line.strip() and line.strip()[0].isdigit() and '.' in line:
                                 point_num = int(line.split('.')[0])
                                 score = extracted_scores.get(point_num, 3)
-                                if score >= 4.5:
+                                if score >= 4.0:
                                     adj = "exemplary"
-                                elif score >= 3.5:
+                                elif score >= 3.0:
                                     adj = "proficient"
-                                elif score >= 2.5:
+                                elif score >= 2.0:
                                     adj = "competent"
-                                elif score >= 1.5:
+                                elif score >= 1.0:
                                     adj = "developing"
                                 else:
                                     adj = "inadequate"
@@ -1032,49 +1032,39 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write(f"<p><strong>Pattern:</strong> {current_pattern.replace('_', ' ').title()}</p>\n")
                 
                 if enhanced_narrative and isinstance(enhanced_narrative, dict):
-                    full_response = enhanced_narrative.get('full_response', '')
-                    if full_response and "RUBRIC_SCORES_START" in full_response:
-                        # Get rubric assessments (everything before scores)
-                        rubric_content = full_response.split("RUBRIC_SCORES_START")[0].strip()
-                        
-                        # Display each rubric point with its score
-                        import re
-                        lines = rubric_content.split('\n')
-                        for line in lines:
-                            line = line.strip()
-                            if line and re.match(r'^\d+\.', line):  # Starts with number and period
-                                # Extract point number
-                                match = re.match(r'^(\d+)', line)
-                                if match:
-                                    point_num = int(match.group(1))
-                                    if point_num in extracted_scores:
-                                        score = extracted_scores[point_num]
-                                        if score >= 4.5:
-                                            adj = "exemplary"
-                                        elif score >= 3.5:
-                                            adj = "proficient"
-                                        elif score >= 2.5:
-                                            adj = "competent"
-                                        elif score >= 1.5:
-                                            adj = "developing"
-                                        else:
-                                            adj = "inadequate"
-                                        f.write(f"<div class='rubric-point'>{line} <strong>{score}/5 {adj}</strong></div>\n")
-                                    else:
-                                        f.write(f"<div class='rubric-point'>{line}</div>\n")
-                            elif line:  # Non-numbered lines (continuation of rubric points)
-                                f.write(f"<p>{line}</p>\n")
+                    # Use the new structured format with rubric_comments
+                    rubric_comments = enhanced_narrative.get('rubric_comments', {})
+                    
+                    # Display rubric points in order
+                    for point_num in range(1, 8):  # Points 1-7
+                        if point_num in rubric_comments and point_num in extracted_scores:
+                            comment = rubric_comments[point_num]
+                            score = extracted_scores[point_num]
+                            
+                            # Determine adjective
+                            if score >= 4.0:
+                                adj = "exemplary"
+                            elif score >= 3.0:
+                                adj = "proficient"
+                            elif score >= 2.0:
+                                adj = "competent"
+                            elif score >= 1.0:
+                                adj = "developing"
+                            else:
+                                adj = "inadequate"
+                            
+                            f.write(f"<div class='rubric-point'>{point_num}. {comment} <strong>{score}/5 {adj}</strong></div>\n")
                     
                     # Add average score
                     if extracted_scores:
                         avg_score = sum(extracted_scores.values()) / len(extracted_scores)
-                        if avg_score >= 4.5:
+                        if avg_score >= 4.0:
                             avg_adj = "exemplary"
-                        elif avg_score >= 3.5:
+                        elif avg_score >= 3.0:
                             avg_adj = "proficient"
-                        elif avg_score >= 2.5:
+                        elif avg_score >= 2.0:
                             avg_adj = "competent"
-                        elif avg_score >= 1.5:
+                        elif avg_score >= 1.0:
                             avg_adj = "developing"
                         else:
                             avg_adj = "inadequate"
@@ -1085,16 +1075,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     # Add summative comment
                     summative = enhanced_narrative.get('summative_assessment', '')
                     if summative:
-                        # Remove redundant "summative assessment" prefixes
-                        clean_summative = summative
-                        prefixes_to_remove = ["Summative assessment:", "SUMMATIVE ASSESSMENT:", "Summative Assessment:"]
-                        for prefix in prefixes_to_remove:
-                            if clean_summative.startswith(prefix):
-                                clean_summative = clean_summative[len(prefix):].strip()
-                                break
-                        
                         f.write("<br>\n")
-                        f.write(f"<div class='summative-comment'><strong>Summative Comment:</strong> {clean_summative}</div>\n")
+                        f.write(f"<div class='summative-comment'><strong>Summative Comment:</strong> {summative}</div>\n")
                 
                 # Learner Final Product Image (first)
                 f.write("<h2>Final Product Comparison</h2>\n")
@@ -1103,7 +1085,10 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 try:
                     from surgical_report_generator import SurgicalVOPReportGenerator
                     report_gen = SurgicalVOPReportGenerator()
-                    final_product_image = report_gen._get_final_product_image(video_path, frames)
+                    # Use the enhanced AI-based final product image selection
+                    assessment_data_for_image = {'video_path': video_path, 'api_key': api_key}
+                    report_gen._return_pil_for_html = True  # Flag to return PIL Image for HTML
+                    final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
                     if final_product_image:
                         import base64
                         from io import BytesIO
@@ -1140,7 +1125,29 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 
                 f.write("</body>\n</html>\n")
             
-            st.success(f"✅ TXT and HTML reports auto-generated: {txt_filename}, {html_filename}")
+            st.success(f"✅ TXT and HTML reports auto-generated:")
+            
+            # Create clickable links to the generated files
+            col1, col2 = st.columns(2)
+            with col1:
+                with open(txt_filename, "rb") as f:
+                    st.download_button(
+                        label="📄 Download TXT Report",
+                        data=f.read(),
+                        file_name=os.path.basename(txt_filename),
+                        mime="text/plain"
+                    )
+            with col2:
+                with open(html_filename, "rb") as f:
+                    st.download_button(
+                        label="🌐 Download HTML Report", 
+                        data=f.read(),
+                        file_name=os.path.basename(html_filename),
+                        mime="text/html"
+                    )
+            
+            # Also show file paths for reference
+            st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(html_filename)}")
         except Exception as report_error:
             st.warning(f"⚠️ Could not auto-generate reports: {str(report_error)}")
 

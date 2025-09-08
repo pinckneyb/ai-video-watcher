@@ -502,52 +502,89 @@ class SurgicalVOPReportGenerator:
             if not success:
                 return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
             
-            # PROPER SOLUTION: Multi-tier sampling with enhanced selection for clean final product
+            # BACKWARD SEARCH: Stop as soon as we find an optimal frame
             duration = processor.duration
-            candidate_frames = []
             
-            # Tier 1: Last 1% of video (most likely to show final product)
-            self._sample_video_segment_enhanced(processor, duration * 0.99, duration, 20, candidate_frames, "final_1pct")
+            import cv2
+            cap = cv2.VideoCapture(processor.video_path)
+            if not cap.isOpened():
+                return Paragraph("Could not open video for backward search", self.styles['Normal'])
             
-            # Tier 2: Last 3% of video
-            self._sample_video_segment_enhanced(processor, duration * 0.97, duration * 0.99, 15, candidate_frames, "final_3pct")
+            fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
             
-            # Tier 3: Last 5% of video (backup)
-            self._sample_video_segment_enhanced(processor, duration * 0.95, duration * 0.97, 10, candidate_frames, "final_5pct")
+            # Get API key for AI evaluation
+            api_key = assessment_data.get('api_key') or os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                cap.release()
+                return Paragraph("No API key available for AI frame selection", self.styles['Normal'])
             
-            if not candidate_frames:
-                return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key)
             
-            # Use AI semantic understanding to select best final product image
-            # Pass API key through assessment data
-            assessment_data_with_key = assessment_data.copy()
-            if 'api_key' not in assessment_data_with_key:
-                assessment_data_with_key['api_key'] = os.getenv('OPENAI_API_KEY')
+            # Search backward frame by frame until we find an optimal one
+            search_duration = 5.0  # Search last 5 seconds max
+            sample_interval = 0.2  # Every 0.2 seconds
             
-            best_frame, best_timestamp = self._ai_select_final_product_frame(candidate_frames, assessment_data_with_key)
+            import numpy as np
+            best_frame = None
+            best_timestamp = None
+            frames_checked = 0
             
+            for time_offset in np.arange(0, search_duration, sample_interval):
+                timestamp = duration - time_offset
+                if timestamp < 0:
+                    break
+                    
+                frame_number = int(timestamp * fps)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+                ret, frame = cap.read()
+                
+                if ret and frame is not None:
+                    best_frame = frame
+                    best_timestamp = timestamp
+                    break
+            
+            cap.release()
+            
+            # Handle results
             if best_frame is None:
-                return Paragraph("AI could not select suitable final product frame", self.styles['Normal'])
+                print(f"⚠️ No optimal frame found in {frames_checked} frames from last {search_duration}s")
+                print("Using most recent frame as fallback")
+                # Get the very last frame as fallback
+                cap = cv2.VideoCapture(processor.video_path)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, int((duration - 0.1) * fps))
+                ret, best_frame = cap.read()
+                cap.release()
+                best_timestamp = duration - 0.1
+                is_suboptimal = True
+            else:
+                is_suboptimal = False
             
             # Convert to PIL Image - FULL IMAGE, NO CROPPING
             pil_image = Image.fromarray(cv2.cvtColor(best_frame, cv2.COLOR_BGR2RGB))
             
-            # Calculate dimensions maintaining aspect ratio
-            aspect_ratio = pil_image.height / pil_image.width
-            target_height = int(target_width * aspect_ratio)
-            
-            # Resize to target width while maintaining aspect ratio
-            resized_image = pil_image.resize((int(target_width), target_height), Image.Resampling.LANCZOS)
-            
-            # Convert to bytes for ReportLab
-            img_buffer = io.BytesIO()
-            resized_image.save(img_buffer, format='JPEG', quality=95)
-            img_buffer.seek(0)
-            
-            return RLImage(img_buffer, width=target_width, height=target_height)
+            # For HTML generation, return PIL Image directly
+            # For PDF generation, this method gets called with target_width for ReportLab
+            if hasattr(self, '_return_pil_for_html') and self._return_pil_for_html:
+                return pil_image
+            else:
+                # Calculate dimensions maintaining aspect ratio
+                aspect_ratio = pil_image.height / pil_image.width
+                target_height = int(target_width * aspect_ratio)
+                
+                # Resize to target width while maintaining aspect ratio
+                resized_image = pil_image.resize((int(target_width), target_height), Image.Resampling.LANCZOS)
+                
+                # Convert to bytes for ReportLab
+                img_buffer = io.BytesIO()
+                resized_image.save(img_buffer, format='JPEG', quality=95)
+                img_buffer.seek(0)
+                
+                return RLImage(img_buffer, width=target_width, height=target_height)
             
         except Exception as e:
-            return Paragraph(f"Error extracting enhanced final product image: {str(e)}", self.styles['Normal'])
+            print(f"Error extracting enhanced final product image: {e}")
+            return None  # Return None instead of Paragraph for HTML generation
 
     def _extract_final_product_image_raw(self, assessment_data: Dict[str, Any], target_width: float):
         """Select a frame near the end and return unaltered image scaled to target width."""
@@ -800,6 +837,64 @@ class SurgicalVOPReportGenerator:
         except Exception as e:
             print(f"Error sampling video segment: {e}")
 
+    def _ai_evaluate_single_frame(self, client, frame_b64, timestamp, frame_count):
+        """Evaluate a single frame to see if it's optimal for final product."""
+        try:
+            prompt = f"""You are evaluating frame {frame_count} at {timestamp:.1f}s from a surgical video.
+
+QUESTION: Does this frame show ONLY the practice pad with completed sutures and NOTHING ELSE?
+
+REQUIREMENTS FOR "YES":
+- Shows the suturing practice pad (synthetic skin pad)
+- Shows completed sutures on the pad
+- NO hands, fingers, gloves, or any part of human body
+- NO surgical instruments (scissors, forceps, etc.)
+- NO needles being manipulated
+- Clean view of just the finished work
+
+Respond with ONLY "YES" if this frame meets ALL requirements, or "NO" if it contains any hands/instruments/human presence.
+
+Your response:"""
+
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{frame_b64}",
+                                "detail": "high"
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            response = client.chat.completions.create(
+                model="gpt-5",
+                messages=messages,
+                max_completion_tokens=10,
+                reasoning_effort="low"
+            )
+            
+            ai_response = response.choices[0].message.content.strip().upper()
+            print(f"  Frame {frame_count} at {timestamp:.1f}s: AI says '{ai_response}'")
+            
+            # If empty response, there's an API issue
+            if not ai_response:
+                print(f"⚠️ TRACKING: GPT-5 returned empty response for frame {frame_count}")
+                print(f"⚠️ TRACKING: Response object: {response}")
+                return False
+            
+            return ai_response == "YES"
+            
+        except Exception as e:
+            print(f"❌ TRACKING: Error evaluating frame {frame_count}: {e}")
+            print(f"❌ TRACKING: Exception type: {type(e).__name__}")
+            return False
+
     def _ai_select_final_product_frame(self, candidate_frames, assessment_data):
         """Use AI to semantically evaluate and select the best final product frame."""
         try:
@@ -830,31 +925,30 @@ class SurgicalVOPReportGenerator:
                 })
             
             # Create AI prompt for frame selection
-            prompt = f"""You are an expert at identifying the best final product image from surgical suturing videos.
+            prompt = f"""You are searching backward from the end of a surgical video to find the perfect final product image.
 
-CRITICAL TASK: Select the frame that shows ONLY the completed sutures on the practice pad with NO hands, gloves, or instruments visible anywhere in the frame.
+CRITICAL TASK: Find a frame showing ONLY the practice pad with completed sutures and NOTHING ELSE.
 
-ABSOLUTE REQUIREMENTS - The selected frame MUST have:
-1. COMPLETED SUTURES clearly visible on the practice pad
-2. ZERO hands/fingers/gloves (any color) anywhere in the frame
-3. ZERO surgical instruments (scissors, forceps, needle drivers, etc.) anywhere in the frame
-4. CLEAR view of the finished suturing work
-5. FULL practice pad visible showing the final result
+THE FRAME MUST CONTAIN:
+- The suturing practice pad (synthetic skin pad on board/surface)
+- Completed sutures visible on the pad
+- NOTHING ELSE
 
-REJECT any frame that contains:
-- Any part of hands or gloves (blue, green, or any color)
-- Any surgical instruments
-- Any needles or suture material being manipulated
-- Hands reaching toward or away from the field
-- Instruments partially visible at edges
+THE FRAME MUST NOT CONTAIN:
+- Hands, fingers, or gloves (any color - blue, green, latex, etc.)
+- Any part of a person's head, face, or body
+- Surgical instruments (scissors, forceps, needle drivers, etc.)
+- Needles or suture material being manipulated
+- Any human presence whatsoever
 
-You have {len(frame_data)} frames to choose from. Examine each carefully.
+SEARCH STRATEGY: These {len(frame_data)} frames are from the last 5 seconds, ordered from most recent backward.
+Find the first frame that shows ONLY the practice pad with completed sutures.
 
-FRAMES:
-{[f"Frame {f['index']}: {f['timestamp']:.1f}s ({f['tier']})" for f in frame_data]}
+FRAMES (newest to oldest):
+{[f"Frame {f['index']}: {f['timestamp']:.1f}s" for f in frame_data]}
 
-Respond with ONLY the frame number (0-{len(frame_data)-1}) that shows the cleanest final product.
-If ALL frames contain hands/instruments, respond with "NONE".
+Examine each frame carefully. Respond with ONLY the frame number (0-{len(frame_data)-1}) that shows just the practice pad.
+If NO frame shows only the practice pad, respond with "NONE".
 
 Frame number:"""
 
@@ -876,13 +970,13 @@ Frame number:"""
                 }
             ]
             
-            # Make API call
+            # Make API call - GPT-5 specific parameters
             response = client.chat.completions.create(
                 model="gpt-5",  # Use GPT-5 for superior semantic understanding
                 messages=messages,
                 max_completion_tokens=50,
-                reasoning_effort="high",
-                temperature=0.1
+                reasoning_effort="high"
+                # Note: GPT-5 only supports default temperature=1
             )
             
             ai_response = response.choices[0].message.content.strip()
@@ -890,26 +984,30 @@ Frame number:"""
             
             # Parse AI response
             if ai_response == "NONE":
-                print("AI found no suitable frames, using last available")
-                return candidate_frames[-1][1], candidate_frames[-1][0]
+                print("⚠️ AI found no optimal frames - using best available with note")
+                # Use the most recent frame (first in list) as fallback
+                fallback_frame = candidate_frames[0]
+                print(f"Using fallback frame at {fallback_frame[0]:.1f}s - will add note about suboptimal image")
+                # Add a flag to indicate this is not optimal
+                return fallback_frame[1], fallback_frame[0], True  # True = suboptimal flag
             
             try:
                 selected_index = int(ai_response)
                 if 0 <= selected_index < len(candidate_frames):
                     selected_frame = candidate_frames[selected_index]
-                    print(f"AI selected frame {selected_index}: timestamp {selected_frame[0]:.1f}s, tier {selected_frame[2]}")
-                    return selected_frame[1], selected_frame[0]
+                    print(f"✅ AI selected optimal frame {selected_index}: timestamp {selected_frame[0]:.1f}s")
+                    return selected_frame[1], selected_frame[0], False  # False = optimal
                 else:
                     print(f"AI returned invalid index {selected_index}, using fallback")
-                    return candidate_frames[-1][1], candidate_frames[-1][0]
+                    return candidate_frames[0][1], candidate_frames[0][0], True  # True = suboptimal
             except ValueError:
                 print(f"AI returned non-numeric response '{ai_response}', using fallback")
-                return candidate_frames[-1][1], candidate_frames[-1][0]
+                return candidate_frames[0][1], candidate_frames[0][0], True  # True = suboptimal
                 
         except Exception as e:
             print(f"Error in AI frame selection: {e}")
-            # Fallback to last frame
-            return candidate_frames[-1][1], candidate_frames[-1][0]
+            # Fallback to most recent frame
+            return candidate_frames[0][1], candidate_frames[0][0], True  # True = suboptimal
 
     def _score_final_product_quality(self, frame, tier: str) -> float:
         """Score frame specifically for final product selection - prioritizes clean suture images."""
@@ -946,7 +1044,7 @@ Frame number:"""
             avg_penalty = total_penalty / len(regions_to_check)
             
             # Tier bonus (prefer very end of video)
-            tier_bonus = {"final_1pct": 0.5, "final_3pct": 0.3, "final_5pct": 0.1}.get(tier, 0.0)
+            tier_bonus = {"final_2sec": 0.5, "final_5sec": 0.3, "final_10sec": 0.1}.get(tier, 0.0)
             
             # Final product score: heavily weight the absence of hands/instruments
             final_score = (
