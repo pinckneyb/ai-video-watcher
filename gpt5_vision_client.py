@@ -584,11 +584,18 @@ ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 MANDATORY EVIDENCE & THRESHOLDS:
-- Use SUBCUTICULAR_EVIDENCE / BITES_TOTAL_ESTIMATE / BREACHES_AGGREGATED / BREACH_CITATIONS / CONFIDENCE lines from the observation record if present.
+- Use SUBCUTICULAR_EVIDENCE / BITES_TOTAL_ESTIMATE / BREACHES_AGGREGATED / BREACH_CITATIONS / BREACH_CONFIDENCE / CONFIDENCE lines from the observation record if present.
 - BREACH THRESHOLD for a categorical "non‑subcuticular" claim: require ≥2 distinct mid‑run epidermal breaches ≥1 cm apart across the run OR BREACHES_AGGREGATED ≥ 2 with citations. If threshold not met, do NOT output the failure template.
 - If CONFIDENCE is LOW (or evidence <4 unique bites inferred), avoid categorical failure language; qualify uncertainty and score based on demonstrated intradermal behavior and surface appearance during motion.
 - Endpoints and brief surface re‑grips are permissible and must not be counted as breaches.
 - Ignore artifacts (forceps indentations, glare/adhesive, blanching) as breaches.
+
+STRICT SCORING CALIBRATION (Subcuticular):
+- Default score for a criterion is 2 (safe but below full standard) unless strong, high‑confidence evidence supports higher.
+- Confidence caps: if CONFIDENCE = LOW → cap all points at 2; if MEDIUM → cap all points at 3; only HIGH may reach 4–5.
+- Breach caps (apply to points 1, 2, 3, 5, 6): if BREACHES_AGGREGATED ≥ 1 (mid‑run), cap at 3; if ≥ 2, cap at 2.
+- Award 4 ONLY with explicit high‑confidence evidence of continuous intradermal progression (with citations) and zero mid‑run breaches.
+- Award 5 ONLY for exemplary continuity with flawless plane integrity, buried start/finish, and no ambiguity or occlusion; if any uncertainty, do NOT award 5.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
@@ -608,7 +615,7 @@ LANGUAGE AND OUTPUT RULES (MANDATORY):
 - If making any failing claim, include a brief parenthetical with cited evidence times (e.g., "(breaches at ~11:32:55 and ~11:33:13)").
 
 RUBRIC ASSESSMENT FORMAT:
-For each rubric point (1-7), provide a 1-2 sentence comment and a 1-5 score.
+For each rubric point (1-7), provide a 1-2 sentence comment and a 1-5 score. Apply the caps above before writing the final number.
 
 IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns.
 
