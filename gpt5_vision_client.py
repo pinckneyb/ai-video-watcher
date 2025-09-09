@@ -424,10 +424,17 @@ ANALYSIS REQUIREMENTS (Subcuticular):
 6. SYMMETRY: Opposing intradermal entry/exit levels and equal bite depth/length.
 7. SURFACE APPEARANCE: Skin edges approximated flat without ridging; knots buried or lateral/off-line.
 
+ARTIFACT RULES:
+- Do NOT count forceps indentations, transient skin blanching, adhesive/glare artifacts, or shadowing as epidermal punctures.
+- Treat endpoint knots and brief surface re-grips as permissible; only mid-run epidermal emergence counts as a breach.
+
 OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally.
 
-At the end, include one line:
-SUBCUTICULAR_EVIDENCE: [YES/NO] - one sentence citing the strongest visual evidence (e.g., intradermal arcs, absence of surface breaches, flat surface)."""
+At the end, include these lines exactly:
+SUBCUTICULAR_EVIDENCE: [YES/NO] - one sentence citing strongest visual evidence (e.g., intradermal arcs, absence of surface breaches, flat surface)
+BITES_OBSERVED: [integer estimate within these frames]
+OCCLUSION: [LOW/MEDIUM/HIGH]
+EVIDENCE_BREACHES: [semicolon-separated list of mid-run breach observations with brief frame/time descriptors, or NONE] (exclude endpoints and brief re-grips)."""
         else:
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
 
@@ -477,12 +484,22 @@ Focus on:
 5. SURFACE APPEARANCE: Flat approximation without ridging; knots buried or lateral.
 6. FINAL STATE: Describe the final skin surface and closure integrity (flatness, absence of surface punctures along the line).
 
+ARTIFACT & THRESHOLD RULES:
+- Do NOT count forceps indentations, glare/adhesive, or transient blanching as breach evidence.
+- ENDPOINTS: endpoint knots/exits and brief surface re-grips are permissible; only mid-run epidermal emergence counts as breach.
+- BREACH THRESHOLD: To label the run non‑subcuticular due to breaches, require ≥2 distinct mid‑run breaches ≥1 cm apart across the timeline; otherwise, do not make a categorical claim.
+- LOW CONFIDENCE: If evidence <4 unique bites observed or occlusion HIGH, emit LOW_CONFIDENCE instead of categorical negative claims.
+
 OUTPUT: Comprehensive chronological narrative. Describe naturally without mentioning internal focusing processes.
 
 NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters.
 
-At the end, include one line:
-SUBCUTICULAR_EVIDENCE: [YES/NO] - cite strongest evidence in one sentence (intradermal arcs, no epidermal breaches, flat surface, buried/lateral knots)."""
+At the end, include these lines exactly:
+SUBCUTICULAR_EVIDENCE: [YES/NO] - cite strongest evidence in one sentence
+BITES_TOTAL_ESTIMATE: [integer]
+BREACHES_AGGREGATED: [number of distinct mid-run breaches counted]
+BREACH_CITATIONS: [semicolon-separated frame/time descriptors for each, or NONE]
+CONFIDENCE: [HIGH/MEDIUM/LOW] based on evidence quantity/occlusion."""
         else:
             prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a suturing procedure.
 
@@ -544,13 +561,12 @@ OBSERVATION RECORD:
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
-EVIDENCE RULES (MANDATORY):
-- Use any lines explicitly labeled SUBCUTICULAR_EVIDENCE in the observation record as strong positive evidence.
-- Do NOT declare the closure "transcutaneous" based on a single isolated surface puncture (e.g., pilot stitch, terminal knot exit) near the start or end. These do NOT disqualify a subcuticular run.
-- Do NOT count forceps indentations, transient skin blanching, adhesive/glare artifacts, or shadowing as epidermal punctures. Only count if you clearly see suture/needle traversing the epidermis.
-- TEMPORAL AGGREGATION: Base your judgment on the majority of the procedure and especially the latter half. Do not base the decision on a brief early segment or a single frame.
-- THRESHOLD FOR NON‑SUBCUTICULAR CALL: Only classify as non‑subcuticular if you observe at least 3 distinct, non‑terminal epidermal breaches separated by progression events along the active line. If this threshold is not met, do NOT make a categorical "not subcuticular" claim.
-- If uncertain, avoid categorical rejection; score based on demonstrated intradermal behavior and surface appearance.
+MANDATORY EVIDENCE & THRESHOLDS:
+- Use SUBCUTICULAR_EVIDENCE / BITES_TOTAL_ESTIMATE / BREACHES_AGGREGATED / BREACH_CITATIONS / CONFIDENCE lines from the observation record if present.
+- BREACH THRESHOLD for a categorical "non‑subcuticular" claim: require ≥2 distinct mid‑run epidermal breaches ≥1 cm apart across the run OR BREACHES_AGGREGATED ≥ 2 with citations. If threshold not met, do NOT output the failure template.
+- If CONFIDENCE is LOW (or evidence <4 unique bites inferred), avoid categorical failure language; qualify uncertainty and score based on demonstrated intradermal behavior and final surface.
+- Endpoints and brief surface re‑grips are permissible and must not be counted as breaches.
+- Ignore artifacts (forceps indentations, glare/adhesive, blanching) as breaches.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
@@ -567,6 +583,7 @@ LANGUAGE AND OUTPUT RULES (MANDATORY):
 - Do NOT mention images/frames/narratives in output
 - Do NOT say "no full passes were recorded"; draw conclusions from observed evidence
 - Eyewitness, concise clinical language only
+- If making any failing claim, include a brief parenthetical with cited evidence times (e.g., "(breaches at ~11:32:55 and ~11:33:13)").
 
 RUBRIC ASSESSMENT FORMAT:
 For each rubric point (1-7), provide a 1-2 sentence comment and a 1-5 score.
@@ -605,7 +622,7 @@ ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
-Your assessment must focus ONLY on the single suture line that was worked on throughout the procedure. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
+Your assessment must focus ONLY on the single suture line that was worked on throughout. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
 
 PATTERN ASSESSMENT RULES:
 - You are assessing a {rubric_data['display_name']} suturing technique
@@ -649,7 +666,14 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on flow, hand coordination, and overall competence. Do NOT mention images, frames, or narratives.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
+- Overall procedural flow and rhythm
+- Hand coordination and technique efficiency  
+- General competence level and surgical judgment
+- Key strengths and areas needing improvement
+- Overall assessment of the learner's performance
+
+Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
