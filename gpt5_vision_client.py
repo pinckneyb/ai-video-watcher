@@ -545,9 +545,12 @@ ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 EVIDENCE RULES (MANDATORY):
-- You MUST ground subcuticular conclusions in observable evidence from the observation record and/or final image.
-- If claiming "not subcuticular" (e.g., transcutaneous/epidermal breaches), you MUST cite specific observations (e.g., visible epidermal puncture at [approximate time/description]). If no such observation exists, do not make this claim.
-- Prefer positive identification criteria (intradermal arcs, flat surface, buried/lateral knots) when present.
+- Use any lines explicitly labeled SUBCUTICULAR_EVIDENCE in the observation record as strong positive evidence.
+- Do NOT declare the closure "transcutaneous" based on a single isolated surface puncture (e.g., pilot stitch, terminal knot exit) near the start or end. These do NOT disqualify a subcuticular run.
+- Do NOT count forceps indentations, transient skin blanching, adhesive/glare artifacts, or shadowing as epidermal punctures. Only count if you clearly see suture/needle traversing the epidermis.
+- TEMPORAL AGGREGATION: Base your judgment on the majority of the procedure and especially the latter half. Do not base the decision on a brief early segment or a single frame.
+- THRESHOLD FOR NON‑SUBCUTICULAR CALL: Only classify as non‑subcuticular if you observe at least 3 distinct, non‑terminal epidermal breaches separated by progression events along the active line. If this threshold is not met, do NOT make a categorical "not subcuticular" claim.
+- If uncertain, avoid categorical rejection; score based on demonstrated intradermal behavior and surface appearance.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
