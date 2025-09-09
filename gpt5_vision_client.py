@@ -399,6 +399,8 @@ class GPT5VisionClient:
         if pattern == "subcuticular":
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
 
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
+
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
 CRITICAL FOCUS: SUBCUTICULAR (INTRADERMAL) CLOSURE ON THE ACTIVE LINE
@@ -436,7 +438,10 @@ BITES_OBSERVED: [integer estimate within these frames]
 OCCLUSION: [LOW/MEDIUM/HIGH]
 EVIDENCE_BREACHES: [semicolon-separated list of mid-run breach observations with brief frame/time descriptors, or NONE] (exclude endpoints and brief re-grips)."""
         else:
+            label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
+
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is {label_text}; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as {label_text}.
 
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
@@ -467,6 +472,8 @@ Analyze these {len(frames)} frames:"""
         
         if pattern == "subcuticular":
             prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a subcuticular (intradermal) closure.
+
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
 
 FRAME DESCRIPTIONS:
 {descriptions_text}
@@ -501,7 +508,10 @@ BREACHES_AGGREGATED: [number of distinct mid-run breaches counted]
 BREACH_CITATIONS: [semicolon-separated frame/time descriptors for each, or NONE]
 CONFIDENCE: [HIGH/MEDIUM/LOW] based on evidence quantity/occlusion."""
         else:
+            label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
             prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a suturing procedure.
+
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is {label_text}; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as {label_text}.
 
 FRAME DESCRIPTIONS:
 {descriptions_text}
@@ -550,6 +560,8 @@ NARRATIVE LENGTH REQUIREMENT: Generate a substantial narrative that captures the
             prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
+
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
 
 You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
@@ -609,16 +621,20 @@ Provide your complete assessment:"""
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
 
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is {rubric_data['display_name']}; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as {rubric_data['display_name']}.
+
 You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
 OBSERVATION RECORD:
 {video_narrative}
 
+{"FINAL PRODUCT IMAGE VERIFICATION: You have access to the final product image showing the completed sutures. You MUST use this image to verify your assessment. Look at this image carefully and count the actual number of completed sutures visible. Do NOT rely solely on the narrative - use this visual evidence to confirm suture counts and spacing. If the narrative says one thing but the image shows another, trust the image over the narrative." if final_product_image else ""}
+
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
-Your assessment must focus ONLY on the single suture line that was worked on throughout. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
+Your assessment must focus ONLY on the single suture line that was worked on throughout the procedure. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
 
 PATTERN ASSESSMENT RULES:
 - You are assessing a {rubric_data['display_name']} suturing technique
@@ -662,14 +678,7 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
-- Overall procedural flow and rhythm
-- Hand coordination and technique efficiency  
-- General competence level and surgical judgment
-- Key strengths and areas needing improvement
-- Overall assessment of the learner's performance
-
-Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on flow, hand coordination, and overall competence. Do NOT mention images, frames, or narratives.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
@@ -697,6 +706,8 @@ Provide your complete assessment:"""
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
 
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is {rubric_data['display_name']}; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as {rubric_data['display_name']}.
+
 You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
 OBSERVATION RECORD:
@@ -707,25 +718,6 @@ Evaluate this surgical performance against the specific rubric criteria. Base yo
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Your assessment must focus ONLY on the single suture line that was worked on throughout the procedure. Each video has exactly ONE suture line being worked on. You must evaluate only this one line where hands and instruments were actively working, where sutures were being added progressively. Do not assess any other incision lines. However, do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally.
-
-PATTERN ASSESSMENT RULES:
-- You are assessing a {rubric_data['display_name']} suturing technique
-- Do NOT speculate about what pattern was being attempted or rename the technique
-- Assess the performance against the {rubric_data['display_name']} criteria only
-- If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
-- Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
-- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
-- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
-- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
-- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
-
-VIDEO ASSESSMENT INSTRUCTIONS:
-- Identify the single suture line that was worked on throughout the procedure (there is only one per video)
-- Assess the overall technique quality and consistency on this suture line only
-- Look for patterns, improvements, or deteriorations over time on this suture line
-- Consider the spatial and temporal relationships between actions on this suture line
-- Evaluate the flow and motion of the surgical procedure on this suture line
-- Do not mention "active suture line" or "focus" in your final assessment output - describe the technique naturally
 
 PATTERN ASSESSMENT RULES:
 - You are assessing a {rubric_data['display_name']} suturing technique
@@ -782,14 +774,7 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
-- Overall procedural flow and rhythm
-- Hand coordination and technique efficiency  
-- General competence level and surgical judgment
-- Key strengths and areas needing improvement
-- Overall assessment of the learner's performance
-
-Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on flow, hand coordination, and overall competence. Do NOT mention images, frames, or narratives.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
