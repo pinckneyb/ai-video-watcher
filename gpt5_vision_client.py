@@ -556,15 +556,13 @@ You have just observed a complete surgical video of suturing technique. The foll
 OBSERVATION RECORD:
 {video_narrative}
 
-{"FINAL PRODUCT IMAGE VERIFICATION: You have access to the final product image of a subcuticular closure. You MUST use this image to verify plane integrity and final surface appearance (flatness, absence of ridging, no unintended surface punctures along the line). If the narrative says one thing but the image shows another, trust the image over the narrative." if final_product_image else ""}
-
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 MANDATORY EVIDENCE & THRESHOLDS:
 - Use SUBCUTICULAR_EVIDENCE / BITES_TOTAL_ESTIMATE / BREACHES_AGGREGATED / BREACH_CITATIONS / CONFIDENCE lines from the observation record if present.
 - BREACH THRESHOLD for a categorical "non‑subcuticular" claim: require ≥2 distinct mid‑run epidermal breaches ≥1 cm apart across the run OR BREACHES_AGGREGATED ≥ 2 with citations. If threshold not met, do NOT output the failure template.
-- If CONFIDENCE is LOW (or evidence <4 unique bites inferred), avoid categorical failure language; qualify uncertainty and score based on demonstrated intradermal behavior and final surface.
+- If CONFIDENCE is LOW (or evidence <4 unique bites inferred), avoid categorical failure language; qualify uncertainty and score based on demonstrated intradermal behavior and surface appearance during motion.
 - Endpoints and brief surface re‑grips are permissible and must not be counted as breaches.
 - Ignore artifacts (forceps indentations, glare/adhesive, blanching) as breaches.
 
@@ -615,8 +613,6 @@ You have just observed a complete surgical video of suturing technique. The foll
 
 OBSERVATION RECORD:
 {video_narrative}
-
-{"FINAL PRODUCT IMAGE VERIFICATION: You have access to the final product image showing the completed sutures. You MUST use this image to verify your assessment. Look at this image carefully and count the actual number of completed sutures visible. Do NOT rely solely on the narrative - use this visual evidence to confirm suture counts and spacing. If the narrative says one thing but the image shows another, trust the image over the narrative." if final_product_image else ""}
 
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.

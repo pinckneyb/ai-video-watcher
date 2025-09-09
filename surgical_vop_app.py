@@ -947,7 +947,10 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             print(f"⚠️ Error extracting final product image: {e}, proceeding without it")
             st.session_state.final_product_image = None
         
-        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine, final_product_image)
+        # For subcuticular assessments, disable final image usage in Pass 3
+        image_for_pass3 = None if current_pattern == 'subcuticular' else final_product_image
+        
+        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine, image_for_pass3)
         
         if not enhanced_narrative.get('success', False):
             st.error(f"❌ PASS 3 failed: {enhanced_narrative.get('error', 'Unknown error')}")
