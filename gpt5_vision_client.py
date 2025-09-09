@@ -321,6 +321,9 @@ class GPT5VisionClient:
             print(f"✅ PASS 3 SUCCESS: Generated {response_length:,} character assessment")
             print(f"DEBUG: Assessment response preview: {assessment_response[:200]}...")
             
+            # Sanitize output to remove disallowed phrases and process references
+            assessment_response = self._sanitize_assessment_output(assessment_response)
+            
             parsed_response = self._parse_assessment_response(assessment_response, rubric_engine)
             parse_success = parsed_response.get('success', False)
             print(f"📊 PASS 3 PARSE SUCCESS: {parse_success}")
@@ -492,6 +495,12 @@ PATTERN ASSESSMENT RULES:
 - MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
 - FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
 
+LANGUAGE AND OUTPUT RULES (MANDATORY):
+- Do NOT say "no full passes were recorded" or "no full passes were captured". Draw conclusions from visible evidence without capture disclaimers.
+- Do NOT mention or reference: "final image", "image", "photo", "narrative", "description", "synopsis", or "frames" in your output.
+- Use direct eyewitness language; state concise clinical conclusions.
+- Keep comments self-contained; no process commentary.
+
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
 - Score 2 = Some deficiencies - technique below standard with notable issues  
@@ -543,7 +552,7 @@ SUMMATIVE_ASSESSMENT:
 - Key strengths and areas needing improvement
 - Overall assessment of the learner's performance
 
-Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure.]
+Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure. Do NOT mention images, frames, or narratives in this output.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
@@ -888,3 +897,19 @@ Provide your complete assessment:"""
             'other_api_errors': 0
         }
         print("🔄 Error statistics reset - ready for new analysis")
+
+    def _sanitize_assessment_output(self, text: str) -> str:
+        """Remove disallowed phrases and process references from model output."""
+        try:
+            # Remove sentences like "Final image confirmation: ..."
+            cleaned = re.sub(r"(?i)final\s+image\s+confirmation:\s*.*?(?=(\n|$))", "", text)
+            # Remove sentences claiming capture issues like "no full passes were recorded/captured..."
+            cleaned = re.sub(r"(?i)no\s+full\s+passes\s+were\s+(recorded|captured)[^.]*\.\s*", "", cleaned)
+            # Avoid explicit process references if present
+            cleaned = re.sub(r"(?i)\b(final\s+image|image|photo|narrative|description|synopsis|frames)\b", "", cleaned)
+            # Normalize whitespace
+            cleaned = re.sub(r"\s{2,}", " ", cleaned)
+            cleaned = re.sub(r"\n\s*\n\s*\n+", "\n\n", cleaned)
+            return cleaned.strip()
+        except Exception:
+            return text
