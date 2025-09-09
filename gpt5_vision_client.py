@@ -18,6 +18,7 @@ class GPT5VisionClient:
         self.frame_descriptions = []
         self.video_narrative = ""
         self.context_state = ""
+        self.current_pattern = None  # 'simple_interrupted', 'subcuticular', etc.
         
         # Error tracking and monitoring
         self.error_stats = {
@@ -393,8 +394,28 @@ class GPT5VisionClient:
         """Build prompt for PASS 1: Surgical description of frames"""
         
         timestamp_range = f"{frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s"
+        pattern = (self.current_pattern or "").lower()
         
-        prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
+        if pattern == "subcuticular":
+            prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
+
+CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
+
+CRITICAL FOCUS: SUBCUTICULAR (INTRADERMAL) CLOSURE ON THE ACTIVE LINE
+Each video has exactly ONE suture line being worked on. For a subcuticular closure, bites run within the dermis, and the skin surface should show minimal/absent epidermal punctures. Ignore other lines.
+
+ANALYSIS REQUIREMENTS (Subcuticular):
+1. ACTIVE LINE: Identify the incision currently being closed intradermally.
+2. HAND/INSTRUMENTS: Positions relative to the active line.
+3. NEEDLE HANDLING: Needle grasp/orientation for shallow intradermal arcs.
+4. PLANE INTEGRITY: Bites remain within dermis; no unintended epidermal breaches.
+5. BITE PROGRESSION: Describe sequential intradermal bites (not discrete surface stitches).
+6. SYMMETRY: Opposing intradermal entry/exit levels and equal bite depth/length.
+7. SURFACE APPEARANCE: Skin edges approximated flat without ridging; knots buried or lateral/off-line.
+
+OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally."""
+        else:
+            prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
 
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
@@ -421,8 +442,32 @@ Analyze these {len(frames)} frames:"""
     
     def _build_video_narrative_prompt(self, descriptions_text: str) -> str:
         """Build prompt for PASS 2: Video narrative assembly"""
+        pattern = (self.current_pattern or "").lower()
         
-        prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a suturing procedure.
+        if pattern == "subcuticular":
+            prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a subcuticular (intradermal) closure.
+
+FRAME DESCRIPTIONS:
+{descriptions_text}
+
+TASK: Create a comprehensive narrative describing the complete procedure.
+
+CRITICAL FOCUS: MAINTAIN ACTIVE SUTURE LINE CONTINUITY
+Track the single incision being closed throughout. For subcuticular, describe intradermal bite progression, plane integrity, symmetry, and surface appearance.
+
+Focus on:
+1. INTRADERMAL CONTINUITY: Bites remain within dermis (no unintended epidermal breaches).
+2. BITE PROGRESSION: Sequential intradermal bites advancing the closure.
+3. SYMMETRY/CONSISTENCY: Mirrored depth/length across sides; consistent shallow arcs.
+4. HAND EVOLUTION: How hand positions/instruments support intradermal passes.
+5. SURFACE APPEARANCE: Flat approximation without ridging; knots buried or lateral.
+6. FINAL STATE: Describe the final skin surface and closure integrity (flatness, absence of surface punctures along the line).
+
+OUTPUT: Comprehensive chronological narrative. Describe naturally without mentioning internal focusing processes.
+
+NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters."""
+        else:
+            prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a suturing procedure.
 
 FRAME DESCRIPTIONS:
 {descriptions_text}
@@ -453,9 +498,7 @@ Before completing your narrative, you MUST:
 
 OUTPUT: Write a comprehensive, detailed chronological narrative that connects the frame observations into a coherent story of the surgical technique. Include ALL important details from the frame descriptions. Be thorough and detailed - it's better to be comprehensive than to miss critical elements. Describe the procedure naturally without mentioning "active suture line" or internal focusing processes.
 
-NARRATIVE LENGTH REQUIREMENT: Generate a substantial narrative that captures the full complexity of the procedure. Aim for 8,000-12,000 characters to ensure no important details are lost.
-
-Create the video narrative:"""
+NARRATIVE LENGTH REQUIREMENT: Generate a substantial narrative that captures the full complexity of the procedure. Aim for 8,000-12,000 characters to ensure no important details are lost."""
         
         return prompt
     
@@ -466,6 +509,61 @@ Create the video narrative:"""
         rubric_data = rubric_engine.get_pattern_rubric(pattern_id)
         if not rubric_data:
             return "Error: Could not load rubric data"
+        
+        pattern = (pattern_id or "").lower()
+        
+        if pattern == "subcuticular":
+            prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
+
+SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
+
+You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
+
+OBSERVATION RECORD:
+{video_narrative}
+
+{"FINAL PRODUCT IMAGE VERIFICATION: You have access to the final product image of a subcuticular closure. You MUST use this image to verify plane integrity and final surface appearance (flatness, absence of ridging, no unintended surface punctures along the line). If the narrative says one thing but the image shows another, trust the image over the narrative." if final_product_image else ""}
+
+ASSESSMENT TASK:
+Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
+
+CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
+Evaluate ONLY the single incision that was worked on throughout.
+
+PATTERN ASSESSMENT RULES (Subcuticular):
+- Assess intradermal bites staying within dermis (no unintended epidermal breaches)
+- Evaluate bite progression/continuity rather than discrete surface stitch counts
+- Check symmetry: opposing intradermal entry/exit levels; consistent bite depth/length
+- Judge surface appearance: flat approximation without ridging
+- Knots: buried or lateral/off-line; tidy housekeeping
+- Gentle/efficient handling: minimal, controlled forceps use
+
+LANGUAGE AND OUTPUT RULES (MANDATORY):
+- Do NOT mention images/frames/narratives in output
+- Do NOT say "no full passes were recorded"; draw conclusions from observed evidence
+- Eyewitness, concise clinical language only
+
+RUBRIC ASSESSMENT FORMAT:
+For each rubric point (1-7), provide a 1-2 sentence comment and a 1-5 score.
+
+IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns.
+
+Format each rubric point exactly like this:
+
+RUBRIC_POINT_1:
+Comment: [Your 1-2 sentence assessment]
+Score: [1-5]
+
+...
+
+SUMMATIVE_ASSESSMENT:
+[Write a holistic 2-3 paragraph assessment of the entire procedure focusing on flow, hand coordination, plane integrity, and overall competence. Do NOT mention images, frames, or narratives.]
+
+RUBRIC POINTS TO ASSESS:
+{json.dumps(rubric_data['points'], indent=2)}
+
+Provide your complete assessment:"""
+            return prompt
         
         prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
 
@@ -496,28 +594,9 @@ PATTERN ASSESSMENT RULES:
 - FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
 
 LANGUAGE AND OUTPUT RULES (MANDATORY):
-- Do NOT say "no full passes were recorded" or "no full passes were captured". Draw conclusions from visible evidence without capture disclaimers.
-- Do NOT mention or reference: "final image", "image", "photo", "narrative", "description", "synopsis", or "frames" in your output.
-- Use direct eyewitness language; state concise clinical conclusions.
-- Keep comments self-contained; no process commentary.
-
-STRICT SCORING GUIDELINES:
-- Score 1 = Major deficiencies - technique significantly below standard
-- Score 2 = Some deficiencies - technique below standard with notable issues  
-- Score 3 = Meets standard - technique is adequate and competent
-- Score 4 = Exceeds standard - technique is consistently good with minor areas for improvement
-- Score 5 = Exemplary - technique demonstrates mastery and serves as a model
-
-CRITICAL SCORING PHILOSOPHY:
-- Score 2 should be your DEFAULT for safe, functional technique
-- Score 3 means the technique is competent but has room for improvement
-- Score 4 means you would use this video to teach other attendings - RARE
-- Score 5 means this is among the best technique you've seen in your entire career - EXTREMELY RARE
-- Assume EVERY technique has flaws until proven otherwise
-- You are training surgeons who will operate on real patients
-- BE CONSERVATIVE: Most learners should score 2-3, not 3-4
-- Only give 4+ if the technique is genuinely impressive and teachable
-- Only give 5 if it's truly exemplary and could serve as a gold standard
+- Do NOT say "no full passes were recorded/captured". Draw conclusions from visible evidence.
+- Do NOT mention images/frames/narratives in output.
+- Use direct eyewitness language; concise clinical conclusions.
 
 RUBRIC ASSESSMENT FORMAT:
 For each rubric point (1-7), provide:
@@ -545,14 +624,7 @@ Comment: [Your 1-2 sentence assessment of this specific point]
 Score: [1-5]
 
 SUMMATIVE_ASSESSMENT:
-[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on:
-- Overall procedural flow and rhythm
-- Hand coordination and technique efficiency  
-- General competence level and surgical judgment
-- Key strengths and areas needing improvement
-- Overall assessment of the learner's performance
-
-Do NOT repeat individual rubric point details or focus on specific suture counts. This should be a high-level evaluation of the complete surgical procedure. Do NOT mention images, frames, or narratives in this output.]
+[Write a comprehensive, holistic assessment (2-3 paragraphs) that evaluates the ENTIRE PROCEDURE as a whole. Focus on flow, hand coordination, and overall competence. Do NOT mention images, frames, or narratives.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
