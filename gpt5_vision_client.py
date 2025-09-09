@@ -404,6 +404,17 @@ CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysi
 CRITICAL FOCUS: SUBCUTICULAR (INTRADERMAL) CLOSURE ON THE ACTIVE LINE
 Each video has exactly ONE suture line being worked on. For a subcuticular closure, bites run within the dermis, and the skin surface should show minimal/absent epidermal punctures. Ignore other lines.
 
+ACTIVE LINE IDENTIFICATION HIERARCHY (use in order):
+1) Where the needle tip enters/exits tissue within these frames
+2) Where thread is being tensioned/advanced within tissue
+3) Where hands/instruments are manipulating the wound edges
+4) Only if none of the above, use temporal continuity from prior batches
+
+DISAMBIGUATION RULES:
+- If other incision lines show visible surface stitches but no current manipulation, treat them as background.
+- Do NOT infer the active line from pre-existing stitches; use ongoing motion and needle/thread interaction.
+- Evaluate only the single line with current activity, even if other lines have visible repairs.
+
 ANALYSIS REQUIREMENTS (Subcuticular):
 1. ACTIVE LINE: Identify the incision currently being closed intradermally.
 2. HAND/INSTRUMENTS: Positions relative to the active line.
@@ -413,7 +424,10 @@ ANALYSIS REQUIREMENTS (Subcuticular):
 6. SYMMETRY: Opposing intradermal entry/exit levels and equal bite depth/length.
 7. SURFACE APPEARANCE: Skin edges approximated flat without ridging; knots buried or lateral/off-line.
 
-OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally."""
+OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally.
+
+At the end, include one line:
+SUBCUTICULAR_EVIDENCE: [YES/NO] - one sentence citing the strongest visual evidence (e.g., intradermal arcs, absence of surface breaches, flat surface)."""
         else:
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
 
@@ -465,7 +479,10 @@ Focus on:
 
 OUTPUT: Comprehensive chronological narrative. Describe naturally without mentioning internal focusing processes.
 
-NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters."""
+NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters.
+
+At the end, include one line:
+SUBCUTICULAR_EVIDENCE: [YES/NO] - cite strongest evidence in one sentence (intradermal arcs, no epidermal breaches, flat surface, buried/lateral knots)."""
         else:
             prompt = f"""You are analyzing surgical frame descriptions to create a video narrative. These are still images from a suturing procedure.
 
@@ -526,6 +543,11 @@ OBSERVATION RECORD:
 
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
+
+EVIDENCE RULES (MANDATORY):
+- You MUST ground subcuticular conclusions in observable evidence from the observation record and/or final image.
+- If claiming "not subcuticular" (e.g., transcutaneous/epidermal breaches), you MUST cite specific observations (e.g., visible epidermal puncture at [approximate time/description]). If no such observation exists, do not make this claim.
+- Prefer positive identification criteria (intradermal arcs, flat surface, buried/lateral knots) when present.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
