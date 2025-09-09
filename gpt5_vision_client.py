@@ -412,6 +412,14 @@ ACTIVE LINE IDENTIFICATION HIERARCHY (use in order):
 3) Where hands/instruments are manipulating the wound edges
 4) Only if none of the above, use temporal continuity from prior batches
 
+PAD VISUAL AMBIGUITY (Practice pads often mislead):
+- Single silicone layer with poor epidermis–dermis contrast can make intradermal arcs look superficial.
+- Eversion can roll dermis up to the top edge (appearing like a surface shelf).
+- Glare/low texture can obscure depth and mimic surface passes.
+BREACH CONFIRMATION RULE (multi-cue):
+- Count a mid‑run epidermal breach ONLY if ≥2 of these cues co‑occur at the same locus: (a) clear needle emergence through the epidermal surface; (b) suture thread visibly traversing on top of epidermis across a surface span; (c) continuous reflection/edge artifact consistent with thread on surface (not forceps indentation) AND motion continuity across frames.
+- Default to INTRADERMAL when cues are ambiguous or single‑cue only.
+
 DISAMBIGUATION RULES:
 - If other incision lines show visible surface stitches but no current manipulation, treat them as background.
 - Do NOT infer the active line from pre-existing stitches; use ongoing motion and needle/thread interaction.
@@ -436,7 +444,8 @@ At the end, include these lines exactly:
 SUBCUTICULAR_EVIDENCE: [YES/NO] - one sentence citing strongest visual evidence (e.g., intradermal arcs, absence of surface breaches, flat surface)
 BITES_OBSERVED: [integer estimate within these frames]
 OCCLUSION: [LOW/MEDIUM/HIGH]
-EVIDENCE_BREACHES: [semicolon-separated list of mid-run breach observations with brief frame/time descriptors, or NONE] (exclude endpoints and brief re-grips)."""
+EVIDENCE_BREACHES: [semicolon-separated list of mid-run breach observations with brief frame/time descriptors, or NONE] (exclude endpoints and brief re-grips)
+BREACH_CONFIDENCE: [HIGH/MEDIUM/LOW] based on multi-cue rule and pad ambiguity (default LOW if ambiguous)."""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
@@ -491,6 +500,8 @@ Focus on:
 5. SURFACE APPEARANCE: Flat approximation without ridging; knots buried or lateral.
 6. FINAL STATE: Describe the final skin surface and closure integrity (flatness, absence of surface punctures along the line).
 
+PAD VISUAL AMBIGUITY (consider): single-layer silicone, eversion rolling dermis up, glare/low texture. Apply multi‑cue rule for breaches: require ≥2 co‑occurring cues (clear needle through epidermis; thread traversing on epidermis; sustained surface reflection consistent with thread) across frames. Default to intradermal if ambiguous.
+
 ARTIFACT & THRESHOLD RULES:
 - Do NOT count forceps indentations, glare/adhesive, or transient blanching as breach evidence.
 - ENDPOINTS: endpoint knots/exits and brief surface re-grips are permissible; only mid-run epidermal emergence counts as breach.
@@ -506,6 +517,7 @@ SUBCUTICULAR_EVIDENCE: [YES/NO] - cite strongest evidence in one sentence
 BITES_TOTAL_ESTIMATE: [integer]
 BREACHES_AGGREGATED: [number of distinct mid-run breaches counted]
 BREACH_CITATIONS: [semicolon-separated frame/time descriptors for each, or NONE]
+BREACH_CONFIDENCE_AGG: [HIGH/MEDIUM/LOW]
 CONFIDENCE: [HIGH/MEDIUM/LOW] based on evidence quantity/occlusion."""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
