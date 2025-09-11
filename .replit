@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "AI Video Watcher"
+args = "AI Video Analysis Suite"
 
 [[workflows.workflow]]
-name = "AI Video Watcher"
+name = "AI Video Analysis Suite"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run app.py"
+args = "streamlit run launcher.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -35,7 +35,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 41123
+localPort = 41829
 externalPort = 3000
 
 [deployment]
