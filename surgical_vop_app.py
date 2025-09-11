@@ -1356,34 +1356,127 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 unsafe_allow_html=True
             )
         
-        # PDF report generation button
-        if st.button("📄 Generate PDF Report"):
+        # HTML report generation and download button
+        if st.button("🌐 Generate & Download HTML Report"):
             try:
-                from surgical_report_generator import SurgicalVOPReportGenerator
+                # Generate HTML filename based on current assessment
+                html_filename = f"html_reports/VOP_Assessment_{results['video_info']['pattern']}_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
                 
-                report_generator = SurgicalVOPReportGenerator()
-                report_filename = f"VOP_Assessment_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                # Ensure html_reports directory exists
+                os.makedirs("html_reports", exist_ok=True)
                 
-                report_path = report_generator.generate_vop_report(
-                    results,
-                    st.session_state.rubric_scores,
-                    overall_result,
-                    report_filename
-                )
+                # Generate HTML report content
+                with open(html_filename, 'w', encoding='utf-8') as f:
+                    f.write("<!DOCTYPE html>\n<html>\n<head>\n")
+                    f.write("<title>Surgical VOP Assessment Report</title>\n")
+                    f.write("<style>\n")
+                    f.write("body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }\n")
+                    f.write("h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }\n")
+                    f.write("h2 { color: #34495e; margin-top: 30px; }\n")
+                    f.write(".rubric-point { margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; }\n")
+                    f.write(".summative { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }\n")
+                    f.write(".average-score { background-color: #fff3cd; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0; }\n")
+                    f.write(".image-section { margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; }\n")
+                    f.write(".image-section h3 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 10px; }\n")
+                    f.write(".image-section img { max-width: 100%; max-height: 500px; width: auto; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }\n")
+                    f.write("</style>\n</head>\n<body>\n")
+                    
+                    f.write(f"<h1>Surgical VOP Assessment Report</h1>\n")
+                    f.write(f"<p><strong>Video:</strong> {results['video_info']['filename']}</p>\n")
+                    f.write(f"<p><strong>Pattern:</strong> {results['video_info']['pattern'].replace('_', ' ').title()}</p>\n")
+                    
+                    # Add rubric points and scores
+                    for point_id, score in st.session_state.rubric_scores.items():
+                        # Get rubric point details
+                        rubric_data = st.session_state.get('current_rubric_data', {})
+                        point_info = None
+                        if 'points' in rubric_data:
+                            for point in rubric_data['points']:
+                                if point['pid'] == point_id:
+                                    point_info = point
+                                    break
+                        
+                        if point_info:
+                            # Convert score to performance level
+                            if score >= 4.5:
+                                performance_level = "exemplary"
+                            elif score >= 3.5:
+                                performance_level = "proficient"
+                            elif score >= 2.5:
+                                performance_level = "competent"
+                            elif score >= 1.5:
+                                performance_level = "developing"
+                            else:
+                                performance_level = "inadequate"
+                            
+                            f.write(f"<div class='rubric-point'>{point_id}. <strong>{point_info['title']}</strong>: ")
+                            f.write(f"{point_info['what_you_assess']} ")
+                            f.write(f"<strong>{score}/5 {performance_level}</strong></div>\n")
+                    
+                    # Add average score
+                    f.write("<br>\n")
+                    f.write(f"<div class='average-score'><strong>Average Score: {overall_result['average_score']:.1f}/5 ")
+                    if overall_result['pass']:
+                        f.write("- COMPETENCY ACHIEVED</strong></div>\n")
+                    else:
+                        f.write("- COMPETENCY NOT ACHIEVED</strong></div>\n")
+                    
+                    # Add final product image if available
+                    f.write("<h2>Final Product Comparison</h2>\n")
+                    f.write("<div class='image-section'>\n")
+                    f.write("<h3>Learner Final Product</h3>\n")
+                    try:
+                        final_product_image = st.session_state.get('final_product_image', None)
+                        if final_product_image and hasattr(final_product_image, 'save'):
+                            import base64
+                            from io import BytesIO
+                            buffered = BytesIO()
+                            final_product_image.save(buffered, format="JPEG")
+                            img_str = base64.b64encode(buffered.getvalue()).decode()
+                            f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
+                        else:
+                            f.write("<p><em>No final product image available</em></p>\n")
+                    except Exception as e:
+                        f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
+                    f.write("</div>\n")
+                    
+                    # Add gold standard image
+                    f.write("<div class='image-section'>\n")
+                    f.write("<h3>Gold Standard Reference</h3>\n")
+                    try:
+                        gold_standard_mapping = {
+                            'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
+                            'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
+                            'subcuticular': 'subcuticular_example.png'
+                        }
+                        current_pattern = results['video_info']['pattern']
+                        gold_standard_path = gold_standard_mapping.get(current_pattern, f"gold_standard_{current_pattern}.jpg")
+                        if os.path.exists(gold_standard_path):
+                            with open(gold_standard_path, "rb") as img_file:
+                                import base64 as b64
+                                img_data = b64.b64encode(img_file.read()).decode()
+                                f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
+                        else:
+                            f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
+                    except Exception as e:
+                        f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
+                    f.write("</div>\n")
+                    
+                    f.write("</body>\n</html>\n")
                 
-                st.success(f"✅ PDF report generated: {report_path}")
+                st.success(f"✅ HTML report generated: {os.path.basename(html_filename)}")
                 
                 # Offer download
-                with open(report_path, "rb") as pdf_file:
-                        st.download_button(
-                        label="📥 Download PDF Report",
-                            data=pdf_file.read(),
-                        file_name=report_filename,
-                        mime="application/pdf"
-                        )
+                with open(html_filename, "rb") as html_file:
+                    st.download_button(
+                        label="📥 Download HTML Report",
+                        data=html_file.read(),
+                        file_name=os.path.basename(html_filename),
+                        mime="text/html"
+                    )
                     
             except Exception as e:
-                st.error(f"Error generating PDF report: {e}")
+                st.error(f"Error generating HTML report: {e}")
 
 if __name__ == "__main__":
     main()
