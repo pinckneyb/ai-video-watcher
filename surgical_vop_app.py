@@ -575,6 +575,9 @@ def main():
                 
                 # Show video information for each file
                 with st.expander("📊 Video Information", expanded=True):
+                    # Ensure temp_videos directory exists
+                    os.makedirs("temp_videos", exist_ok=True)
+                    
                     temp_video_paths = []
                     for i, file in enumerate(uploaded_file, 1):
                         temp_path = os.path.join("temp_videos", f"temp_{file.name}")
@@ -614,6 +617,9 @@ def main():
             else:
                 # Single file
                 with st.expander("📊 Video Information", expanded=True):
+                    # Ensure temp_videos directory exists
+                    os.makedirs("temp_videos", exist_ok=True)
+                    
                     # Save video temporarily for analysis
                     temp_video_path = os.path.join("temp_videos", f"temp_{uploaded_file.name}")
                     with open(temp_video_path, "wb") as f:
