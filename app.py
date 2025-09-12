@@ -1,6 +1,6 @@
 """
 AI Video Watcher - Main Streamlit Application
-A generic video analysis app using GPT-4o to narrate video content.
+A generic video analysis app using GPT-5 to narrate video content.
 """
 
 import streamlit as st
@@ -12,7 +12,7 @@ from datetime import datetime
 
 # Import our modules
 from video_processor import VideoProcessor, FrameBatchProcessor
-from gpt4o_client import GPT4oClient
+from gpt5_client import GPT5Client
 from profiles import ProfileManager
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
@@ -36,26 +36,28 @@ st.set_page_config(
 def validate_api_key(api_key: str) -> bool:
     """Validate OpenAI API key by making a test call."""
     try:
-        test_client = GPT4oClient(api_key=api_key)
+        test_client = GPT5Client(api_key=api_key)
         # Make a simple test call to validate the key
         response = test_client.client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5",
             messages=[{"role": "user", "content": "Hello"}],
-            max_tokens=10
+            max_completion_tokens=10,
+            reasoning_effort="low"
         )
         return True
     except Exception as e:
         print(f"API key validation failed: {e}")
         return False
 
-def is_api_key_still_valid(client: GPT4oClient) -> bool:
+def is_api_key_still_valid(client: GPT5Client) -> bool:
     """Check if the current API key is still valid."""
     try:
         # Make a simple test call
         response = client.client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5",
             messages=[{"role": "user", "content": "Test"}],
-            max_tokens=5
+            max_completion_tokens=5,
+            reasoning_effort="low"
         )
         return True
     except Exception as e:
@@ -162,8 +164,8 @@ def main():
     # Initialize session state
     if 'video_processor' not in st.session_state:
         st.session_state.video_processor = None
-    if 'gpt4o_client' not in st.session_state:
-        st.session_state.gpt4o_client = None
+    if 'gpt5_client' not in st.session_state:
+        st.session_state.gpt5_client = None
     if 'current_profile' not in st.session_state:
         st.session_state.current_profile = None
     if 'analysis_complete' not in st.session_state:
@@ -351,7 +353,7 @@ def main():
             st.info("🔑 API key found from previous session")
             if st.button("🗑️ Clear saved API key"):
                 st.session_state.saved_api_key = ""
-                st.session_state.gpt4o_client = None
+                st.session_state.gpt5_client = None
                 save_api_key("")  # Clear saved key
                 st.rerun()
         
@@ -369,30 +371,30 @@ def main():
                 if validate_api_key(api_key):
                     st.session_state.saved_api_key = api_key
                     save_api_key(api_key)
-                    st.session_state.gpt4o_client = GPT4oClient(api_key=api_key)
+                    st.session_state.gpt5_client = GPT5Client(api_key=api_key)
                     st.success("✅ API key validated and saved!")
                 else:
                     st.error("❌ Invalid API key. Please check and try again.")
-                    st.session_state.gpt4o_client = None
+                    st.session_state.gpt5_client = None
         
         # Show current API key status
-        elif st.session_state.saved_api_key and st.session_state.gpt4o_client:
+        elif st.session_state.saved_api_key and st.session_state.gpt5_client:
             # Check if the API key is still valid
-            if is_api_key_still_valid(st.session_state.gpt4o_client):
+            if is_api_key_still_valid(st.session_state.gpt5_client):
                 st.success("✅ API key configured and validated")
             else:
                 st.warning("⚠️ API key may have expired. Please re-enter your key.")
-                st.session_state.gpt4o_client = None
+                st.session_state.gpt5_client = None
         elif st.session_state.saved_api_key:
             # Try to recreate client with saved key
             try:
-                st.session_state.gpt4o_client = GPT4oClient(api_key=st.session_state.saved_api_key)
+                st.session_state.gpt5_client = GPT5Client(api_key=st.session_state.saved_api_key)
                 st.success("✅ API key loaded from previous session")
             except Exception as e:
                 st.error(f"❌ Error loading saved API key: {e}")
                 st.session_state.saved_api_key = ""
                 save_api_key("")
-                st.session_state.gpt4o_client = None
+                st.session_state.gpt5_client = None
     
     # Main content area
     col1, col2 = st.columns([2, 1])
@@ -464,11 +466,11 @@ def main():
                             st.session_state.events = []
                             
                             # Reset GPT-4o client context
-                            if st.session_state.gpt4o_client:
-                                st.session_state.gpt4o_client.reset_context()
+                            if st.session_state.gpt5_client:
+                                st.session_state.gpt5_client.reset_context()
                             
                             # Handle audio transcription if enabled
-                            if enable_whisper and st.session_state.gpt4o_client:
+                            if enable_whisper and st.session_state.gpt5_client:
                                 with st.spinner("Transcribing audio with Whisper..."):
                                     try:
                                         # Generate unique temp filename
@@ -493,13 +495,13 @@ def main():
                                                 st.info("🎤 Transcribing with speaker diarization...")
                                                 audio_transcript = transcribe_audio_with_diarization(
                                                     audio_path, 
-                                                    st.session_state.gpt4o_client.api_key
+                                                    st.session_state.gpt5_client.api_key
                                                 )
                                             else:
                                                 st.info("🎤 Transcribing with Whisper...")
                                                 audio_transcript = transcribe_audio_with_whisper(
                                                     audio_path, 
-                                                    st.session_state.gpt4o_client.api_key
+                                                    st.session_state.gpt5_client.api_key
                                                 )
                                             
                                             if audio_transcript:
@@ -550,7 +552,7 @@ def main():
         else:
             st.info("⏳ No video loaded")
         
-        if st.session_state.gpt4o_client:
+        if st.session_state.gpt5_client:
             st.success("✅ API configured")
         else:
             st.warning("⚠️ API not configured")
@@ -621,7 +623,7 @@ def main():
                             st.rerun()
     
     # Analysis section
-    if st.session_state.video_processor and st.session_state.gpt4o_client:
+    if st.session_state.video_processor and st.session_state.gpt5_client:
         st.header("🧠 Video Analysis")
         
         # Start analysis button
@@ -932,7 +934,7 @@ def main():
                 
                 # Check various conditions
                 whisper_enabled = enable_whisper
-                api_configured = st.session_state.gpt4o_client is not None
+                api_configured = st.session_state.gpt5_client is not None
                 video_loaded = st.session_state.video_processor is not None
                 
                 col_status1, col_status2, col_status3 = st.columns(3)
@@ -976,7 +978,7 @@ def main():
                     })
             
             # Audio transcription testing section
-            if st.session_state.video_processor and st.session_state.gpt4o_client:
+            if st.session_state.video_processor and st.session_state.gpt5_client:
                 st.subheader("🎵 Audio Transcription Testing")
                 
                 col_test1, col_test2 = st.columns(2)
@@ -1028,7 +1030,7 @@ def main():
                                 st.info("Testing Whisper API connection...")
                                 
                                 # Try to make a minimal API call
-                                test_client = GPT4oClient(api_key=st.session_state.gpt4o_client.api_key)
+                                test_client = GPT5Client(api_key=st.session_state.gpt5_client.api_key)
                                 st.success("✅ Whisper API connection successful")
                                 
                             except Exception as e:
@@ -1084,7 +1086,7 @@ def main():
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
-                            st.session_state.gpt4o_client.api_key,
+                            st.session_state.gpt5_client.api_key,
                             audio_transcript,
                             st.session_state.current_profile
                         )
@@ -1108,7 +1110,7 @@ def main():
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
-                            st.session_state.gpt4o_client.api_key,
+                            st.session_state.gpt5_client.api_key,
                             audio_transcript,
                             st.session_state.current_profile
                         )
@@ -1147,7 +1149,7 @@ def main():
                     )
     
     # Rescan section
-    if st.session_state.video_processor and st.session_state.gpt4o_client and st.session_state.analysis_complete:
+    if st.session_state.video_processor and st.session_state.gpt5_client and st.session_state.analysis_complete:
         st.header("🔍 Rescan Segment")
         
         # Check if we have rescan parameters from search
@@ -1256,7 +1258,7 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
     
     try:
         video_processor = st.session_state.video_processor
-        gpt4o_client = st.session_state.gpt4o_client
+        gpt5_client = st.session_state.gpt5_client
         profile = st.session_state.current_profile
         
         # Extract all frames
@@ -1292,7 +1294,7 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
             
             start_time = time.time()
             # Use concurrent processing
-            performance_metrics = process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches)
+            performance_metrics = process_batches_concurrently(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches)
             end_time = time.time()
             processing_time = end_time - start_time
             
@@ -1328,7 +1330,7 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
             st.info("🐌 Using sequential processing")
             start_time = time.time()
             # Use sequential processing
-            process_batches_sequentially(batches, gpt4o_client, profile, progress_bar, status_text, total_batches)
+            process_batches_sequentially(batches, gpt5_client, profile, progress_bar, status_text, total_batches)
             end_time = time.time()
             processing_time = end_time - start_time
             st.success(f"🐌 Sequential processing completed in {processing_time:.2f} seconds")
@@ -1338,8 +1340,8 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
         status_text.text("✅ Analysis complete!")
         
         # Store results
-        st.session_state.transcript = gpt4o_client.get_full_transcript()
-        st.session_state.events = gpt4o_client.get_event_timeline()
+        st.session_state.transcript = gpt5_client.get_full_transcript()
+        st.session_state.events = gpt5_client.get_event_timeline()
         st.session_state.analysis_complete = True
         
         st.success("🎉 Video analysis completed successfully!")
@@ -1363,7 +1365,7 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
                 enhanced_narrative = create_coherent_narrative(
                     st.session_state.transcript, 
                     st.session_state.events,
-                    gpt4o_client.api_key,
+                    gpt5_client.api_key,
                     audio_transcript,
                     st.session_state.current_profile
                 )
@@ -1381,20 +1383,20 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
         st.error(f"❌ Analysis failed: {e}")
         status_text.text("❌ Analysis failed")
 
-def process_batches_sequentially(batches, gpt4o_client, profile, progress_bar, status_text, total_batches):
+def process_batches_sequentially(batches, gpt5_client, profile, progress_bar, status_text, total_batches):
     """Process batches sequentially (original method)."""
     for i, batch in enumerate(batches):
         status_text.text(f"Processing batch {i+1}/{total_batches}...")
         
         # Analyze batch with GPT-4o
-        narrative, events = gpt4o_client.analyze_frames(
+        narrative, events = gpt5_client.analyze_frames(
             batch, 
             profile, 
-            gpt4o_client.context_state
+            gpt5_client.context_state
         )
         
         # Update context
-        gpt4o_client.update_context(narrative, events)
+        gpt5_client.update_context(narrative, events)
         
         # Update progress
         progress = (i + 1) / total_batches
@@ -1403,7 +1405,7 @@ def process_batches_sequentially(batches, gpt4o_client, profile, progress_bar, s
         # Small delay to show progress
         time.sleep(0.1)
 
-def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches):
+def process_batches_concurrently(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches):
     """Process batches concurrently using ThreadPoolExecutor with monitoring."""
     import concurrent.futures
     import threading
@@ -1432,7 +1434,7 @@ def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, s
         for i, batch in enumerate(batches):
             future = executor.submit(
                 process_single_batch_concurrent,
-                batch, gpt4o_client, profile, i, total_batches, context_lock
+                batch, gpt5_client, profile, i, total_batches, context_lock
             )
             future_to_batch[future] = i
         
@@ -1447,7 +1449,7 @@ def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, s
                 
                 # Update context with thread safety
                 with context_lock:
-                    gpt4o_client.update_context(narrative, events)
+                    gpt5_client.update_context(narrative, events)
                 
                 # Record successful batch
                 successful_batches += 1
@@ -1502,15 +1504,15 @@ def process_batches_concurrently(batches, gpt4o_client, profile, progress_bar, s
     
     return performance_metrics
 
-def process_single_batch_concurrent(batch, gpt4o_client, profile, batch_index, total_batches, context_lock):
+def process_single_batch_concurrent(batch, gpt5_client, profile, batch_index, total_batches, context_lock):
     """Process a single batch for concurrent execution."""
     try:
         # Create a temporary client for this batch to avoid conflicts
-        temp_client = GPT4oClient(api_key=gpt4o_client.api_key)
+        temp_client = GPT5Client(api_key=gpt5_client.api_key)
         
         # Get current context state safely
         with context_lock:
-            current_context = gpt4o_client.context_state
+            current_context = gpt5_client.context_state
         
         # Analyze batch with GPT-4o
         narrative, events = temp_client.analyze_frames(
@@ -1529,7 +1531,7 @@ def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: 
     """Create a coherent, continuous narrative using GPT-5."""
     try:
         # Create a GPT-5 client for narrative enhancement
-        gpt5_client = GPT4oClient(api_key=api_key)
+        gpt5_client = GPT5Client(api_key=api_key)
         
         # Prepare the enhancement prompt with profile personality
         if profile:
@@ -1693,7 +1695,7 @@ def rescan_segment(start_time: str, end_time: str, rescan_fps: float):
     
     try:
         video_processor = st.session_state.video_processor
-        gpt4o_client = st.session_state.gpt4o_client
+        gpt5_client = st.session_state.gpt5_client
         profile = st.session_state.current_profile
         
         # Parse timestamps
@@ -1713,7 +1715,7 @@ def rescan_segment(start_time: str, end_time: str, rescan_fps: float):
                 return
             
             # Analyze with rescan prompt
-            detailed_narrative, detailed_events = gpt4o_client.rescan_segment(
+            detailed_narrative, detailed_events = gpt5_client.rescan_segment(
                 start_time, end_time, rescan_frames, profile
             )
             
