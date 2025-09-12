@@ -423,3 +423,136 @@ def extract_video_info(video_path: str) -> Dict[str, Any]:
         
     except Exception as e:
         return {"error": str(e)}
+
+def analyze_audio_with_yamnet(audio_path: str) -> dict:
+    """
+    Analyze audio using Google's YAMNet model to classify non-speech sounds.
+    
+    Args:
+        audio_path: Path to audio file
+        
+    Returns:
+        dict: Audio classification results with timestamps and sound events
+    """
+    try:
+        import tensorflow as tf
+        import tensorflow_hub as hub
+        import numpy as np
+        import soundfile as sf
+        import csv
+        
+        print(f"Loading YAMNet model...")
+        
+        # Load YAMNet model from TensorFlow Hub
+        model = hub.load('https://tfhub.dev/google/yamnet/1')
+        
+        # Load class map
+        class_map = {}
+        try:
+            with open('yamnet_class_map.csv', 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    class_map[int(row['index'])] = row['display_name']
+        except FileNotFoundError:
+            print("Warning: yamnet_class_map.csv not found, using class indices")
+            class_map = {i: f"Class_{i}" for i in range(521)}
+        
+        # Load and preprocess audio
+        print(f"Processing audio file: {audio_path}")
+        wav_data, sample_rate = sf.read(audio_path)
+        
+        # Ensure mono audio
+        if wav_data.ndim > 1:
+            wav_data = wav_data.mean(axis=1)
+        
+        # Resample to 16kHz if needed
+        if sample_rate != 16000:
+            import resampy
+            wav_data = resampy.resample(wav_data, sample_rate, 16000)
+            sample_rate = 16000
+        
+        # Normalize audio to [-1.0, 1.0]
+        wav_data = wav_data.astype(np.float32)
+        if wav_data.max() > 1.0 or wav_data.min() < -1.0:
+            wav_data = wav_data / np.max(np.abs(wav_data))
+        
+        print(f"Audio processed: {len(wav_data)/sample_rate:.2f} seconds at {sample_rate}Hz")
+        
+        # Run YAMNet inference
+        print("Running YAMNet inference...")
+        scores, embeddings, spectrogram = model(wav_data)
+        
+        # Convert scores to numpy
+        scores = scores.numpy()
+        
+        # Process results - YAMNet outputs scores every 0.48 seconds
+        hop_duration = 0.48  # seconds per frame
+        results = []
+        
+        for i, frame_scores in enumerate(scores):
+            timestamp = i * hop_duration
+            
+            # Get top 5 predictions for this frame
+            top_indices = np.argsort(frame_scores)[-5:][::-1]
+            top_scores = frame_scores[top_indices]
+            
+            frame_predictions = []
+            for idx, score in zip(top_indices, top_scores):
+                if score > 0.1:  # Only include predictions with confidence > 0.1
+                    class_name = class_map.get(idx, f"Unknown_{idx}")
+                    frame_predictions.append({
+                        'class': class_name,
+                        'confidence': float(score),
+                        'class_id': int(idx)
+                    })
+            
+            if frame_predictions:  # Only add if we have confident predictions
+                results.append({
+                    'timestamp': timestamp,
+                    'predictions': frame_predictions
+                })
+        
+        # Aggregate results to find dominant sound events
+        all_classes = {}
+        for result in results:
+            for pred in result['predictions']:
+                class_name = pred['class']
+                if class_name not in all_classes:
+                    all_classes[class_name] = []
+                all_classes[class_name].append(pred['confidence'])
+        
+        # Calculate average confidence for each class
+        summary = []
+        for class_name, confidences in all_classes.items():
+            avg_confidence = np.mean(confidences)
+            max_confidence = np.max(confidences)
+            detection_count = len(confidences)
+            
+            summary.append({
+                'class': class_name,
+                'avg_confidence': float(avg_confidence),
+                'max_confidence': float(max_confidence),
+                'detection_count': detection_count,
+                'presence_ratio': detection_count / len(results) if results else 0
+            })
+        
+        # Sort by average confidence
+        summary.sort(key=lambda x: x['avg_confidence'], reverse=True)
+        
+        print(f"YAMNet analysis complete: {len(results)} frames analyzed, {len(summary)} sound classes detected")
+        
+        return {
+            'frame_results': results,
+            'summary': summary[:20],  # Top 20 classes
+            'total_frames': len(results),
+            'duration': len(wav_data) / sample_rate,
+            'sample_rate': sample_rate
+        }
+        
+    except ImportError as e:
+        print(f"Error: Missing required libraries for YAMNet: {e}")
+        print("Please install: tensorflow, tensorflow-hub, soundfile, resampy")
+        return None
+    except Exception as e:
+        print(f"Error analyzing audio with YAMNet: {e}")
+        return None
