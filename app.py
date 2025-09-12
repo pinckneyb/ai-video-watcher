@@ -1254,6 +1254,113 @@ def main():
         "Built with Streamlit, OpenCV, and OpenAI"
     )
 
+def start_complete_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1, enable_whisper: bool = False):
+    """Start complete automated analysis including enhanced narrative generation."""
+    
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    try:
+        video_processor = st.session_state.video_processor
+        gpt5_client = st.session_state.gpt5_client
+        profile = st.session_state.current_profile
+        
+        # Extract all frames
+        status_text.text("Extracting frames...")
+        
+        # Debug info
+        st.info(f"Video duration: {video_processor.duration} seconds")
+        st.info(f"Target FPS: {fps}")
+        
+        try:
+            frames = video_processor.extract_frames(custom_fps=fps)
+            
+            if not frames:
+                st.error("No frames extracted from video")
+                return
+                
+        except Exception as e:
+            st.error(f"❌ Frame extraction failed: {e}")
+            return
+        
+        # Audio transcription if enabled
+        audio_transcript = ""
+        if enable_whisper:
+            status_text.text("Extracting and transcribing audio...")
+            progress_bar.progress(0.1)
+            try:
+                audio_transcript = video_processor.extract_and_transcribe_audio(gpt5_client.api_key)
+                if audio_transcript:
+                    st.success(f"🎵 Audio transcribed successfully ({len(audio_transcript)} characters)")
+                    st.session_state.audio_transcript = audio_transcript
+                else:
+                    st.warning("⚠️ No audio found in video")
+            except Exception as e:
+                st.warning(f"⚠️ Audio transcription failed: {e}")
+        
+        # Create batches
+        batch_processor = FrameBatchProcessor(batch_size=batch_size)
+        batches = batch_processor.create_batches(frames)
+        
+        total_batches = len(batches)
+        st.info(f"Processing {len(frames)} frames in {total_batches} batches...")
+        
+        # Process batches (concurrent or sequential)
+        progress_bar.progress(0.2)
+        status_text.text("Processing video frames...")
+        
+        if max_concurrent_batches > 1:
+            st.info(f"⚡ Using concurrent processing: {max_concurrent_batches} batches simultaneously")
+            start_time = time.time()
+            performance_metrics = process_batches_concurrently(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches)
+            end_time = time.time()
+            processing_time = end_time - start_time
+            st.success(f"⚡ Concurrent processing completed in {processing_time:.2f} seconds")
+        else:
+            st.info("🐌 Using sequential processing")
+            start_time = time.time()
+            process_batches_sequentially(batches, gpt5_client, profile, progress_bar, status_text, total_batches)
+            end_time = time.time()
+            processing_time = end_time - start_time
+            st.success(f"🐌 Sequential processing completed in {processing_time:.2f} seconds")
+        
+        # Store initial analysis results
+        progress_bar.progress(0.8)
+        status_text.text("Storing analysis results...")
+        
+        st.session_state.transcript = gpt5_client.get_full_transcript()
+        st.session_state.events = gpt5_client.get_event_timeline()
+        st.session_state.analysis_complete = True
+        
+        # Automatically create enhanced narrative
+        progress_bar.progress(0.9)
+        status_text.text("Creating enhanced narrative with GPT-5...")
+        
+        try:
+            enhanced_narrative = create_coherent_narrative(
+                st.session_state.transcript, 
+                st.session_state.events,
+                gpt5_client.api_key,
+                audio_transcript,
+                st.session_state.current_profile
+            )
+            if enhanced_narrative:
+                st.session_state.enhanced_narrative = enhanced_narrative
+                st.success("✨ Enhanced narrative created automatically!")
+            else:
+                st.warning("⚠️ Enhanced narrative creation failed, but analysis completed")
+        except Exception as e:
+            st.warning(f"⚠️ Enhanced narrative failed: {e}, but analysis completed")
+        
+        # Complete
+        progress_bar.progress(1.0)
+        status_text.text("✅ Complete analysis finished!")
+        st.success("🎉 Complete video analysis with enhanced narrative finished!")
+        
+    except Exception as e:
+        st.error(f"❌ Analysis failed: {e}")
+        status_text.text("❌ Analysis failed")
+
 def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1):
     """Start the video analysis process with optional concurrency."""
     
