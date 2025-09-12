@@ -201,13 +201,13 @@ def main():
     
     # Sidebar configuration
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        st.header("⚙️ Simple Configuration")
         
         # Profile selection
         profile_manager = ProfileManager()
         available_profiles = profile_manager.get_available_profiles()
         selected_profile = st.selectbox(
-            "Select Analysis Profile",
+            "Analysis Type",
             available_profiles,
             format_func=lambda x: profile_manager.get_profile(x)["name"]
         )
@@ -217,133 +217,18 @@ def main():
             st.session_state.current_profile = profile
             st.info(f"**{profile['name']}**: {profile['description']}")
         
-        # Video settings
-        st.subheader("📹 Video Settings")
-        fps = st.slider("Frames per second", 0.5, 5.0, 1.0, 0.1)
-        batch_size = st.slider("Batch size", 3, 15, 5, 1)
-        
         # Audio transcription settings
-        st.subheader("🎵 Audio Transcription")
+        st.subheader("🎵 Audio Options")
         enable_whisper = st.checkbox(
-            "Enable OpenAI Whisper transcription",
-            help="Extract and transcribe audio track (if present) using Whisper API"
+            "Include audio transcription",
+            help="Extract and transcribe audio track using Whisper API"
         )
         
-        if enable_whisper:
-            enable_diarization = st.checkbox(
-                "Enable speaker diarization",
-                help="Identify different speakers in the audio (requires pyannote.audio)"
-            )
-        
-        # Concurrency settings
-        st.subheader("⚡ Concurrency Settings")
-        
-        # Concurrency presets
-        col_preset1, col_preset2, col_preset3 = st.columns(3)
-        
-        with col_preset1:
-            if st.button("✅ Proven Safe (10)", help="100% safe - tested and reliable"):
-                st.session_state.max_concurrent_batches = 10
-                st.rerun()
-        
-        with col_preset2:
-            if st.button("🧪 Testing (12)", help="Next level to test - monitor closely"):
-                st.session_state.max_concurrent_batches = 12
-                st.rerun()
-        
-        with col_preset3:
-            if st.button("🚀 Future Test (15)", help="Future testing level"):
-                st.session_state.max_concurrent_batches = 15
-                st.rerun()
-        
-        # Smart preset recommendation
-        if 'concurrency_performance_history' in st.session_state and st.session_state.concurrency_performance_history:
-            recommended = get_recommended_concurrency()
-            if recommended:
-                st.info(f"💡 **Smart Recommendation**: Based on your performance history, try {recommended} concurrent batches")
-        
-        # Real-world concurrency guidance
-        st.info(f"🎯 **Proven Safe**: 10 concurrent batches is 100% reliable")
-        st.info(f"🧪 **Testing Next**: 12 concurrent batches - monitor closely")
-        st.info(f"📊 **Current FPS**: {fps} - adjust based on performance history")
-        
-        # FPS/Concurrency Guide Button
-        if st.button("📚 FPS & Concurrency Guide", help="Learn about optimal settings"):
-            st.session_state.show_fps_guide = True
-            st.rerun()
-        
-        # Show FPS Guide if requested
-        if st.session_state.get('show_fps_guide', False):
-            with st.expander("📚 FPS & Concurrency Optimization Guide", expanded=True):
-                st.markdown("""
-                ## 🎯 **Optimal Settings by Use Case**
-                
-                ### **Initial Scan (1-2 FPS)**
-                - **Conservative**: 3-5 concurrent batches
-                - **Balanced**: 5-8 concurrent batches  
-                - **Aggressive**: 8-12 concurrent batches
-                - **Best for**: Getting overview, identifying key moments
-                
-                ### **Detail Scan (6-10 FPS)**
-                - **Conservative**: 2-4 concurrent batches
-                - **Balanced**: 4-6 concurrent batches
-                - **Aggressive**: 6-8 concurrent batches
-                - **Best for**: Analyzing specific techniques, knot tying, suturing
-                
-                ### **High Detail (10-15 FPS)**
-                - **Conservative**: 1-3 concurrent batches
-                - **Balanced**: 3-5 concurrent batches
-                - **Aggressive**: 5-7 concurrent batches
-                - **Best for**: Frame-by-frame analysis, precise timing
-                
-                ## ⚡ **Speed vs Quality Trade-offs**
-                
-                | FPS | Batch Size | Concurrency | Speed | Quality | Use Case |
-                |-----|------------|-------------|-------|---------|----------|
-                | 1   | 5-8        | 8-15        | ⚡⚡⚡ | ⭐⭐     | Overview |
-                | 2   | 5-8        | 6-12        | ⚡⚡   | ⭐⭐⭐    | General |
-                | 5   | 3-6        | 4-8         | ⚡    | ⭐⭐⭐⭐   | Detail |
-                | 10  | 2-4        | 2-6         | 🐌   | ⭐⭐⭐⭐⭐  | Precision |
-                
-                ## 🔍 **Recommended Workflow**
-                
-                1. **Start with 1 FPS, 5 batch size, 8 concurrency** for overview
-                2. **Search transcript** for keywords like "knot", "suture"
-                3. **Rescan key moments** at 10 FPS with 2-4 concurrency
-                4. **Adjust based on performance** - reduce concurrency if you see failures
-                
-                ## ⚠️ **Warning Signs**
-                - **High failure rate**: Reduce concurrency by 2-3
-                - **Slow processing**: Increase concurrency by 1-2
-                - **API errors**: Check your OpenAI tier limits
-                """)
-                
-                if st.button("📚 Close Guide"):
-                    st.session_state.show_fps_guide = False
-                    st.rerun()
-        
-        # Manual concurrency control
-        max_concurrent_batches = st.slider(
-            "Max concurrent batches", 
-            1, 20, 
-            value=st.session_state.get('max_concurrent_batches', 10), 
-            step=1,
-            help="Higher values = faster processing (requires OpenAI Tier 4+)"
-        )
-        
-        # Store the selected value
-        st.session_state.max_concurrent_batches = max_concurrent_batches
-        
-        # Concurrency safety indicator
-        safety_level = get_concurrency_safety_level(max_concurrent_batches, fps)
-        if safety_level == "safe":
-            st.success(f"✅ **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches")
-        elif safety_level == "caution":
-            st.info(f"💡 **{safety_level.upper()}**: {max_concurrent_batches} concurrent batches - monitor closely")
-        
-        # Rescan settings
-        st.subheader("🔍 Rescan Settings")
-        rescan_fps = st.slider("Rescan FPS", 5.0, 20.0, 10.0, 1.0)
+        # Simplified video settings (collapsed by default)
+        with st.expander("⚙️ Advanced Settings"):
+            fps = st.slider("Analysis speed (FPS)", 0.5, 5.0, 1.0, 0.1, help="Higher = more detailed but slower")
+            batch_size = st.slider("Batch size", 3, 15, 5, 1, help="Frames processed together")
+            max_concurrent_batches = st.slider("Concurrency", 1, 15, 10, 1, help="Parallel processing batches")
         
         # API key input
         st.subheader("🔑 OpenAI API Key")
