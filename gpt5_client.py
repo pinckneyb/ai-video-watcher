@@ -79,8 +79,8 @@ class GPT5Client:
             response = self.client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_tokens=2000,
-                temperature=0.3
+                max_completion_tokens=2000,
+                reasoning_effort="low"
             )
             
             # Parse response
@@ -246,8 +246,8 @@ Analyze these frames with much higher detail, focusing on subtle movements and e
             response = self.client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_tokens=2500,
-                temperature=0.2
+                max_completion_tokens=2500,
+                reasoning_effort="low"
             )
             
             narrative_text = response.choices[0].message.content
@@ -308,8 +308,8 @@ Output format: [Condensed State Summary]"""
                         "content": condensation_prompt.format(transcript_text=transcript_text)
                     }
                 ],
-                max_tokens=300,
-                temperature=0.1
+                max_completion_tokens=300,
+                reasoning_effort="low"
             )
             
             condensed_state = response.choices[0].message.content
