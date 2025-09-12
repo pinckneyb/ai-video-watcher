@@ -448,8 +448,8 @@ def main():
                 video_source = video_url
                 st.success(f"✅ Video URL set: {video_url}")
         
-        # Load video button
-        if video_source and st.button("🚀 Load Video", type="primary"):
+        # Auto-load video after upload (no manual button needed)
+        if video_source and not st.session_state.video_processor:
             with st.spinner("Loading video..."):
                 try:
                     st.session_state.video_processor = VideoProcessor()
@@ -458,7 +458,7 @@ def main():
                     if success:
                         # Verify video properties were loaded
                         if st.session_state.video_processor.duration and st.session_state.video_processor.duration > 0:
-                            st.success("✅ Video loaded successfully!")
+                            st.success("✅ Video loaded and ready for analysis!")
                             st.info(f"Duration: {format_timestamp(st.session_state.video_processor.duration)}")
                             st.info(f"Total frames: {int(st.session_state.video_processor.duration * fps)}")
                             st.session_state.analysis_complete = False
@@ -624,12 +624,14 @@ def main():
     
     # Analysis section
     if st.session_state.video_processor and st.session_state.gpt5_client:
-        st.header("🧠 Video Analysis")
+        st.header("🚀 Complete Analysis")
         
-        # Start analysis button
-        if st.button("🎬 Start Analysis", type="primary", disabled=st.session_state.analysis_complete):
+        # Single button to do everything: analyze + enhanced narrative
+        analysis_disabled = st.session_state.analysis_complete or not st.session_state.video_processor
+        
+        if st.button("🚀 Analyze Everything (GPT-5 + Enhanced Narrative)", type="primary", disabled=analysis_disabled):
             if st.session_state.current_profile:
-                start_analysis(fps, batch_size, max_concurrent_batches)
+                start_complete_analysis(fps, batch_size, max_concurrent_batches, enable_whisper)
             else:
                 st.error("Please select an analysis profile")
         
