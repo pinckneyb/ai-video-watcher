@@ -41,8 +41,7 @@ def validate_api_key(api_key: str) -> bool:
         response = test_client.client.chat.completions.create(
             model="gpt-5",
             messages=[{"role": "user", "content": "Hello"}],
-            max_completion_tokens=10,
-            reasoning_effort="low"
+            max_tokens=10
         )
         return True
     except Exception as e:
@@ -56,8 +55,7 @@ def is_api_key_still_valid(client: GPT5Client) -> bool:
         response = client.client.chat.completions.create(
             model="gpt-5",
             messages=[{"role": "user", "content": "Test"}],
-            max_completion_tokens=5,
-            reasoning_effort="low"
+            max_tokens=5
         )
         return True
     except Exception as e:
@@ -159,7 +157,7 @@ def main():
     
     # Header
     st.markdown('<h1 class="main-header">🎥 AI Video Watcher</h1>', unsafe_allow_html=True)
-    st.markdown("### Let GPT-4o watch and narrate your videos with intelligent frame-by-frame analysis")
+    st.markdown("### Let GPT-5 watch and narrate your videos with intelligent frame-by-frame analysis")
     
     # Initialize session state
     if 'video_processor' not in st.session_state:
