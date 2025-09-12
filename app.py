@@ -18,7 +18,8 @@ from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, save_timeline_json, estimate_processing_time,
     extract_video_info, sanitize_filename, extract_audio_from_video,
-    transcribe_audio_with_whisper, transcribe_audio_with_diarization
+    transcribe_audio_with_whisper, transcribe_audio_with_diarization,
+    analyze_audio_with_yamnet
 )
 
 # API key management
@@ -180,6 +181,8 @@ def main():
         st.session_state.enhanced_narrative = ""
     if 'audio_transcript' not in st.session_state:
         st.session_state.audio_transcript = ""
+    if 'yamnet_results' not in st.session_state:
+        st.session_state.yamnet_results = None
     if 'enhancement_requested' not in st.session_state:
         st.session_state.enhancement_requested = False
     if 'regeneration_requested' not in st.session_state:
@@ -387,6 +390,21 @@ def main():
                                                 st.info(f"🎵 Preview: {audio_transcript[:200]}...")
                                             else:
                                                 st.warning("⚠️ Audio transcription failed - no transcript returned")
+                                            
+                                            # YAMNet audio classification
+                                            st.info("🔊 Analyzing audio with YAMNet for sound classification...")
+                                            yamnet_results = analyze_audio_with_yamnet(audio_path)
+                                            
+                                            if yamnet_results:
+                                                st.session_state.yamnet_results = yamnet_results
+                                                summary = yamnet_results.get('summary', [])
+                                                if summary:
+                                                    top_sounds = [f"{item['class']} ({item['avg_confidence']:.2f})" for item in summary[:5]]
+                                                    st.success(f"✅ Audio classification completed! Top sounds: {', '.join(top_sounds)}")
+                                                else:
+                                                    st.warning("⚠️ YAMNet analysis completed but no significant sound events detected")
+                                            else:
+                                                st.warning("⚠️ YAMNet audio classification failed")
                                         else:
                                             st.warning("⚠️ Audio extraction failed - no audio track found or extraction error")
                                         
@@ -807,6 +825,37 @@ def main():
                             file_name=filename,
                             mime="text/markdown"
                         )
+            
+            # Display YAMNet audio classification if available
+            if hasattr(st.session_state, 'yamnet_results') and st.session_state.yamnet_results:
+                st.subheader("🔊 Audio Classification (YAMNet)")
+                with st.expander("🎵 Non-Speech Sound Events", expanded=True):
+                    yamnet_data = st.session_state.yamnet_results
+                    
+                    st.markdown(f"**Analysis Duration:** {yamnet_data.get('duration', 0):.2f} seconds")
+                    st.markdown(f"**Total Frames Analyzed:** {yamnet_data.get('total_frames', 0)}")
+                    
+                    # Top sound events
+                    summary = yamnet_data.get('summary', [])
+                    if summary:
+                        st.markdown("**Top Sound Events Detected:**")
+                        for i, item in enumerate(summary[:10], 1):
+                            confidence_bar = "█" * int(item['avg_confidence'] * 20)
+                            st.markdown(f"{i}. **{item['class']}** - Confidence: {item['avg_confidence']:.3f} {confidence_bar}")
+                            st.caption(f"Detected in {item['detection_count']} frames ({item['presence_ratio']:.1%} of video)")
+                    
+                    # Download YAMNet results
+                    if st.button("📊 Download Audio Classification (JSON)"):
+                        filename = f"yamnet_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                        with open(filename, 'w') as f:
+                            json.dump(yamnet_data, f, indent=2)
+                        st.success(f"✅ YAMNet results saved as {filename}")
+                        st.download_button(
+                            label="📥 Download Audio Classification Data",
+                            data=json.dumps(yamnet_data, indent=2),
+                            file_name=filename,
+                            mime="application/json"
+                        )
             else:
                 # Enhanced debugging information
                 st.subheader("🎵 Audio Transcription Status")
@@ -964,11 +1013,13 @@ def main():
                 if st.session_state.get('regeneration_requested', False):
                     with st.spinner("Regenerating enhanced narrative..."):
                         audio_transcript = st.session_state.get('audio_transcript', '')
+                        yamnet_results = st.session_state.get('yamnet_results', None)
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt5_client.api_key,
                             audio_transcript,
+                            yamnet_results,
                             st.session_state.current_profile
                         )
                         if enhanced_narrative:
@@ -988,11 +1039,13 @@ def main():
                 if st.session_state.get('enhancement_requested', False):
                     with st.spinner("Creating enhanced narrative..."):
                         audio_transcript = st.session_state.get('audio_transcript', '')
+                        yamnet_results = st.session_state.get('yamnet_results', None)
                         enhanced_narrative = create_coherent_narrative(
                             st.session_state.transcript, 
                             st.session_state.events,
                             st.session_state.gpt5_client.api_key,
                             audio_transcript,
+                            yamnet_results,
                             st.session_state.current_profile
                         )
                         if enhanced_narrative:
@@ -1345,16 +1398,20 @@ def start_analysis(fps: float, batch_size: int, max_concurrent_batches: int = 1)
             with st.spinner("Creating coherent narrative with GPT-5..."):
                 # Debug: show what we're passing
                 audio_transcript = st.session_state.get('audio_transcript', '')
+                yamnet_results = st.session_state.get('yamnet_results', None)
                 if audio_transcript:
                     st.info(f"🎵 Including audio transcript ({len(audio_transcript)} characters)")
                 else:
                     st.warning("⚠️ No audio transcript found - check Whisper settings")
+                if yamnet_results:
+                    st.info(f"🔊 Including audio classification data")
                 
                 enhanced_narrative = create_coherent_narrative(
                     st.session_state.transcript, 
                     st.session_state.events,
                     gpt5_client.api_key,
                     audio_transcript,
+                    yamnet_results,
                     st.session_state.current_profile
                 )
                 if enhanced_narrative:
@@ -1515,7 +1572,7 @@ def process_single_batch_concurrent(batch, gpt5_client, profile, batch_index, to
         st.error(f"❌ Error in concurrent batch {batch_index + 1}: {e}")
         return f"Error in batch {batch_index + 1}: {e}", []
 
-def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "", profile: Dict[str, Any] = None) -> str:
+def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "", yamnet_results: dict = None, profile: Dict[str, Any] = None) -> str:
     """Create a coherent, continuous narrative using GPT-5."""
     try:
         # Create a GPT-5 client for narrative enhancement
@@ -1552,6 +1609,9 @@ EVENTS TIMELINE:
 
 AUDIO TRANSCRIPT:
 {audio_transcript if audio_transcript else "No audio transcription available."}
+
+AUDIO CLASSIFICATION (YAMNet):
+{json.dumps(yamnet_results.get('summary', [])[:5], indent=2) if yamnet_results else "No audio classification available."}
 
 INSTRUCTIONS:
 1. **Chronological Flow**: Maintain strict chronological order from start to finish
