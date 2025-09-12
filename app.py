@@ -1572,7 +1572,7 @@ def process_single_batch_concurrent(batch, gpt5_client, profile, batch_index, to
         st.error(f"❌ Error in concurrent batch {batch_index + 1}: {e}")
         return f"Error in batch {batch_index + 1}: {e}", []
 
-def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "", yamnet_results: dict = None, profile: Dict[str, Any] = None) -> str:
+def create_coherent_narrative(raw_transcript: str, events: List[Dict], api_key: str, audio_transcript: str = "", yamnet_results: Optional[dict] = None, profile: Optional[Dict[str, Any]] = None) -> str:
     """Create a coherent, continuous narrative using GPT-5."""
     try:
         # Create a GPT-5 client for narrative enhancement
