@@ -41,7 +41,8 @@ def validate_api_key(api_key: str) -> bool:
         response = test_client.client.chat.completions.create(
             model="gpt-5",
             messages=[{"role": "user", "content": "Hello"}],
-            max_tokens=10
+            max_completion_tokens=10,
+            reasoning_effort="low"
         )
         return True
     except Exception as e:
@@ -55,7 +56,8 @@ def is_api_key_still_valid(client: GPT5Client) -> bool:
         response = client.client.chat.completions.create(
             model="gpt-5",
             messages=[{"role": "user", "content": "Test"}],
-            max_tokens=5
+            max_completion_tokens=5,
+            reasoning_effort="low"
         )
         return True
     except Exception as e:
