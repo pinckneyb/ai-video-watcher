@@ -224,11 +224,10 @@ def main():
             help="Extract and transcribe audio track using Whisper API"
         )
         
-        # Simplified video settings (collapsed by default)
-        with st.expander("⚙️ Advanced Settings"):
-            fps = st.slider("Analysis speed (FPS)", 0.5, 5.0, 1.0, 0.1, help="Higher = more detailed but slower")
-            batch_size = st.slider("Batch size", 3, 15, 5, 1, help="Frames processed together")
-            max_concurrent_batches = st.slider("Concurrency", 1, 15, 10, 1, help="Parallel processing batches")
+        # Use smart defaults for all technical settings
+        fps = 1.0  # Good balance of speed and detail
+        batch_size = 5  # Optimal batch size
+        max_concurrent_batches = 10  # Proven safe concurrency
         
         # API key input
         st.subheader("🔑 OpenAI API Key")
@@ -376,18 +375,11 @@ def main():
                                         if audio_path and os.path.exists(audio_path):
                                             st.info(f"🎵 Audio extracted to {audio_path}")
                                             
-                                            if enable_diarization:
-                                                st.info("🎤 Transcribing with speaker diarization...")
-                                                audio_transcript = transcribe_audio_with_diarization(
-                                                    audio_path, 
-                                                    st.session_state.gpt5_client.api_key
-                                                )
-                                            else:
-                                                st.info("🎤 Transcribing with Whisper...")
-                                                audio_transcript = transcribe_audio_with_whisper(
-                                                    audio_path, 
-                                                    st.session_state.gpt5_client.api_key
-                                                )
+                                            st.info("🎤 Transcribing with Whisper...")
+                                            audio_transcript = transcribe_audio_with_whisper(
+                                                audio_path, 
+                                                st.session_state.gpt5_client.api_key
+                                            )
                                             
                                             if audio_transcript:
                                                 st.session_state.audio_transcript = audio_transcript
