@@ -1055,13 +1055,15 @@ def main():
                 
                 with col_enh2:
                     if st.button("📄 Download", key="download_enhanced"):
-                        filename = save_transcript(st.session_state.enhanced_narrative, prefix="enhanced_")
-                        st.success(f"✅ Enhanced narrative saved as {filename}")
+                        # Generate TXT filename for enhanced narrative
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"enhanced_{timestamp}.txt"
+                        st.success(f"✅ Enhanced narrative ready for download as {filename}")
                         st.download_button(
                             label="📥 Download Enhanced Narrative",
                             data=st.session_state.enhanced_narrative,
                             file_name=filename,
-                            mime="text/markdown"
+                            mime="text/plain"
                         )
                 
                 with col_enh3:
