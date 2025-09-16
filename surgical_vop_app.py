@@ -519,6 +519,36 @@ def main():
         fps = st.slider("Analysis FPS", 1.0, 5.0, 1.0, 0.5)
         batch_size = st.slider("Batch Size", 5, 15, 15, 1, help="Number of frames processed together in each batch")
         
+        # GPT-5 Model Settings
+        st.subheader("🤖 GPT-5 Model Settings")
+        
+        # Model selection
+        gpt5_model = st.selectbox(
+            "Model",
+            options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
+            index=0,  # Default to gpt-5
+            help="Choose the GPT-5 model variant. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest."
+        )
+        st.session_state.gpt5_model = gpt5_model
+        
+        # Reasoning level
+        reasoning_level = st.selectbox(
+            "Reasoning Level",
+            options=["minimal", "low", "medium", "high"],
+            index=2,  # Default to medium
+            help="Controls computational effort: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality for complex tasks)."
+        )
+        st.session_state.reasoning_level = reasoning_level
+        
+        # Verbosity level
+        verbosity_level = st.selectbox(
+            "Verbosity Level",
+            options=["low", "medium", "high"],
+            index=1,  # Default to medium
+            help="Controls response detail: low (terse), medium (balanced), high (verbose explanations)."
+        )
+        st.session_state.verbosity_level = verbosity_level
+        
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
         max_concurrent_batches = st.slider(
