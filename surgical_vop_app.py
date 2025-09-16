@@ -17,7 +17,6 @@ from pathlib import Path
 from video_processor import VideoProcessor, FrameBatchProcessor
 from gpt4o_client import GPT4oClient
 from gpt5_vision_client import GPT5VisionClient
-from google_drive_uploader import GoogleDriveUploader, setup_google_drive_integration, get_drive_uploader
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, extract_video_info, sanitize_filename
@@ -424,9 +423,6 @@ def main():
     # Sidebar configuration
     with st.sidebar:
         st.header("📋 Assessment Configuration")
-        
-        # Add Google Drive integration setup
-        setup_google_drive_integration()
         
         # Pattern detection and selection
         st.subheader("🧵 Suture Pattern")
@@ -1044,55 +1040,6 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             progress_text.text("✅ Video narrative complete!")
             st.success("✅ PASS 2 complete: Video narrative generated")
             
-            # IMMEDIATELY CREATE AND SAVE TXT NARRATIVE TO GOOGLE DRIVE
-            try:
-                # Ensure narratives directory exists
-                os.makedirs("narratives", exist_ok=True)
-                
-                # Derive original filename (strip temp_ prefix if present)
-                original_filename = os.path.basename(video_path)
-                if original_filename.startswith("temp_"):
-                    original_filename = original_filename[len("temp_"):]
-                
-                # Create TXT filename based on Pass 2 completion
-                clean_filename = original_filename
-                if clean_filename.startswith("temp_"):
-                    clean_filename = clean_filename[5:]
-                
-                base_filename = f"VOP_Narrative_{clean_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                txt_filename = os.path.join("narratives", f"{base_filename}.txt")
-                
-                # Write the complete Pass 2 narrative to TXT file
-                with open(txt_filename, 'w', encoding='utf-8') as f:
-                    f.write(f"SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE\n")
-                    f.write(f"{'='*60}\n")
-                    f.write(f"Video: {original_filename}\n")
-                    f.write(f"Pattern: {current_pattern.replace('_', ' ').title()}\n")
-                    f.write(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"{'='*60}\n\n")
-                    f.write(f"{video_narrative}\n")
-                    f.write(f"\n\n{'='*60}\n")
-                    f.write("END OF NARRATIVE")
-                
-                st.success(f"✅ Pass 2 narrative saved: {base_filename}.txt")
-                
-                # Try to upload TXT to Google Drive if configured
-                drive_uploader = get_drive_uploader()
-                if drive_uploader and drive_uploader.service:
-                    try:
-                        # Upload TXT file using upload_html_report (works for any file)
-                        upload_result = drive_uploader.upload_html_report(txt_filename)
-                        if upload_result["success"]:
-                            st.success(f"☁️ Pass 2 narrative uploaded to Google Drive!")
-                            st.markdown(f"🔗 [View TXT in Google Drive]({upload_result['web_link']})")
-                        else:
-                            st.warning(f"⚠️ Google Drive upload failed: {upload_result['error']}")
-                    except Exception as e:
-                        st.warning(f"⚠️ Google Drive upload error: {str(e)}")
-                        
-            except Exception as txt_error:
-                st.warning(f"⚠️ Could not save Pass 2 narrative: {str(txt_error)}")
-            
         except Exception as e:
             st.error(f"❌ PASS 2 failed with exception: {str(e)}")
             return
@@ -1232,8 +1179,40 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             txt_filename = os.path.join("narratives", f"{base_filename}.txt")
             html_filename = os.path.join("html_reports", f"{base_filename}.html")
             
-            # Note: TXT narrative is now created immediately after Pass 2 completes
-            # This section only creates the HTML report
+            # Generate TXT report
+            with open(txt_filename, 'w', encoding='utf-8') as f:
+                f.write(f"Video: {original_filename}\n")
+                f.write(f"Pattern: {current_pattern.replace('_', ' ').title()}\n\n")
+                
+                if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                    full_response = enhanced_narrative.get('full_response', '')
+                    if full_response and "RUBRIC_SCORES_START" in full_response:
+                        rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
+                        lines = rubric_commentary.split('\n')
+                        for line in lines:
+                            f.write(line)
+                            if line.strip() and line.strip()[0].isdigit() and '.' in line:
+                                point_num = int(line.split('.')[0])
+                                score = extracted_scores.get(point_num, 3)
+                                if score >= 4.0:
+                                    adj = "exemplary"
+                                elif score >= 3.0:
+                                    adj = "proficient"
+                                elif score >= 2.0:
+                                    adj = "competent"
+                                elif score >= 1.0:
+                                    adj = "developing"
+                                else:
+                                    adj = "inadequate"
+                                f.write(f" {score}/5 {adj}")
+                            f.write("\n")
+                        f.write("\n")
+                    
+                    summative = enhanced_narrative.get('summative_assessment', '')
+                    if summative:
+                        f.write("Summative assessment:\n")
+                        f.write(summative)
+                        f.write("\n\n")
             
             # Generate HTML report with properly stacked images
             with open(html_filename, 'w', encoding='utf-8') as f:
@@ -1384,19 +1363,6 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write("</body>\n</html>\n")
             
             st.success(f"✅ TXT and HTML reports auto-generated:")
-            
-            # Try to upload HTML to Google Drive if configured
-            drive_uploader = get_drive_uploader()
-            if drive_uploader and drive_uploader.service:
-                try:
-                    upload_result = drive_uploader.upload_html_report(html_filename)
-                    if upload_result["success"]:
-                        st.success(f"☁️ {upload_result['message']}")
-                        st.markdown(f"🔗 [View in Google Drive]({upload_result['web_link']})")
-                    else:
-                        st.warning(f"⚠️ Google Drive upload failed: {upload_result['error']}")
-                except Exception as e:
-                    st.warning(f"⚠️ Google Drive upload error: {str(e)}")
             
             # Create clickable links to the generated files
             col1, col2 = st.columns(2)
