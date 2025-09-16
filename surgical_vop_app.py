@@ -17,6 +17,7 @@ from pathlib import Path
 from video_processor import VideoProcessor, FrameBatchProcessor
 from gpt4o_client import GPT4oClient
 from gpt5_vision_client import GPT5VisionClient
+from google_drive_uploader import GoogleDriveUploader, setup_google_drive_integration, get_drive_uploader
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, extract_video_info, sanitize_filename
@@ -423,6 +424,9 @@ def main():
     # Sidebar configuration
     with st.sidebar:
         st.header("📋 Assessment Configuration")
+        
+        # Add Google Drive integration setup
+        setup_google_drive_integration()
         
         # Pattern detection and selection
         st.subheader("🧵 Suture Pattern")
@@ -1363,6 +1367,19 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write("</body>\n</html>\n")
             
             st.success(f"✅ TXT and HTML reports auto-generated:")
+            
+            # Try to upload HTML to Google Drive if configured
+            drive_uploader = get_drive_uploader()
+            if drive_uploader and drive_uploader.service:
+                try:
+                    upload_result = drive_uploader.upload_html_report(html_filename)
+                    if upload_result["success"]:
+                        st.success(f"☁️ {upload_result['message']}")
+                        st.markdown(f"🔗 [View in Google Drive]({upload_result['web_link']})")
+                    else:
+                        st.warning(f"⚠️ Google Drive upload failed: {upload_result['error']}")
+                except Exception as e:
+                    st.warning(f"⚠️ Google Drive upload error: {str(e)}")
             
             # Create clickable links to the generated files
             col1, col2 = st.columns(2)
