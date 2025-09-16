@@ -436,20 +436,35 @@ def main():
             if isinstance(uploaded_file, list):
                 # Multiple files - just show count
                 st.info(f"📁 **Files**: {len(uploaded_file)} videos selected")
+                valid_files = []
                 for i, file in enumerate(uploaded_file, 1):
-                    file_size_mb = len(file.read()) / (1024 * 1024)
-                    file.seek(0)  # Reset file pointer
-                    if file_size_mb > 2000:  # 2GB limit
-                        st.error(f"❌ **File too large**: {file.name} exceeds 2GB limit")
-                        uploaded_file = None
-                        break
+                    try:
+                        file_size_mb = len(file.read()) / (1024 * 1024)
+                        file.seek(0)  # Reset file pointer
+                        if file_size_mb > 2000:  # 2GB limit
+                            st.error(f"❌ **File too large**: {file.name} exceeds 2GB limit")
+                        else:
+                            valid_files.append(file)
+                            st.success(f"✅ {file.name}: {file_size_mb:.1f} MB")
+                    except Exception as e:
+                        st.error(f"❌ **Error reading file**: {file.name} - {str(e)}")
+                        continue
+                
+                # Update uploaded_file to only include valid files
+                uploaded_file = valid_files if valid_files else None
             else:
                 # Single file - just show count
-                file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
-                uploaded_file.seek(0)  # Reset file pointer
-                
-                if file_size_mb > 2000:  # 2GB limit
-                    st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
+                try:
+                    file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
+                    uploaded_file.seek(0)  # Reset file pointer
+                    
+                    if file_size_mb > 2000:  # 2GB limit
+                        st.error("❌ **File too large**: Maximum size is 2GB. Please compress your video.")
+                        uploaded_file = None
+                    else:
+                        st.success(f"✅ {uploaded_file.name}: {file_size_mb:.1f} MB")
+                except Exception as e:
+                    st.error(f"❌ **Error reading file**: {uploaded_file.name} - {str(e)}")
                     uploaded_file = None
         
         if uploaded_file:
@@ -459,12 +474,16 @@ def main():
                 st.subheader("🔍 Pattern Detection Results")
                 detected_patterns = {}
                 for i, file in enumerate(uploaded_file, 1):
-                    pattern = detect_pattern_from_upload(file)
-                    if pattern:
-                        detected_patterns[file.name] = pattern
-                        st.success(f"✅ {i}. {file.name}: {pattern.replace('_', ' ').title()}")
-                    else:
-                        st.warning(f"⚠️ {i}. {file.name}: Pattern not detected")
+                    try:
+                        pattern = detect_pattern_from_upload(file)
+                        if pattern:
+                            detected_patterns[file.name] = pattern
+                            st.success(f"✅ {i}. {file.name}: {pattern.replace('_', ' ').title()}")
+                        else:
+                            st.warning(f"⚠️ {i}. {file.name}: Pattern not detected")
+                    except Exception as e:
+                        st.error(f"❌ **Error detecting pattern for** {file.name}: {str(e)}")
+                        # Continue with other files
                 
                 # Show pattern summary
                 if detected_patterns:
