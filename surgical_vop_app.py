@@ -685,6 +685,63 @@ def main():
         if st.button("🛑 STOP Application", type="secondary", help="Gracefully stop the application"):
             st.stop()
     
+    # Emergency batch recovery section
+    if st.button("🚨 Access Recent Batch Files (App Reset Recovery)"):
+        st.markdown("## 📥 Recent Batch Download Recovery")
+        st.info("💾 **Save files to:** `C:\\CursorAI_folders\\AI_video_watcher\\`")
+        
+        # Recent batch files (from timestamp analysis)
+        recent_files = [
+            {
+                'html': 'html_reports/VOP_Assessment_2501_simple_interrupted.mp4_20250916_231151.html',
+                'txt': 'narratives/VOP_Assessment_2501_simple_interrupted.mp4_20250916_231151.txt',
+                'name': '2501_simple_interrupted.mp4',
+                'score': '4.4/5 - Excellent'
+            },
+            {
+                'html': 'html_reports/VOP_Assessment_2501_subcuticular.mp4_20250916_231715.html', 
+                'txt': 'narratives/VOP_Assessment_2501_subcuticular.mp4_20250916_231715.txt',
+                'name': '2501_subcuticular.mp4',
+                'score': '1.9/5 - Needs Work'
+            },
+            {
+                'html': 'html_reports/VOP_Assessment_2501_vertical_mattress.mp4_20250916_233413.html',
+                'txt': 'narratives/VOP_Assessment_2501_vertical_mattress.mp4_20250916_233413.txt', 
+                'name': '2501_vertical_mattress.mp4',
+                'score': '2.6/5 - Needs Work'
+            }
+        ]
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 🌐 HTML Reports")
+            for file_info in recent_files:
+                if os.path.exists(file_info['html']):
+                    with open(file_info['html'], "rb") as f:
+                        st.download_button(
+                            label=f"🌐 {file_info['name']} ({file_info['score']})",
+                            data=f.read(),
+                            file_name=os.path.basename(file_info['html']),
+                            mime="text/html",
+                            key=f"html_recovery_{file_info['name']}"
+                        )
+        
+        with col2:
+            st.markdown("### 📄 TXT Reports") 
+            for file_info in recent_files:
+                if os.path.exists(file_info['txt']):
+                    with open(file_info['txt'], "rb") as f:
+                        st.download_button(
+                            label=f"📄 {file_info['name']} ({file_info['score']})",
+                            data=f.read(),
+                            file_name=os.path.basename(file_info['txt']),
+                            mime="text/plain",
+                            key=f"txt_recovery_{file_info['name']}"
+                        )
+        
+        st.divider()
+    
     # Main content area
     if uploaded_file and st.session_state.selected_pattern and api_key:
         col1, col2 = st.columns([2, 1])
