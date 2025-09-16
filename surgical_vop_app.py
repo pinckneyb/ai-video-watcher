@@ -703,8 +703,25 @@ def main():
                             file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
                             st.info(f"Processing {i}/{len(uploaded_file)}: {file.name} ({file_pattern})")
                             
-                            # Use the existing working function
-                            start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
+                            try:
+                                # Clear previous video's session state to avoid conflicts
+                                if hasattr(st.session_state, 'assessment_results'):
+                                    del st.session_state.assessment_results
+                                if hasattr(st.session_state, 'vop_analysis_complete'):
+                                    del st.session_state.vop_analysis_complete
+                                if hasattr(st.session_state, 'final_product_image'):
+                                    del st.session_state.final_product_image
+                                
+                                # Use the existing working function
+                                start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
+                                
+                                st.success(f"✅ Video {i} completed successfully")
+                                
+                            except Exception as e:
+                                st.error(f"❌ Video {i} ({file.name}) failed: {str(e)}")
+                                st.code(f"Error details: {e}", language="text")
+                                # Continue processing next video instead of crashing
+                                continue
                             
                             # Add a separator between videos
                             if i < len(uploaded_file):
