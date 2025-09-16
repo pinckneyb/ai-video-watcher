@@ -1052,7 +1052,9 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         try:
             from surgical_report_generator import SurgicalVOPReportGenerator
             report_gen = SurgicalVOPReportGenerator()
-            assessment_data_for_image = {'video_path': video_path, 'api_key': api_key}
+            # Use the actual temp video path that exists, not original filename
+            actual_video_path = temp_video_path if 'temp_video_path' in locals() else video_path
+            assessment_data_for_image = {'video_path': actual_video_path, 'api_key': api_key}
             report_gen._return_pil_for_html = True  # Flag to return PIL Image
             final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
             if final_product_image:
@@ -1341,7 +1343,11 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             # Also show file paths for reference
             st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(html_filename)}")
         except Exception as report_error:
-            st.warning(f"⚠️ Could not auto-generate reports: {str(report_error)}")
+            st.error(f"❌ **AUTOMATIC REPORT GENERATION FAILED**: {str(report_error)}")
+            import traceback
+            st.code(traceback.format_exc())
+            print(f"AUTOMATIC GENERATION ERROR: {report_error}")
+            print(f"TRACEBACK: {traceback.format_exc()}")
 
         # Cleanup temp video file
         try:
@@ -1533,41 +1539,92 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     f.write(f"<p><strong>Video:</strong> {results['video_info']['filename']}</p>\n")
                     f.write(f"<p><strong>Pattern:</strong> {results['video_info']['pattern'].replace('_', ' ').title()}</p>\n")
                     
-                    # Add rubric points and scores
-                    for point_id, score in st.session_state.rubric_scores.items():
-                        # Get rubric point details
-                        rubric_data = st.session_state.get('current_rubric_data', {})
-                        point_info = None
-                        if 'points' in rubric_data:
-                            for point in rubric_data['points']:
-                                if point['pid'] == point_id:
-                                    point_info = point
-                                    break
-                        
-                        if point_info:
-                            # Convert score to performance level
-                            if score >= 4.5:
-                                performance_level = "exemplary"
-                            elif score >= 3.5:
-                                performance_level = "proficient"
-                            elif score >= 2.5:
-                                performance_level = "competent"
-                            elif score >= 1.5:
-                                performance_level = "developing"
-                            else:
-                                performance_level = "inadequate"
-                            
-                            f.write(f"<div class='rubric-point'>{point_id}. <strong>{point_info['title']}</strong>: ")
-                            f.write(f"{point_info['what_you_assess']} ")
-                            f.write(f"<strong>{score}/5 {performance_level}</strong></div>\n")
+                    # Add rubric assessment with GPT-5 generated content
+                    enhanced_narrative = results.get('enhanced_narrative', {})
+                    extracted_scores = results.get('extracted_scores', {})
                     
-                    # Add average score
-                    f.write("<br>\n")
-                    f.write(f"<div class='average-score'><strong>Average Score: {overall_result['average_score']:.1f}/5 ")
-                    if overall_result['pass']:
-                        f.write("- COMPETENCY ACHIEVED</strong></div>\n")
+                    # Parse GPT-5 comments for each rubric point
+                    rubric_comments = {}
+                    summative_assessment = ""
+                    
+                    if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                        # Try to get structured data first
+                        rubric_comments = enhanced_narrative.get('rubric_comments', {})
+                        summative_assessment = enhanced_narrative.get('summative_assessment', '')
+                        
+                        # If no structured data, parse from full_response (GPT-5 Pass 3 output)
+                        if not rubric_comments and 'full_response' in enhanced_narrative:
+                            full_response = enhanced_narrative['full_response']
+                            # Parse rubric points from full response
+                            for point_num in range(1, 8):
+                                point_pattern = f"RUBRIC_POINT_{point_num}:"
+                                if point_pattern in full_response:
+                                    start_idx = full_response.find(point_pattern)
+                                    if start_idx != -1:
+                                        next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
+                                        summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
+                                        end_idx = len(full_response)
+                                        if next_point_idx != -1:
+                                            end_idx = min(end_idx, next_point_idx)
+                                        if summative_idx != -1:
+                                            end_idx = min(end_idx, summative_idx)
+                                        
+                                        point_section = full_response[start_idx:end_idx]
+                                        comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
+                                        if comment_match:
+                                            rubric_comments[point_num] = comment_match.group(1).strip()
+                            
+                            # Parse summative assessment from full response
+                            if not summative_assessment:
+                                if "SUMMATIVE_ASSESSMENT:" in full_response:
+                                    summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
+                                    summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
+                    
+                    # Get rubric point titles for proper labeling
+                    rubric_data = st.session_state.get('current_rubric_data', {})
+                    rubric_titles = {}
+                    if 'points' in rubric_data:
+                        for point in rubric_data['points']:
+                            rubric_titles[point['pid']] = point['title']
+                    
+                    f.write("<h2>Rubric Assessment</h2>\n")
+                    # Display rubric points with GPT-5 generated content
+                    for point_num in range(1, 8):
+                        if point_num in extracted_scores:
+                            comment = rubric_comments.get(point_num, "Assessment comment not available")
+                            ai_score = extracted_scores[point_num] 
+                            title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
+                            
+                            # Determine competency level based on AI score
+                            if ai_score >= 4.0:
+                                competency = "COMPETENCY ACHIEVED"
+                            elif ai_score >= 3.0:
+                                competency = "COMPETENT"
+                            else:
+                                competency = "COMPETENCY NOT ACHIEVED"
+                            
+                            f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {ai_score}/5 - {competency}</strong></div>\n")
+                    
+                    # Add AI-generated average score and summative assessment
+                    if extracted_scores:
+                        avg_score = sum(extracted_scores.values()) / len(extracted_scores)
+                        if avg_score >= 3.0:
+                            overall_competency = "COMPETENCY ACHIEVED"
+                        else:
+                            overall_competency = "COMPETENCY NOT ACHIEVED"
+                        
+                        f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5 - {overall_competency}</strong></div>\n")
+                        
+                        # Add summative comment if available
+                        if summative_assessment:
+                            f.write(f"<div class='summative'><strong>Summative Assessment:</strong><br>{summative_assessment}</div>\n")
                     else:
-                        f.write("- COMPETENCY NOT ACHIEVED</strong></div>\n")
+                        f.write("<p><strong>AI Assessment scores not available - using manual scores</strong></p>\n")
+                        f.write(f"<div class='average-score'><strong>Manual Average Score: {overall_result['average_score']:.1f}/5 ")
+                        if overall_result['pass']:
+                            f.write("- COMPETENCY ACHIEVED</strong></div>\n")
+                        else:
+                            f.write("- COMPETENCY NOT ACHIEVED</strong></div>\n")
                     
                     # Add final product image if available
                     f.write("<h2>Final Product Comparison</h2>\n")

@@ -44,10 +44,22 @@ class VideoProcessor:
                     video_bytes = response.content
                     self.video_path = self._save_temp_video(video_bytes)
                 else:
-                    # Local file
-                    if not os.path.exists(source):
-                        raise FileNotFoundError(f"Video file not found: {source}")
-                    self.video_path = source
+                    # Local file - try multiple path variations if original doesn't exist
+                    if os.path.exists(source):
+                        self.video_path = source
+                    else:
+                        # Try temp_videos with temp_ prefix
+                        basename = os.path.basename(source)
+                        temp_path = os.path.join("temp_videos", f"temp_{basename}")
+                        if os.path.exists(temp_path):
+                            self.video_path = temp_path
+                        else:
+                            # Try temp_videos without temp_ prefix
+                            temp_path2 = os.path.join("temp_videos", basename)
+                            if os.path.exists(temp_path2):
+                                self.video_path = temp_path2
+                            else:
+                                raise FileNotFoundError(f"Video file not found: {source} (also tried {temp_path}, {temp_path2})")
             else:
                 # Bytes input
                 self.video_path = self._save_temp_video(source)
