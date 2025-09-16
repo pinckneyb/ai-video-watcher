@@ -101,6 +101,9 @@ class BatchManager:
         if all_completed:
             manifest["status"] = "completed"
             manifest["finished_at"] = datetime.now().isoformat()
+            
+            # Update index status to completed
+            self._update_batch_status_in_index(batch_id, "completed")
         
         # Write updated manifest
         self._write_manifest(batch_id, manifest)
@@ -232,6 +235,31 @@ class BatchManager:
         
         # Write atomically
         temp_path = self.index_file + ".tmp"
+        with open(temp_path, "w") as f:
+            json.dump(index, f, indent=2)
+        os.rename(temp_path, self.index_file)
+    
+    def _update_batch_status_in_index(self, batch_id: str, status: str):
+        """Update batch status in index.json"""
+        if not os.path.exists(self.index_file):
+            return
+        
+        try:
+            with open(self.index_file, "r") as f:
+                index = json.load(f)
+        except:
+            return
+        
+        # Find and update the batch entry
+        for batch_entry in index.get("batches", []):
+            if batch_entry["batch_id"] == batch_id:
+                batch_entry["status"] = status
+                if status == "completed":
+                    batch_entry["finished_at"] = datetime.now().isoformat()
+                break
+        
+        # Write atomically
+        temp_path = self.index_file + ".tmp" 
         with open(temp_path, "w") as f:
             json.dump(index, f, indent=2)
         os.rename(temp_path, self.index_file)
