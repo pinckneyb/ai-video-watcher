@@ -1132,7 +1132,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 try:
                     # Use the final product image from session state
                     final_product_image = st.session_state.get('final_product_image', None)
-                    if final_product_image and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
+                    if final_product_image is not None and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
                         import base64
                         from io import BytesIO
                         buffered = BytesIO()
@@ -1427,7 +1427,7 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     f.write("<h3>Learner Final Product</h3>\n")
                     try:
                         final_product_image = st.session_state.get('final_product_image', None)
-                        if final_product_image and hasattr(final_product_image, 'save'):
+                        if final_product_image is not None and hasattr(final_product_image, 'save'):
                             import base64
                             from io import BytesIO
                             buffered = BytesIO()

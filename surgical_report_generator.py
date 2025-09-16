@@ -461,7 +461,13 @@ class SurgicalVOPReportGenerator:
             # Learner final product (unaltered) full page width
             learner_header = Paragraph("<b>Learner Final Product</b>", self.styles['Normal'])
             learner_img = self._extract_final_product_image_enhanced_full(assessment_data, 6*inch)
-            story.append(KeepTogether([learner_header, Spacer(1, 6), learner_img, Spacer(1, 20)]))
+            if learner_img is not None:
+                story.append(KeepTogether([learner_header, Spacer(1, 6), learner_img, Spacer(1, 20)]))
+            else:
+                story.append(learner_header)
+                story.append(Spacer(1, 6))
+                story.append(Paragraph("Final product image could not be extracted from video", self.styles['Normal']))
+                story.append(Spacer(1, 20))
             
             # Add gold standard image below
             if gold_standard_path and os.path.exists(gold_standard_path):
@@ -491,7 +497,8 @@ class SurgicalVOPReportGenerator:
         try:
             video_path = assessment_data.get('video_path')
             if not video_path:
-                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+                print("⚠️ Video not available for final product extraction")
+                return None
             
             from video_processor import VideoProcessor
             import cv2
@@ -500,12 +507,14 @@ class SurgicalVOPReportGenerator:
             success = processor.load_video(video_path)
             
             if not success:
-                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+                print("⚠️ Could not load video for final product extraction")
+                return None
             
             duration = processor.duration
             cap = cv2.VideoCapture(processor.video_path)
             if not cap.isOpened():
-                return Paragraph("Could not open video for frame extraction", self.styles['Normal'])
+                print("⚠️ Could not open video for frame extraction")
+                return None
             
             fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
             
@@ -513,7 +522,8 @@ class SurgicalVOPReportGenerator:
             api_key = assessment_data.get('api_key') or os.getenv('OPENAI_API_KEY')
             if not api_key:
                 cap.release()
-                return Paragraph("No API key available for GPT-5 frame evaluation", self.styles['Normal'])
+                print("⚠️ No API key available for GPT-5 frame evaluation")
+                return None
             
             # Test API key validity
             from openai import OpenAI
@@ -733,26 +743,30 @@ SCORE:"""
         try:
             video_path = assessment_data.get('video_path')
             if not video_path:
-                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+                print("⚠️ Video not available for final product extraction")
+                return None
             from video_processor import VideoProcessor
             import cv2
             vp = VideoProcessor()
             if not vp.load_video(video_path):
-                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+                print("⚠️ Could not load video for final product extraction")
+                return None
             # Choose a frame near the end (last 5%)
             duration = vp.duration
             start = max(0.0, duration * 0.95)
             end = duration
             cap = cv2.VideoCapture(vp.video_path)
             if not cap.isOpened():
-                return Paragraph("Could not open video", self.styles['Normal'])
+                print("⚠️ Could not open video")
+                return None
             fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
             frame_idx = int(((start + end) / 2.0) * fps)
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             ret, frame = cap.read()
             cap.release()
             if not ret or frame is None:
-                return Paragraph("Could not read frame for final product", self.styles['Normal'])
+                print("⚠️ Could not read frame for final product")
+                return None
             pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             ar = pil.height / pil.width
             target_height = int(target_width * ar)
@@ -762,7 +776,8 @@ SCORE:"""
             buf.seek(0)
             return RLImage(buf, width=target_width, height=target_height)
         except Exception as e:
-            return Paragraph(f"Error extracting final product image: {str(e)}", self.styles['Normal'])
+            print(f"⚠️ Error extracting final product image: {str(e)}")
+            return None
     
     def _generate_summative_feedback(self, scores: Dict[int, int], avg_score: float, assessment_data: Dict[str, Any]) -> str:
         """Extract summative feedback from AI-generated enhanced narrative."""
@@ -881,7 +896,8 @@ SCORE:"""
             # Get video path from assessment data
             video_path = assessment_data.get('video_path')
             if not video_path:
-                return Paragraph("Video not available for final product extraction", self.styles['Normal'])
+                print("⚠️ Video not available for final product extraction")
+                return None
             
             # Import video processor
             from video_processor import VideoProcessor
@@ -892,7 +908,8 @@ SCORE:"""
             success = processor.load_video(video_path)
             
             if not success:
-                return Paragraph("Could not load video for final product extraction", self.styles['Normal'])
+                print("⚠️ Could not load video for final product extraction")
+                return None
             
             # Multi-tier sampling strategy for best final product image
             duration = processor.duration
@@ -908,7 +925,8 @@ SCORE:"""
             self._sample_video_segment_enhanced(processor, duration * 0.85, duration * 0.93, 6, candidate_frames, "final_15pct")
             
             if not candidate_frames:
-                return Paragraph("No frames could be extracted from final portion of video", self.styles['Normal'])
+                print("⚠️ No frames could be extracted from final portion of video")
+                return None
             
             # Score all frames with enhanced criteria (hand/instrument avoidance)
             scored_frames = []
@@ -943,7 +961,8 @@ SCORE:"""
             return reportlab_image
             
         except Exception as e:
-            return Paragraph(f"Error extracting final product image: {str(e)}", self.styles['Normal'])
+            print(f"⚠️ Error extracting final product image: {str(e)}")
+            return None
 
     def _sample_video_segment_enhanced(self, processor, start_time: float, end_time: float, 
                                      num_samples: int, candidate_frames: list, tier: str):
