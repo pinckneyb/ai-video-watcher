@@ -46,10 +46,10 @@ class GoogleDriveUploader:
     
     def upload_html_report(self, file_path, custom_name=None):
         """
-        Upload HTML report to Google Drive folder
+        Upload file to Google Drive folder (works for HTML, TXT, and other files)
         
         Args:
-            file_path: Local path to HTML file
+            file_path: Local path to file
             custom_name: Optional custom name for the file
             
         Returns:
@@ -69,10 +69,19 @@ class GoogleDriveUploader:
                 'parents': [self.folder_id]  # Upload to specific folder
             }
             
+            # Determine MIME type based on file extension
+            file_extension = os.path.splitext(file_path)[1].lower()
+            if file_extension == '.html':
+                mimetype = 'text/html'
+            elif file_extension == '.txt':
+                mimetype = 'text/plain'
+            else:
+                mimetype = None  # Let Google Drive auto-detect
+            
             # Create media upload object
             media = MediaFileUpload(
                 file_path, 
-                mimetype='text/html',
+                mimetype=mimetype,
                 resumable=True
             )
             
