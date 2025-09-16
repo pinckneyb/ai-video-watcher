@@ -330,11 +330,14 @@ def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, i
                         point_id = int(point_id.strip())
                         score = int(score_str.strip())
                         
+                        # Apply 0.7 multiplier and round up to adjust for GPT-5 over-scoring
+                        adjusted_score = int(score * 0.7 + 0.999)  # Multiply by 0.7 and round up
+                        
                         # Validate score is in range
-                        if 1 <= score <= 5:
-                            scores[point_id] = score
+                        if 1 <= adjusted_score <= 5:
+                            scores[point_id] = adjusted_score
                         else:
-                            st.warning(f"Score {score} for point {point_id} is out of range (1-5)")
+                            st.warning(f"Adjusted score {adjusted_score} for point {point_id} is out of range (1-5)")
                     except (ValueError, IndexError) as e:
                         st.warning(f"Could not parse score line: {line}")
                         continue
@@ -1300,14 +1303,10 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                             
                             f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {score}/5 - {competency}</strong></div>\n")
                     
-                    # Add average score with competency determination
+                    # Add average score
                     avg_score = sum(extracted_scores.values()) / len(extracted_scores)
-                    if avg_score >= 3.0:
-                        overall_competency = "COMPETENCY ACHIEVED"
-                    else:
-                        overall_competency = "COMPETENCY NOT ACHIEVED"
                     
-                    f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5 - {overall_competency}</strong></div>\n")
+                    f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5</strong></div>\n")
                     
                     # Add summative comment if available
                     if summative_assessment:
@@ -1537,7 +1536,7 @@ def display_assessment_results(rubric_engine: RubricEngine):
             st.markdown(
                 f"""<div style="background-color: #d4edda; color: #155724; padding: 15px; 
                 border-radius: 8px; border: 1px solid #c3e6cb; text-align: center; font-size: 18px; font-weight: bold;">
-                ✅ COMPETENCY ACHIEVED - Average Score: {overall_result['average_score']:.1f}/5.0
+                Average Score: {overall_result['average_score']:.1f}/5.0
                 </div>""", 
                 unsafe_allow_html=True
             )
@@ -1663,7 +1662,7 @@ def display_assessment_results(rubric_engine: RubricEngine):
                         else:
                             overall_competency = "Remediate"
                         
-                        f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5 - {overall_competency}</strong></div>\n")
+                        f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5</strong></div>\n")
                         
                         # Add summative comment if available
                         if summative_assessment:
