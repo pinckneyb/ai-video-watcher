@@ -1070,7 +1070,12 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write(f"<p><strong>Video:</strong> {original_filename}</p>\n")
                 f.write(f"<p><strong>Pattern:</strong> {current_pattern.replace('_', ' ').title()}</p>\n")
                 
-                if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                # Get the assessment results data
+                assessment_results = st.session_state.get('assessment_results', {})
+                enhanced_narrative = assessment_results.get('enhanced_narrative', {})
+                extracted_scores = assessment_results.get('extracted_scores', {})
+                
+                if enhanced_narrative and isinstance(enhanced_narrative, dict) and extracted_scores:
                     # Use the new structured format with rubric_comments
                     rubric_comments = enhanced_narrative.get('rubric_comments', {})
                     
@@ -1124,6 +1129,9 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     if summative:
                         f.write("<br>\n")
                         f.write(f"<div class='summative-comment'><strong>Summative Comment:</strong> {summative}</div>\n")
+                else:
+                    # Fallback if structured data isn't available - show message
+                    f.write("<p><em>Assessment data not available in expected format</em></p>\n")
                 
                 # Learner Final Product Image (first)
                 f.write("<h2>Final Product Comparison</h2>\n")

@@ -1,0 +1,84 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_915_Simple Interrupted.m4v
+Pattern: simple_interrupted
+Analysis Date: 2025-09-16 15:58:44
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The procedure unfolds on a synthetic skin pad with several parallel vertical slits on its left half. From start to finish, the surgeon concentrates on the leftmost vertical incision. The work never migrates to the untouched central or right-hand slits; hands and instruments consistently return to and operate over that same left-side wound. In a few segments, the camera angle and working posture make the target look like a neighboring slit or briefly show the instrument path along a diagonal vector; nevertheless, the manipulations, strand management, and tissue handling always remain on the same left-side vertical wound. Likewise, although a couple of mid-sequence views momentarily make the strand appear like a running zig‑zag, the closure remains a series of discrete, simple interrupted stitches with individual knots and trimmed tails. Where descriptions seem inconsistent, the later and final frames confirm the pattern and location: the leftmost vertical incision closed with multiple separate knots on its surface.
+
+Initial setup and first passes (0–59 s)
+The opening moments show standard setup over a straight vertical cut on the left side of the pad. The left hand carries a needle driver, the right hand Adson/tissue forceps. The needle is loaded correctly—grasped at the proximal third to mid‑body, curve concavity facing the wound, and presented near‑perpendicular to the skin surface. The right-hand pickups evert and present the near dermal edge; the driver advances the needle in a controlled wrist arc across to the far edge. Thread is pulled through to complete the first crossing, but no knot is tied yet. This sequence repeats with minor reloading and angle refinement: the driver is reoriented to maintain close to a 90° entry, the forceps continue to stabilize and evert. Through these early frames the surgeon is dialing in entry points and bite depth without yet securing a knot. Completed suture count at the end of this phase: 0.
+
+First knot secured (60–164 s)
+Attention remains squarely over the leftmost incision, easily identified by a small ink cross near the center in one view. Now a first stitch is present with a visible knot stack centered over the wound. Technique is consistent with simple interrupted closure: forceps are used to steady and evert the edge while the surgeon completes knot throws with the driver and manages loop orientation to square and seat the knot. The left hand typically holds the driver during this phase, while the right hand alternates between forceps for tissue control and scissors to trim tails. No new passes through tissue are performed in some frames; instead, the emphasis is on tightening and securing the already placed stitch, then cutting the tails to length. By the end of this phase a single, well-formed interrupted stitch approximates the edges at the lower-to-mid portion of the slit. Completed suture count now: 1.
+
+Building the line: second and third stitches (165–194 s)
+The surgeon proceeds immediately adjacent to that first knot to extend the closure along the same slit. Here the right hand takes over the needle driver in several passes while the left hand provides countertraction and precise edge control with the forceps. The needle is grasped at mid‑body, the tip again perpendicular to the skin, and driven in an arc through near and far edges with symmetric dermal purchase. By the end of these passes, there are two completed stitches spanning the midline of the slit and a third is actively being placed. In the following sequence, additional throws are tied and tails are trimmed, and three discrete interrupted knots are evident along the left slit. Tissue handling remains measured—everting grasps are short and at the dermal margin to avoid crush injury, and tension is applied just enough to coapt the edges without blanching. Completed suture count progresses from 1 to 2, then to 3 by the end of this interval.
+
+Progression and repositioning around the mid-portion (195–254 s)
+With three stitches in place, the surgeon reloads and fine‑tunes needle orientation for the next bite(s), keeping the working corridor tightly aligned over the same left vertical wound. The right and left hands alternate roles depending on the bite orientation: at times the right hand holds the driver to approach from the operator’s right, at other times the left hand takes the driver to approach from the left/superior aspect. Throughout, the nondominant hand’s forceps lift and evert the edge at the intended entry point, then transition to the opposite lip to guide exit and protect the far dermis. Where the camera zooms tighter, two or three knots are visible within the field; the remainder of the line is simply out of frame. No other incisions are entered or tensioned. Thread slack is drawn through methodically after each pass to prevent sawing or maceration of the synthetic skin, and the suture tail is kept lateral to maintain a clean working window.
+
+Advancing to the superior half; fourth stitch tied and cut (255–299 s)
+The operator now works superiorly along the same slit. The driver presents the needle perpendicular to the edge, bites are placed just a few millimeters from the wound margin with mirrored depth on each side, and the strand is brought across and tied as a separate interrupted stitch. The right hand briefly exchanges the forceps for scissors to trim the tails after knot security is confirmed. By the end of this sequence, the line clearly shows four independent, evenly spaced interrupted stitches approximating the wound. The edges sit neatly everted where the forceps engaged them, with no evidence of excessive tension. Completed suture count: 4.
+
+Fifth stitch placed and trimmed (300–314 s)
+Continuing proximally, the operator places another interrupted stitch. The right hand controls the needle driver and then scissors, while the left hand with pickups keeps the edges coapted and guides exit placement. The pass is driven with a steady wrist rotation, and once the suture is through, throws are completed and the knot is squared. The right hand trims the tails. By the end of this sequence, five interrupted sutures span the left vertical incision.
+
+High‑end workup, reloading, and the appearance of a zig‑zag (315–359 s)
+At the superior end of the wound the surgeon spends time reloading the needle and positioning for the next pass. The left hand often holds the driver during these moments, the right hand alternates between forceps and scissors, and both hands may cross over the wound axis as needed to enter and retrieve the needle efficiently. Because the free end drapes along the wound as the operator tensions and tightens, several frames create the impression of a zig‑zag strand along the line. Despite this appearance, no continuous running lock is performed—the surgeon is preparing discrete passes and tying them individually, as confirmed by the prior and later views that show separate external knots with trimmed tails. In these frames, four to five completed stitches are visible depending on the zoom; no new stitch is unequivocally completed within these specific moments.
+
+Final additions near the top; sixth stitch established (360–404 s)
+Work remains near the superior portion of the left incision. The dominant hand alternates tools (needle driver for placement, pickups for fine control), and the nondominant hand stabilizes tissue just lateral to the intended entry point. Bites are again taken perpendicular to the wound line with consistent depth, the strand is drawn through in line with the incision to avoid lateral drag, and the knot is seated tightly over the wound. By the time the needle is reloaded and poised for the next pass at the top, six completed stitches are visible along the incision. This is corroborated across sequences bracketing this period: even when a frame or two emphasize repositioning, subsequent frames show a stable row of six separate knots confined to the same wound.
+
+Superior‑end tightening and continued preparation (405–449 s)
+The surgeon continues to refine the top segment. The right hand may take the needle driver while the left hand with forceps controls the left wound margin; then the driver returns to the left hand as needed. The needle is held at its proximal third to mid‑body, tip perpendicular, poised for a bite at the superior end. Forceps gently evert the near edge, and the driver aligns the arc for symmetric passage. Several frames focus on setup—aiming the needle, lifting the edge, or moving the driver in and out of the field—without showing a completed pass. Throughout this interval, inspection of the line shows six completed interrupted stitches with external knot stacks and short tails. The edges remain uniformly approximated along the entire visible length.
+
+Finishing maneuvers, trimming, and field tidying (450–479 s)
+With six stitches in place, activity centers on stitch management rather than new placement. The right hand alternates between a needle driver and suture scissors while the left hand with pickups steadies the tissue and presents individual knot tails for trimming. Scissor tips approach parallel to the wound axis, tails are cut to consistent length, and the knots remain seated. No additional penetration or passage through another slit is attempted; the instruments never stray to the central or right-hand incisions, which remain untouched. The completed stitches show even spacing and secure approximation without excessive gapping or inversion. The count of completed sutures stays constant at six throughout these frames.
+
+End of sequence: poised for the next bite (480–481 s)
+In the final moments, the right hand holds the needle driver with the needle grasped at the mid‑body, oriented roughly perpendicular to the wound, tip directed toward the far edge at the upper‑middle segment. The left hand controls the left wound edge with pickups, and an auxiliary forceps at lower‑left lightly tensions the suture strand, creating a triangular working space centered over the incision. Six completed stitches with visible knots are present along the line; the needle positioning suggests preparation to place another stitch just below the most recent knot, but the pass itself is not shown before the recording ends.
+
+Hand position evolution and instrument choreography
+Across the case, hand roles adapt fluidly to maintain optimal approach angles and sightlines:
+
+- Early on, the left hand most often carries the needle driver while the right hand controls tissue with Adson forceps. As passes are planned from different directions, the right hand occasionally takes the driver to approach from the operator’s right or to facilitate an ergonomic cross‑handed pass.
+- The nondominant hand, whichever it is in a given moment, consistently provides fine countertraction: short, toothed grasps at the dermal margin to evert edges, then immediate release to avoid crushing.
+- Scissors appear intermittently in the hand that just completed the knot, allowing immediate trimming of tails while the opposite hand steadying the wound keeps the knot seated.
+- At times, an auxiliary instrument is used to tension the free suture end, helping create a stable, triangular working corridor over the incision—driver at one vertex, pickups at the second, suture tension at the third.
+
+Technique consistency and tissue handling
+The closure technique adheres to simple interrupted principles throughout:
+
+- Needle grip and entry: The needle is consistently held at the proximal third to mid‑body, with the curve oriented perpendicular to the skin surface. Entries are 90° to the epidermis, and the driver follows the needle through a short wrist rotation that respects the curve, minimizing lateral shear.
+- Symmetric bites: Each pass takes a comparable bite of dermis on both sides, a few millimeters from the wound edge. The forceps control the entry site, then shift to the far edge to safeguard exit and ensure symmetric purchase.
+- Edge eversion and approximation: The forceps are used to gently lift rather than crush, achieving a subtle outward roll of the edges. As knots are tied, the surgeon squares each throw to avoid diagonal slippage, seats the knot over the incision, and checks alignment before trimming.
+- Line continuity: Even when a draped strand creates a zig‑zag look during tightening, each stitch is independent with its own knot and trimmed tails; there is no continuous run that carries tension over multiple bites without intervening knots. Later frames with six discrete knot stacks confirm this.
+
+Spatial relationships and working geometry
+The instruments consistently straddle the left vertical wound:
+
+- The driver often hovers just left/superior to the line, angled slightly toward the far edge for entry, while the pickups oppose it on the right/near edge to present tissue.
+- For far‑side passes, the driver crosses the wound axis, arcs through, and is met by the opposing hand’s pickups near the tip to pull the needle through cleanly.
+- During knot tying, the driver and forceps cross above the wound midline, and the suture end is pulled along the axis of the incision to draw slack out without lifting the edges away from one another.
+- When trimming, scissors approach with their blades parallel to the incision, keeping the knot stack stable and the cut ends uniform.
+
+Suture count progression and final state
+The closure develops in a clear sequence:
+
+- Start: 0 completed stitches after initial passes and setup (0–59 s).
+- First stitch: Knot tied, edges approximated, tails trimmed; 1 completed stitch (by 60–164 s).
+- Second and third stitches: A second stitch then a third are added adjacent to the first; 3 completed stitches (by 180–194 s).
+- Fourth stitch: Placed and cut as the work advances superiorly; 4 completed stitches (by 285–299 s).
+- Fifth stitch: Placed, tied, and trimmed; 5 completed stitches (by 300–314 s).
+- Sixth stitch: Added near the superior half as the line is refined; 6 completed stitches visible thereafter (confirmed 390–404 s and repeatedly reaffirmed in later sequences).
+
+The remainder of the recording shows preparation for another bite at the top and tail trimming along the line without any additional stitch being completed. Multiple late segments independently confirm the same final tally with unambiguous language such as “six completed stitches are visible” along this incision. The last frames again show six knot stacks in place while the needle is poised for a potential next pass that is not executed on camera.
+
+Final verification
+The procedure results in six completed simple interrupted sutures approximating the leftmost vertical incision. This exact count is verified repeatedly in the concluding sequences (390–404 s, 435–449 s, 450–464 s, 465–479 s, and 480–481 s), where the wound edges are well aligned with slight eversion and short, neatly trimmed tails. No other incisions were entered, and no continuous run was used, despite a brief mid‑sequence appearance of a zig‑zag strand during tightening. The video ends with the needle reloaded over the superior‑middle segment, working space triangulated by pickups and an auxiliary forceps, ready for another bite should closure need extension.
+
+============================================================
+END OF NARRATIVE
