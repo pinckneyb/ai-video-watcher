@@ -1080,6 +1080,18 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             st.success(f"✅ Pass 2 narrative exported to: {txt_filename}")
             
+            # Immediate download button for Pass 2 narrative
+            st.markdown("### 📥 Save Pass 2 Narrative to Your Local Machine")
+            st.info("💾 **Save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
+            with open(txt_path, "rb") as f:
+                st.download_button(
+                    label="📄 Download Pass 2 Narrative (TXT)",
+                    data=f.read(),
+                    file_name=os.path.basename(txt_filename),
+                    mime="text/plain",
+                    type="primary"
+                )
+            
         except Exception as e:
             st.warning(f"⚠️ Could not export TXT file: {str(e)}")
         
@@ -1364,24 +1376,29 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             st.success(f"✅ TXT and HTML reports auto-generated:")
             
-            # Create clickable links to the generated files
-            col1, col2 = st.columns(2)
-            with col1:
-                with open(txt_filename, "rb") as f:
-                    st.download_button(
-                        label="📄 Download TXT Report",
-                        data=f.read(),
-                        file_name=os.path.basename(txt_filename),
-                        mime="text/plain"
-                    )
-            with col2:
-                with open(html_filename, "rb") as f:
-                    st.download_button(
-                        label="🌐 Download HTML Report", 
-                        data=f.read(),
-                        file_name=os.path.basename(html_filename),
-                        mime="text/html"
-                    )
+            # Immediate download section for Pass 3 completion
+            st.markdown("### 📥 Save Final Reports to Your Local Machine")
+            
+            # HTML Report Download with local path reminder
+            st.info("💾 **HTML Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\html_reports`")
+            with open(html_filename, "rb") as f:
+                st.download_button(
+                    label="🌐 Download HTML Final Report",
+                    data=f.read(),
+                    file_name=os.path.basename(html_filename),
+                    mime="text/html",
+                    type="primary"
+                )
+            
+            # TXT Report Download with local path reminder  
+            st.info("💾 **TXT Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
+            with open(txt_filename, "rb") as f:
+                st.download_button(
+                    label="📄 Download TXT Report",
+                    data=f.read(),
+                    file_name=os.path.basename(txt_filename),
+                    mime="text/plain"
+                )
             
             # Also show file paths for reference
             st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(html_filename)}")
