@@ -523,11 +523,12 @@ def main():
         st.subheader("🤖 GPT-5 Model Settings")
         
         # Create tabs for each analysis pass
-        pass1_tab, pass2_tab, pass3_tab = st.tabs(["🔍 Pass 1: Frame Analysis", "📝 Pass 2: Narrative Synthesis", "📊 Pass 3: Rubric Assessment"])
+        pass1_tab, pass2_tab, pass3_tab = st.tabs(["Pass 1", "Pass 2", "Pass 3"])
         
         # Pass 1 Settings (Frame Analysis)
         with pass1_tab:
-            st.markdown("*Settings for AI frame-by-frame video analysis*")
+            st.markdown("**🔍 Frame Analysis**")
+            st.caption("AI analyzes each video frame to identify surgical techniques, tool usage, and suturing patterns")
             
             gpt5_model_pass1 = st.selectbox(
                 "Model",
@@ -558,7 +559,8 @@ def main():
         
         # Pass 2 Settings (Narrative Synthesis)
         with pass2_tab:
-            st.markdown("*Settings for narrative synthesis and report generation*")
+            st.markdown("**📝 Narrative Synthesis**")
+            st.caption("Combines frame observations into coherent video narrative with temporal flow analysis")
             
             gpt5_model_pass2 = st.selectbox(
                 "Model",
@@ -589,7 +591,8 @@ def main():
         
         # Pass 3 Settings (Rubric Assessment)
         with pass3_tab:
-            st.markdown("*Settings for structured rubric evaluation and scoring*")
+            st.markdown("**📊 Rubric Assessment**")
+            st.caption("Evaluates video narrative against standardized medical education rubrics with numerical scoring")
             
             gpt5_model_pass3 = st.selectbox(
                 "Model",
