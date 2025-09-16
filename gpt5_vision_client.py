@@ -44,7 +44,7 @@ class GPT5VisionClient:
             'other_api_errors': 0
         }
     
-    def pass1_surgical_description(self, frames: List[Dict], context_state: str = "") -> Tuple[str, List[Dict]]:
+    def pass1_surgical_description(self, frames: List[Dict], context_state: str = "", model: str = "gpt-5", reasoning_level: str = "low", verbosity_level: str = "medium") -> Tuple[str, List[Dict]]:
         """
         PASS 1: Describe frames in surgical terms relevant to suturing procedure
         Pure observation without assessment bias
@@ -80,10 +80,11 @@ class GPT5VisionClient:
             print(f"📊 PASS 1 BATCH {self.error_stats['pass1_total_batches']}: Processing {len(frames)} frames")
             
             response = self.client.chat.completions.create(
-                model="gpt-5",
+                model=model,
                 messages=messages,
                 max_completion_tokens=4000,
-                reasoning_effort="low"
+                reasoning_effort=reasoning_level,
+                verbosity=verbosity_level
             )
             
             frame_analysis = response.choices[0].message.content
@@ -164,7 +165,7 @@ class GPT5VisionClient:
             
             return error_msg, self.frame_descriptions
     
-    def pass2_video_narrative(self, all_descriptions: List[Dict]) -> str:
+    def pass2_video_narrative(self, all_descriptions: List[Dict], model: str = "gpt-5", reasoning_level: str = "medium", verbosity_level: str = "high") -> str:
         """
         PASS 2: Assemble descriptions into video narrative with flow analysis
         Focus on motion, connections, and temporal relationships
@@ -208,10 +209,11 @@ class GPT5VisionClient:
             print(f"DEBUG: Prompt length: {len(narrative_prompt)}")
             
             response = self.client.chat.completions.create(
-                model="gpt-5",
+                model=model,
                 messages=messages,
                 max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
-                reasoning_effort="high"  # Increased back to high for better synthesis
+                reasoning_effort=reasoning_level,
+                verbosity=verbosity_level
             )
             
             self.video_narrative = response.choices[0].message.content
@@ -259,7 +261,7 @@ class GPT5VisionClient:
             print(f"📊 PASS 2 ERROR SUMMARY: {self.error_stats['pass2_api_errors']} errors of {self.error_stats['pass2_total_attempts']} attempts")
             return error_msg
     
-    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine, final_product_image=None) -> Dict[str, Any]:
+    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine, final_product_image=None, model: str = "gpt-5", reasoning_level: str = "high", verbosity_level: str = "medium") -> Dict[str, Any]:
         """
         PASS 3: Compare video narrative to rubric for final assessment
         Focus on scoring against specific criteria
@@ -306,10 +308,11 @@ class GPT5VisionClient:
             print(f"DEBUG: Video narrative preview: {self.video_narrative[:200]}...")
             
             response = self.client.chat.completions.create(
-                model="gpt-5",
+                model=model,
                 messages=messages,
                 max_completion_tokens=10000,  # Increased to handle longer narrative
-                reasoning_effort="high"  # Increased for better assessment quality
+                reasoning_effort=reasoning_level,
+                verbosity=verbosity_level
             )
             
             assessment_response = response.choices[0].message.content

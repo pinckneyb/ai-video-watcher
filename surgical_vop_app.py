@@ -773,7 +773,10 @@ def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_b
             
             # PASS 1: Surgical description of frames
             analysis, descriptions = gpt5_client.pass1_surgical_description(
-                batch, current_context
+                batch, current_context,
+                model=st.session_state.get('gpt5_model_pass1', 'gpt-5'),
+                reasoning_level=st.session_state.get('reasoning_level_pass1', 'low'),
+                verbosity_level=st.session_state.get('verbosity_level_pass1', 'medium')
             )
             
             with context_lock:
@@ -843,7 +846,10 @@ def _process_batches_sequentially_gpt5(batches, gpt5_client, profile, progress_b
             
             # PASS 1: Surgical description of frames
             analysis, descriptions = gpt5_client.pass1_surgical_description(
-                batch, gpt5_client.context_state
+                batch, gpt5_client.context_state,
+                model=st.session_state.get('gpt5_model_pass1', 'gpt-5'),
+                reasoning_level=st.session_state.get('reasoning_level_pass1', 'low'),
+                verbosity_level=st.session_state.get('verbosity_level_pass1', 'medium')
             )
             
             batch_time = time.time() - start_time
@@ -974,7 +980,12 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             progress_text.text("🔄 Analyzing temporal flow and motion...")
             progress_bar.progress(0.5)
             
-            video_narrative = gpt5_client.pass2_video_narrative(gpt5_client.frame_descriptions)
+            video_narrative = gpt5_client.pass2_video_narrative(
+                gpt5_client.frame_descriptions,
+                model=st.session_state.get('gpt5_model_pass2', 'gpt-5'),
+                reasoning_level=st.session_state.get('reasoning_level_pass2', 'medium'),
+                verbosity_level=st.session_state.get('verbosity_level_pass2', 'high')
+            )
             
             progress_text.text("🔄 Generating comprehensive narrative...")
             progress_bar.progress(0.8)
@@ -1055,7 +1066,12 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         # For subcuticular assessments, disable final image usage in Pass 3
         image_for_pass3 = None if current_pattern == 'subcuticular' else final_product_image
         
-        enhanced_narrative = gpt5_client.pass3_rubric_assessment(current_pattern, rubric_engine, image_for_pass3)
+        enhanced_narrative = gpt5_client.pass3_rubric_assessment(
+            current_pattern, rubric_engine, image_for_pass3,
+            model=st.session_state.get('gpt5_model_pass3', 'gpt-5'),
+            reasoning_level=st.session_state.get('reasoning_level_pass3', 'high'),
+            verbosity_level=st.session_state.get('verbosity_level_pass3', 'medium')
+        )
         
         if not enhanced_narrative.get('success', False):
             st.error(f"❌ PASS 3 failed: {enhanced_narrative.get('error', 'Unknown error')}")
