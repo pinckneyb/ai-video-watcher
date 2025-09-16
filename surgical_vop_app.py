@@ -1250,13 +1250,17 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                             score = extracted_scores[point_num]
                             title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
                             
-                            # Determine competency level
-                            if score >= 4.0:
-                                competency = "COMPETENCY ACHIEVED"
+                            # Determine Likert scale level
+                            if score >= 5.0:
+                                competency = "Expert"
+                            elif score >= 4.0:
+                                competency = "Proficient"
                             elif score >= 3.0:
-                                competency = "COMPETENT"
+                                competency = "Competent"
+                            elif score >= 2.0:
+                                competency = "Novice"
                             else:
-                                competency = "COMPETENCY NOT ACHIEVED"
+                                competency = "Remediate"
                             
                             f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {score}/5 - {competency}</strong></div>\n")
                     
@@ -1595,23 +1599,33 @@ def display_assessment_results(rubric_engine: RubricEngine):
                             ai_score = extracted_scores[point_num] 
                             title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
                             
-                            # Determine competency level based on AI score
-                            if ai_score >= 4.0:
-                                competency = "COMPETENCY ACHIEVED"
+                            # Determine Likert scale level based on AI score
+                            if ai_score >= 5.0:
+                                competency = "Expert"
+                            elif ai_score >= 4.0:
+                                competency = "Proficient"
                             elif ai_score >= 3.0:
-                                competency = "COMPETENT"
+                                competency = "Competent"
+                            elif ai_score >= 2.0:
+                                competency = "Novice"
                             else:
-                                competency = "COMPETENCY NOT ACHIEVED"
+                                competency = "Remediate"
                             
                             f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {ai_score}/5 - {competency}</strong></div>\n")
                     
                     # Add AI-generated average score and summative assessment
                     if extracted_scores:
                         avg_score = sum(extracted_scores.values()) / len(extracted_scores)
-                        if avg_score >= 3.0:
-                            overall_competency = "COMPETENCY ACHIEVED"
+                        if avg_score >= 5.0:
+                            overall_competency = "Expert"
+                        elif avg_score >= 4.0:
+                            overall_competency = "Proficient"
+                        elif avg_score >= 3.0:
+                            overall_competency = "Competent"
+                        elif avg_score >= 2.0:
+                            overall_competency = "Novice"
                         else:
-                            overall_competency = "COMPETENCY NOT ACHIEVED"
+                            overall_competency = "Remediate"
                         
                         f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5 - {overall_competency}</strong></div>\n")
                         
@@ -1622,9 +1636,9 @@ def display_assessment_results(rubric_engine: RubricEngine):
                         f.write("<p><strong>AI Assessment scores not available - using manual scores</strong></p>\n")
                         f.write(f"<div class='average-score'><strong>Manual Average Score: {overall_result['average_score']:.1f}/5 ")
                         if overall_result['pass']:
-                            f.write("- COMPETENCY ACHIEVED</strong></div>\n")
+                            f.write("</strong></div>\n")
                         else:
-                            f.write("- COMPETENCY NOT ACHIEVED</strong></div>\n")
+                            f.write("</strong></div>\n")
                     
                     # Add final product image if available
                     f.write("<h2>Final Product Comparison</h2>\n")
