@@ -720,6 +720,12 @@ def main():
                 col_start, col_stop = st.columns([2, 1])
                 with col_start:
                     if st.button("🚀 Start Batch VOP Assessment", type="primary"):
+                        # Initialize batch results storage
+                        if 'batch_results' not in st.session_state:
+                            st.session_state.batch_results = []
+                        
+                        st.session_state.batch_results.clear()  # Clear previous batch
+                        
                         # Process each video using the existing working function
                         for i, (file, temp_path) in enumerate(zip(uploaded_file, temp_video_paths), 1):
                             file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
@@ -734,8 +740,20 @@ def main():
                                 if hasattr(st.session_state, 'final_product_image'):
                                     del st.session_state.final_product_image
                                 
-                                # Use the existing working function
+                                # Use the existing working function (but suppress individual downloads)
+                                st.session_state.suppress_individual_downloads = True
                                 start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
+                                
+                                # Store results for this video
+                                if hasattr(st.session_state, 'assessment_results'):
+                                    batch_result = {
+                                        'video_name': file.name,
+                                        'assessment_results': st.session_state.assessment_results.copy(),
+                                        'final_product_image': getattr(st.session_state, 'final_product_image', None),
+                                        'temp_path': temp_path,
+                                        'pattern': file_pattern
+                                    }
+                                    st.session_state.batch_results.append(batch_result)
                                 
                                 st.success(f"✅ Video {i} completed successfully")
                                 
@@ -749,7 +767,86 @@ def main():
                             if i < len(uploaded_file):
                                 st.divider()
                         
+                        # Reset individual download suppression
+                        st.session_state.suppress_individual_downloads = False
+                        
                         st.success(f"✅ Batch processing complete! Processed {len(uploaded_file)} videos.")
+                        
+                        # Show batch download section
+                        if st.session_state.batch_results:
+                            st.markdown("## 📥 Download All Batch Results")
+                            st.info(f"💾 **Save all files to:** `C:\\CursorAI_folders\\AI_video_watcher\\`")
+                            
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown("### 📄 TXT Reports")
+                                for result in st.session_state.batch_results:
+                                    video_name = result['video_name']
+                                    assessment_results = result['assessment_results']
+                                    
+                                    # Generate TXT filename
+                                    clean_filename = video_name
+                                    if clean_filename.startswith("temp_"):
+                                        clean_filename = clean_filename[5:]
+                                    
+                                    base_filename = f"VOP_Assessment_{clean_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                    txt_filename = f"{base_filename}.txt"
+                                    
+                                    # Create TXT content
+                                    txt_content = f"Video: {video_name}\n"
+                                    txt_content += f"Pattern: {result['pattern'].replace('_', ' ').title()}\n\n"
+                                    
+                                    if assessment_results.get('enhanced_narrative'):
+                                        enhanced_narrative = assessment_results['enhanced_narrative']
+                                        if isinstance(enhanced_narrative, dict):
+                                            full_response = enhanced_narrative.get('full_response', '')
+                                            if full_response and "RUBRIC_SCORES_START" in full_response:
+                                                rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
+                                                txt_content += rubric_commentary + "\n\n"
+                                            
+                                            summative = enhanced_narrative.get('summative_assessment', '')
+                                            if summative:
+                                                txt_content += "Summative assessment:\n"
+                                                txt_content += summative + "\n\n"
+                                    
+                                    st.download_button(
+                                        label=f"📄 {video_name}",
+                                        data=txt_content,
+                                        file_name=txt_filename,
+                                        mime="text/plain",
+                                        key=f"txt_{video_name}"
+                                    )
+                            
+                            with col2:
+                                st.markdown("### 🌐 HTML Reports")
+                                for result in st.session_state.batch_results:
+                                    video_name = result['video_name']
+                                    
+                                    # Check if HTML file exists in html_reports directory
+                                    clean_filename = video_name
+                                    if clean_filename.startswith("temp_"):
+                                        clean_filename = clean_filename[5:]
+                                    
+                                    # Look for HTML file
+                                    import glob
+                                    html_pattern = f"html_reports/VOP_Assessment_{clean_filename}_*.html"
+                                    html_files = glob.glob(html_pattern)
+                                    
+                                    if html_files:
+                                        # Use the most recent HTML file
+                                        html_file_path = max(html_files, key=os.path.getctime)
+                                        
+                                        with open(html_file_path, "rb") as f:
+                                            st.download_button(
+                                                label=f"🌐 {video_name}",
+                                                data=f.read(),
+                                                file_name=os.path.basename(html_file_path),
+                                                mime="text/html",
+                                                key=f"html_{video_name}"
+                                            )
+                                    else:
+                                        st.text(f"⚠️ {video_name} - HTML not found")
                         
                 with col_stop:
                     if st.button("🛑 STOP Batch", type="secondary", help="Stop batch processing"):
@@ -1080,17 +1177,18 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             st.success(f"✅ Pass 2 narrative exported to: {txt_filename}")
             
-            # Immediate download button for Pass 2 narrative
-            st.markdown("### 📥 Save Pass 2 Narrative to Your Local Machine")
-            st.info("💾 **Save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
-            with open(txt_path, "rb") as f:
-                st.download_button(
-                    label="📄 Download Pass 2 Narrative (TXT)",
-                    data=f.read(),
-                    file_name=os.path.basename(txt_filename),
-                    mime="text/plain",
-                    type="primary"
-                )
+            # Immediate download button for Pass 2 narrative (only if not in batch mode)
+            if not st.session_state.get('suppress_individual_downloads', False):
+                st.markdown("### 📥 Save Pass 2 Narrative to Your Local Machine")
+                st.info("💾 **Save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
+                with open(txt_path, "rb") as f:
+                    st.download_button(
+                        label="📄 Download Pass 2 Narrative (TXT)",
+                        data=f.read(),
+                        file_name=os.path.basename(txt_filename),
+                        mime="text/plain",
+                        type="primary"
+                    )
             
         except Exception as e:
             st.warning(f"⚠️ Could not export TXT file: {str(e)}")
@@ -1376,29 +1474,30 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             st.success(f"✅ TXT and HTML reports auto-generated:")
             
-            # Immediate download section for Pass 3 completion
-            st.markdown("### 📥 Save Final Reports to Your Local Machine")
-            
-            # HTML Report Download with local path reminder
-            st.info("💾 **HTML Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\html_reports`")
-            with open(html_filename, "rb") as f:
-                st.download_button(
-                    label="🌐 Download HTML Final Report",
-                    data=f.read(),
-                    file_name=os.path.basename(html_filename),
-                    mime="text/html",
-                    type="primary"
-                )
-            
-            # TXT Report Download with local path reminder  
-            st.info("💾 **TXT Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
-            with open(txt_filename, "rb") as f:
-                st.download_button(
-                    label="📄 Download TXT Report",
-                    data=f.read(),
-                    file_name=os.path.basename(txt_filename),
-                    mime="text/plain"
-                )
+            # Immediate download section for Pass 3 completion (only if not in batch mode)
+            if not st.session_state.get('suppress_individual_downloads', False):
+                st.markdown("### 📥 Save Final Reports to Your Local Machine")
+                
+                # HTML Report Download with local path reminder
+                st.info("💾 **HTML Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\html_reports`")
+                with open(html_filename, "rb") as f:
+                    st.download_button(
+                        label="🌐 Download HTML Final Report",
+                        data=f.read(),
+                        file_name=os.path.basename(html_filename),
+                        mime="text/html",
+                        type="primary"
+                    )
+                
+                # TXT Report Download with local path reminder  
+                st.info("💾 **TXT Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\narratives`")
+                with open(txt_filename, "rb") as f:
+                    st.download_button(
+                        label="📄 Download TXT Report",
+                        data=f.read(),
+                        file_name=os.path.basename(txt_filename),
+                        mime="text/plain"
+                    )
             
             # Also show file paths for reference
             st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(html_filename)}")
