@@ -686,62 +686,101 @@ def main():
         if st.button("🛑 STOP Application", type="secondary", help="Gracefully stop the application"):
             st.stop()
     
-    # Emergency batch recovery section
-    if st.button("🚨 Access Recent Batch Files (App Reset Recovery)"):
-        st.markdown("## 📥 Recent Batch Download Recovery")
-        st.info("💾 **Save files to:** `C:\\CursorAI_folders\\AI_video_watcher\\`")
+    # Initialize batch manager
+    if 'batch_manager' not in st.session_state:
+        st.session_state.batch_manager = BatchManager()
+    
+    # Batch History section  
+    st.subheader("📚 Batch History")
+    batches = st.session_state.batch_manager.list_batches()
+    
+    if batches:
+        # Show latest batch recovery if available
+        latest_batch_id = st.session_state.batch_manager.get_latest_batch_id()
+        if latest_batch_id and st.button("🔄 Resume Latest Batch"):
+            st.session_state.selected_batch = latest_batch_id
+            st.rerun()
         
-        # Recent batch files (from timestamp analysis)
-        recent_files = [
-            {
-                'html': 'html_reports/VOP_Assessment_2501_simple_interrupted.mp4_20250916_231151.html',
-                'txt': 'narratives/VOP_Assessment_2501_simple_interrupted.mp4_20250916_231151.txt',
-                'name': '2501_simple_interrupted.mp4',
-                'score': '4.4/5 - Excellent'
-            },
-            {
-                'html': 'html_reports/VOP_Assessment_2501_subcuticular.mp4_20250916_231715.html', 
-                'txt': 'narratives/VOP_Assessment_2501_subcuticular.mp4_20250916_231715.txt',
-                'name': '2501_subcuticular.mp4',
-                'score': '1.9/5 - Needs Work'
-            },
-            {
-                'html': 'html_reports/VOP_Assessment_2501_vertical_mattress.mp4_20250916_233413.html',
-                'txt': 'narratives/VOP_Assessment_2501_vertical_mattress.mp4_20250916_233413.txt', 
-                'name': '2501_vertical_mattress.mp4',
-                'score': '2.6/5 - Needs Work'
-            }
-        ]
+        # Batch selector
+        batch_options = []
+        for batch in batches[:10]:  # Show last 10 batches
+            batch_options.append(f"{batch['batch_id']} ({batch['video_count']} videos, {batch['status']})")
         
-        col1, col2 = st.columns(2)
+        selected_batch_display = st.selectbox("Select Previous Batch:", ["None"] + batch_options)
         
-        with col1:
-            st.markdown("### 🌐 HTML Reports")
-            for file_info in recent_files:
-                if os.path.exists(file_info['html']):
-                    with open(file_info['html'], "rb") as f:
-                        st.download_button(
-                            label=f"🌐 {file_info['name']} ({file_info['score']})",
-                            data=f.read(),
-                            file_name=os.path.basename(file_info['html']),
-                            mime="text/html",
-                            key=f"html_recovery_{file_info['name']}"
-                        )
-        
-        with col2:
-            st.markdown("### 📄 TXT Reports") 
-            for file_info in recent_files:
-                if os.path.exists(file_info['txt']):
-                    with open(file_info['txt'], "rb") as f:
-                        st.download_button(
-                            label=f"📄 {file_info['name']} ({file_info['score']})",
-                            data=f.read(),
-                            file_name=os.path.basename(file_info['txt']),
-                            mime="text/plain",
-                            key=f"txt_recovery_{file_info['name']}"
-                        )
-        
-        st.divider()
+        if selected_batch_display != "None":
+            # Extract batch_id from display string
+            selected_batch_id = selected_batch_display.split(' (')[0]
+            batch_manifest = st.session_state.batch_manager.get_batch_manifest(selected_batch_id)
+            
+            if batch_manifest:
+                st.markdown(f"### 📊 Batch Details: {selected_batch_id}")
+                
+                # Batch summary
+                total_items = len(batch_manifest["items"])
+                completed_items = sum(1 for item in batch_manifest["items"] if item["status"] == "completed")
+                failed_items = sum(1 for item in batch_manifest["items"] if item["status"] == "failed")
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Videos", total_items)
+                with col2:
+                    st.metric("Completed", completed_items)
+                with col3:
+                    st.metric("Failed", failed_items)
+                
+                # Download entire batch as ZIP
+                if completed_items > 0:
+                    zip_path = st.session_state.batch_manager.create_batch_zip(selected_batch_id)
+                    if zip_path and os.path.exists(zip_path):
+                        with open(zip_path, "rb") as f:
+                            st.download_button(
+                                label=f"📦 Download Complete Batch ZIP ({completed_items} files)",
+                                data=f.read(),
+                                file_name=f"{selected_batch_id}.zip",
+                                mime="application/zip",
+                                type="primary"
+                            )
+                
+                # Individual file downloads
+                if batch_manifest["items"]:
+                    st.markdown("#### 📁 Individual Files")
+                    
+                    for item in batch_manifest["items"]:
+                        if item["status"] == "completed":
+                            col1, col2, col3 = st.columns([2, 1, 1])
+                            
+                            with col1:
+                                score = item.get("score", "N/A")
+                                st.write(f"**{item['input_name']}** - {item['detected_pattern']} - Score: {score}")
+                            
+                            with col2:
+                                if item["html_path"] and os.path.exists(item["html_path"]):
+                                    with open(item["html_path"], "rb") as f:
+                                        st.download_button(
+                                            label="🌐 HTML",
+                                            data=f.read(),
+                                            file_name=os.path.basename(item["html_path"]),
+                                            mime="text/html",
+                                            key=f"html_{selected_batch_id}_{item['input_name']}"
+                                        )
+                            
+                            with col3:
+                                if item["narrative_path"] and os.path.exists(item["narrative_path"]):
+                                    with open(item["narrative_path"], "rb") as f:
+                                        st.download_button(
+                                            label="📄 TXT",
+                                            data=f.read(),
+                                            file_name=os.path.basename(item["narrative_path"]),
+                                            mime="text/plain",
+                                            key=f"txt_{selected_batch_id}_{item['input_name']}"
+                                        )
+                        elif item["status"] == "failed":
+                            st.error(f"❌ {item['input_name']} - Failed: {item.get('error', 'Unknown error')}")
+    else:
+        st.info("No previous batches found. Run your first batch assessment to see results here.")
+    
+    st.divider()
     
     # Main content area
     if uploaded_file and st.session_state.selected_pattern and api_key:
@@ -778,16 +817,28 @@ def main():
                 col_start, col_stop = st.columns([2, 1])
                 with col_start:
                     if st.button("🚀 Start Batch VOP Assessment", type="primary"):
-                        # Initialize batch results storage
-                        if 'batch_results' not in st.session_state:
-                            st.session_state.batch_results = []
+                        # Create new batch using BatchManager
+                        video_names = [file.name for file in uploaded_file]
+                        batch_settings = {
+                            "pattern": st.session_state.selected_pattern,
+                            "fps": fps,
+                            "batch_size": batch_size,
+                            "max_concurrent_batches": max_concurrent_batches
+                        }
                         
-                        st.session_state.batch_results.clear()  # Clear previous batch
+                        # Create batch and get batch ID
+                        current_batch_id = st.session_state.batch_manager.create_batch(video_names, batch_settings)
+                        st.info(f"🎯 **Batch Created**: {current_batch_id}")
                         
                         # Process each video using the existing working function
                         for i, (file, temp_path) in enumerate(zip(uploaded_file, temp_video_paths), 1):
                             file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
                             st.info(f"Processing {i}/{len(uploaded_file)}: {file.name} ({file_pattern})")
+                            
+                            # Update batch status to processing
+                            st.session_state.batch_manager.update_item_status(
+                                current_batch_id, file.name, "processing"
+                            )
                             
                             try:
                                 # Clear previous video's session state to avoid conflicts
@@ -802,22 +853,58 @@ def main():
                                 st.session_state.suppress_individual_downloads = True
                                 start_vop_analysis(temp_path, api_key, fps, batch_size, max_concurrent_batches, file_pattern)
                                 
-                                # Store results for this video
-                                if hasattr(st.session_state, 'assessment_results'):
-                                    batch_result = {
-                                        'video_name': file.name,
-                                        'assessment_results': st.session_state.assessment_results.copy(),
-                                        'final_product_image': getattr(st.session_state, 'final_product_image', None),
-                                        'temp_path': temp_path,
-                                        'pattern': file_pattern
-                                    }
-                                    st.session_state.batch_results.append(batch_result)
+                                # Extract score from assessment results
+                                score = None
+                                html_path = None
+                                narrative_path = None
                                 
-                                st.success(f"✅ Video {i} completed successfully")
+                                if hasattr(st.session_state, 'assessment_results'):
+                                    assessment_results = st.session_state.assessment_results
+                                    
+                                    # Extract score
+                                    if 'rubric_scores' in assessment_results:
+                                        scores = assessment_results['rubric_scores']
+                                        if scores:
+                                            avg_score = sum(scores) / len(scores)
+                                            score = f"{avg_score:.1f}/5"
+                                    
+                                    # Find the generated files
+                                    clean_filename = file.name
+                                    if clean_filename.startswith("temp_"):
+                                        clean_filename = clean_filename[5:]
+                                    
+                                    # Look for HTML and narrative files
+                                    import glob
+                                    html_pattern = f"html_reports/VOP_Assessment_{clean_filename}_*.html"
+                                    html_files = glob.glob(html_pattern)
+                                    if html_files:
+                                        html_path = max(html_files, key=os.path.getctime)
+                                    
+                                    txt_pattern = f"narratives/VOP_Assessment_{clean_filename}_*.txt"
+                                    txt_files = glob.glob(txt_pattern)
+                                    if txt_files:
+                                        narrative_path = max(txt_files, key=os.path.getctime)
+                                
+                                # Update batch with completed status
+                                st.session_state.batch_manager.update_item_status(
+                                    current_batch_id, file.name, "completed",
+                                    html_path=html_path,
+                                    narrative_path=narrative_path,
+                                    score=score
+                                )
+                                
+                                st.success(f"✅ Video {i} completed successfully - Score: {score or 'N/A'}")
                                 
                             except Exception as e:
-                                st.error(f"❌ Video {i} ({file.name}) failed: {str(e)}")
-                                st.code(f"Error details: {e}", language="text")
+                                error_msg = str(e)
+                                st.error(f"❌ Video {i} ({file.name}) failed: {error_msg}")
+                                
+                                # Update batch with failed status
+                                st.session_state.batch_manager.update_item_status(
+                                    current_batch_id, file.name, "failed",
+                                    error=error_msg
+                                )
+                                
                                 # Continue processing next video instead of crashing
                                 continue
                             
@@ -828,83 +915,30 @@ def main():
                         # Reset individual download suppression
                         st.session_state.suppress_individual_downloads = False
                         
-                        st.success(f"✅ Batch processing complete! Processed {len(uploaded_file)} videos.")
-                        
-                        # Show batch download section
-                        if st.session_state.batch_results:
-                            st.markdown("## 📥 Download All Batch Results")
-                            st.info(f"💾 **Save all files to:** `C:\\CursorAI_folders\\AI_video_watcher\\`")
+                        # Get final batch status
+                        final_manifest = st.session_state.batch_manager.get_batch_manifest(current_batch_id)
+                        if final_manifest:
+                            completed_count = sum(1 for item in final_manifest["items"] if item["status"] == "completed")
+                            failed_count = sum(1 for item in final_manifest["items"] if item["status"] == "failed")
                             
-                            col1, col2 = st.columns(2)
+                            st.success(f"✅ Batch processing complete! ✅ {completed_count} completed, ❌ {failed_count} failed")
                             
-                            with col1:
-                                st.markdown("### 📄 TXT Reports")
-                                for result in st.session_state.batch_results:
-                                    video_name = result['video_name']
-                                    assessment_results = result['assessment_results']
-                                    
-                                    # Generate TXT filename
-                                    clean_filename = video_name
-                                    if clean_filename.startswith("temp_"):
-                                        clean_filename = clean_filename[5:]
-                                    
-                                    base_filename = f"VOP_Assessment_{clean_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                                    txt_filename = f"{base_filename}.txt"
-                                    
-                                    # Create TXT content
-                                    txt_content = f"Video: {video_name}\n"
-                                    txt_content += f"Pattern: {result['pattern'].replace('_', ' ').title()}\n\n"
-                                    
-                                    if assessment_results.get('enhanced_narrative'):
-                                        enhanced_narrative = assessment_results['enhanced_narrative']
-                                        if isinstance(enhanced_narrative, dict):
-                                            full_response = enhanced_narrative.get('full_response', '')
-                                            if full_response and "RUBRIC_SCORES_START" in full_response:
-                                                rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
-                                                txt_content += rubric_commentary + "\n\n"
-                                            
-                                            summative = enhanced_narrative.get('summative_assessment', '')
-                                            if summative:
-                                                txt_content += "Summative assessment:\n"
-                                                txt_content += summative + "\n\n"
-                                    
-                                    st.download_button(
-                                        label=f"📄 {video_name}",
-                                        data=txt_content,
-                                        file_name=txt_filename,
-                                        mime="text/plain",
-                                        key=f"txt_{video_name}"
-                                    )
+                            # Create and offer batch ZIP download
+                            if completed_count > 0:
+                                zip_path = st.session_state.batch_manager.create_batch_zip(current_batch_id)
+                                if zip_path and os.path.exists(zip_path):
+                                    st.markdown("### 📦 **Download Complete Batch**")
+                                    with open(zip_path, "rb") as f:
+                                        st.download_button(
+                                            label=f"📦 Download Batch ZIP ({completed_count} assessments)",
+                                            data=f.read(),
+                                            file_name=f"{current_batch_id}.zip",
+                                            mime="application/zip",
+                                            type="primary",
+                                            help="Contains all HTML reports, TXT files, and summary CSV. Safe to download - won't reset the app!"
+                                        )
                             
-                            with col2:
-                                st.markdown("### 🌐 HTML Reports")
-                                for result in st.session_state.batch_results:
-                                    video_name = result['video_name']
-                                    
-                                    # Check if HTML file exists in html_reports directory
-                                    clean_filename = video_name
-                                    if clean_filename.startswith("temp_"):
-                                        clean_filename = clean_filename[5:]
-                                    
-                                    # Look for HTML file
-                                    import glob
-                                    html_pattern = f"html_reports/VOP_Assessment_{clean_filename}_*.html"
-                                    html_files = glob.glob(html_pattern)
-                                    
-                                    if html_files:
-                                        # Use the most recent HTML file
-                                        html_file_path = max(html_files, key=os.path.getctime)
-                                        
-                                        with open(html_file_path, "rb") as f:
-                                            st.download_button(
-                                                label=f"🌐 {video_name}",
-                                                data=f.read(),
-                                                file_name=os.path.basename(html_file_path),
-                                                mime="text/html",
-                                                key=f"html_{video_name}"
-                                            )
-                                    else:
-                                        st.text(f"⚠️ {video_name} - HTML not found")
+                            st.info("💡 **All results are safely stored!** Check the 'Batch History' section above to access your files anytime, even after app restarts.")
                         
                 with col_stop:
                     if st.button("🛑 STOP Batch", type="secondary", help="Stop batch processing"):
