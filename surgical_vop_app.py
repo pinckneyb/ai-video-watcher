@@ -519,35 +519,104 @@ def main():
         fps = st.slider("Analysis FPS", 1.0, 5.0, 1.0, 0.5)
         batch_size = st.slider("Batch Size", 5, 15, 15, 1, help="Number of frames processed together in each batch")
         
-        # GPT-5 Model Settings
+        # GPT-5 Model Settings with Pass-specific Configuration
         st.subheader("🤖 GPT-5 Model Settings")
         
-        # Model selection
-        gpt5_model = st.selectbox(
-            "Model",
-            options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
-            index=0,  # Default to gpt-5
-            help="Choose the GPT-5 model variant. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest."
-        )
-        st.session_state.gpt5_model = gpt5_model
+        # Create tabs for each analysis pass
+        pass1_tab, pass2_tab, pass3_tab = st.tabs(["🔍 Pass 1: Frame Analysis", "📝 Pass 2: Narrative Synthesis", "📊 Pass 3: Rubric Assessment"])
         
-        # Reasoning level
-        reasoning_level = st.selectbox(
-            "Reasoning Level",
-            options=["minimal", "low", "medium", "high"],
-            index=2,  # Default to medium
-            help="Controls computational effort: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality for complex tasks)."
-        )
-        st.session_state.reasoning_level = reasoning_level
+        # Pass 1 Settings (Frame Analysis)
+        with pass1_tab:
+            st.markdown("*Settings for AI frame-by-frame video analysis*")
+            
+            gpt5_model_pass1 = st.selectbox(
+                "Model",
+                options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
+                index=0,  # Default to gpt-5
+                help="Choose the GPT-5 model for frame analysis. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
+                key="model_pass1"
+            )
+            st.session_state.gpt5_model_pass1 = gpt5_model_pass1
+            
+            reasoning_level_pass1 = st.selectbox(
+                "Reasoning Level",
+                options=["minimal", "low", "medium", "high"],
+                index=2,  # Default to medium
+                help="Controls computational effort for frame analysis: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality).",
+                key="reasoning_pass1"
+            )
+            st.session_state.reasoning_level_pass1 = reasoning_level_pass1
+            
+            verbosity_level_pass1 = st.selectbox(
+                "Verbosity Level",
+                options=["low", "medium", "high"],
+                index=1,  # Default to medium
+                help="Controls response detail for frame observations: low (terse), medium (balanced), high (verbose explanations).",
+                key="verbosity_pass1"
+            )
+            st.session_state.verbosity_level_pass1 = verbosity_level_pass1
         
-        # Verbosity level
-        verbosity_level = st.selectbox(
-            "Verbosity Level",
-            options=["low", "medium", "high"],
-            index=1,  # Default to medium
-            help="Controls response detail: low (terse), medium (balanced), high (verbose explanations)."
-        )
-        st.session_state.verbosity_level = verbosity_level
+        # Pass 2 Settings (Narrative Synthesis)
+        with pass2_tab:
+            st.markdown("*Settings for narrative synthesis and report generation*")
+            
+            gpt5_model_pass2 = st.selectbox(
+                "Model",
+                options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
+                index=0,  # Default to gpt-5
+                help="Choose the GPT-5 model for narrative synthesis. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
+                key="model_pass2"
+            )
+            st.session_state.gpt5_model_pass2 = gpt5_model_pass2
+            
+            reasoning_level_pass2 = st.selectbox(
+                "Reasoning Level",
+                options=["minimal", "low", "medium", "high"],
+                index=2,  # Default to medium
+                help="Controls computational effort for narrative synthesis: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality).",
+                key="reasoning_pass2"
+            )
+            st.session_state.reasoning_level_pass2 = reasoning_level_pass2
+            
+            verbosity_level_pass2 = st.selectbox(
+                "Verbosity Level",
+                options=["low", "medium", "high"],
+                index=2,  # Default to high for detailed narratives
+                help="Controls response detail for narrative synthesis: low (terse), medium (balanced), high (verbose explanations).",
+                key="verbosity_pass2"
+            )
+            st.session_state.verbosity_level_pass2 = verbosity_level_pass2
+        
+        # Pass 3 Settings (Rubric Assessment)
+        with pass3_tab:
+            st.markdown("*Settings for structured rubric evaluation and scoring*")
+            
+            gpt5_model_pass3 = st.selectbox(
+                "Model",
+                options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
+                index=0,  # Default to gpt-5
+                help="Choose the GPT-5 model for rubric assessment. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
+                key="model_pass3"
+            )
+            st.session_state.gpt5_model_pass3 = gpt5_model_pass3
+            
+            reasoning_level_pass3 = st.selectbox(
+                "Reasoning Level",
+                options=["minimal", "low", "medium", "high"],
+                index=3,  # Default to high for precise rubric evaluation
+                help="Controls computational effort for rubric assessment: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality).",
+                key="reasoning_pass3"
+            )
+            st.session_state.reasoning_level_pass3 = reasoning_level_pass3
+            
+            verbosity_level_pass3 = st.selectbox(
+                "Verbosity Level",
+                options=["low", "medium", "high"],
+                index=1,  # Default to medium for structured scoring
+                help="Controls response detail for rubric scoring: low (terse), medium (balanced), high (verbose explanations).",
+                key="verbosity_pass3"
+            )
+            st.session_state.verbosity_level_pass3 = verbosity_level_pass3
         
         # Concurrency settings
         st.subheader("⚡ Concurrency Settings")
