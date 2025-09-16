@@ -1166,6 +1166,10 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         # AUTOMATIC TXT AND HTML REPORT GENERATION
         try:
+            # Ensure directories exist
+            os.makedirs("narratives", exist_ok=True)
+            os.makedirs("html_reports", exist_ok=True)
+            
             # Use original filename without temp_ prefix
             clean_filename = original_filename
             if clean_filename.startswith("temp_"):
