@@ -21,6 +21,7 @@ from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
     save_transcript, extract_video_info, sanitize_filename
 )
+from batch_manager import BatchManager
 
 # Page configuration
 st.set_page_config(
