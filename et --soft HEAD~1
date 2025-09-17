@@ -1,5 +1,0 @@
-[33m5a2fceb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Fix VOP assessment system and implement proper scoring
-[33m505f1ad[m Integrate GPT-5 scores into rubric assessment - scores now driven y AI analysis
-[33m1df9ea7[m Fix surgical VOP app - copy working GPT-5 structure from app.py
-[33me153c68[m Add M4V video format support
-[33m8a1ee03[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add GPT-5 final assessment and hide individual batch analysis
