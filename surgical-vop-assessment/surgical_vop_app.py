@@ -77,7 +77,7 @@ class SuturePatternDetector:
 class RubricEngine:
     """Handles rubric loading and scoring logic."""
     
-    def __init__(self, rubric_path: str = "unified_rubric.JSON"):
+    def __init__(self, rubric_path: str = "surgical-vop-assessment/unified_rubric.JSON"):
         self.rubric_data = self._load_rubric(rubric_path)
         self.scale = self.rubric_data["global_policies"]["scale"]
         self.baseline_score = self.rubric_data["global_policies"]["baseline_score_if_unclear"]
