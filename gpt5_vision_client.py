@@ -97,6 +97,12 @@ class GPT5VisionClient:
                 
             except Exception as retry_error:
                 error_str = str(retry_error).lower()
+                
+                # Check for quota exceeded - fast fail for batch processing
+                if "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                    print(f"💳 PASS 1 QUOTA EXCEEDED - FAST FAIL: {retry_error}")
+                    raise Exception(f"QUOTA_EXCEEDED_FAST_FAIL: {retry_error}")
+                
                 is_retryable = any(keyword in error_str for keyword in [
                     'rate_limit', 'timeout', 'connection', 'server_error', 'internal_error',
                     'service_unavailable', 'temporary', 'throttl'
@@ -147,6 +153,15 @@ class GPT5VisionClient:
             
             # Update context for next batch
             self.context_state = self._condense_context(frame_analysis, context_state)
+            
+            # CRITICAL: Clear base64 data from frames immediately to prevent memory exhaustion
+            for frame in frames:
+                if 'base64' in frame:
+                    frame['base64'] = None  # Clear to free memory
+                    
+            # Clear local base64_frames list
+            base64_frames.clear()
+            print(f"🧹 MEMORY CLEANUP: Cleared base64 data for {len(frames)} frames")
             
             print(f"✅ PASS 1 BATCH {self.error_stats['pass1_total_batches']} SUCCESS: {len(frame_analysis)} chars generated")
             
@@ -255,6 +270,17 @@ class GPT5VisionClient:
                     
                 except Exception as retry_error:
                     error_str = str(retry_error).lower()
+                    
+                    # Check for quota exceeded - fast fail for batch processing
+                    if "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                        print(f"💳 PASS 2 QUOTA EXCEEDED - FAST FAIL: {retry_error}")
+                        raise Exception(f"QUOTA_EXCEEDED_FAST_FAIL: {retry_error}")
+                    
+                    # Check for context length exceeded - try adaptive chunking
+                    if "context_length_exceeded" in error_str or "maximum context length" in error_str:
+                        print(f"📏 PASS 2 CONTEXT LENGTH EXCEEDED - ATTEMPTING ADAPTIVE CHUNKING")
+                        return self._adaptive_chunking_pass2(all_descriptions, model, reasoning_level, verbosity_level)
+                    
                     is_retryable = any(keyword in error_str for keyword in [
                         'rate_limit', 'timeout', 'connection', 'server_error', 'internal_error',
                         'service_unavailable', 'temporary', 'throttl'
@@ -362,13 +388,46 @@ class GPT5VisionClient:
             print(f"📊 PASS 3 INPUT: {narrative_length:,} character narrative for assessment")
             print(f"DEBUG: Video narrative preview: {self.video_narrative[:200]}...")
             
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                max_completion_tokens=10000,  # Increased to handle longer narrative
-                reasoning_effort=reasoning_level,
-                verbosity=verbosity_level
-            )
+            # Robust retry logic for Pass 3 API calls
+            max_retries = 5
+            retry_delay = 2
+            
+            for attempt in range(max_retries):
+                try:
+                    print(f"🔄 Pass 3 API call attempt {attempt + 1}/{max_retries}")
+                    response = self.client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        max_completion_tokens=10000,  # Increased to handle longer narrative
+                        reasoning_effort=reasoning_level,
+                        verbosity=verbosity_level
+                    )
+                    # Success - break out of retry loop
+                    break
+                    
+                except Exception as retry_error:
+                    error_str = str(retry_error).lower()
+                    
+                    # Check for quota exceeded - fast fail for batch processing
+                    if "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                        print(f"💳 PASS 3 QUOTA EXCEEDED - FAST FAIL: {retry_error}")
+                        raise Exception(f"QUOTA_EXCEEDED_FAST_FAIL: {retry_error}")
+                    
+                    is_retryable = any(keyword in error_str for keyword in [
+                        'rate_limit', 'timeout', 'connection', 'server_error', 'internal_error',
+                        'service_unavailable', 'temporary', 'throttl'
+                    ])
+                    
+                    if attempt < max_retries - 1 and is_retryable:
+                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                        print(f"⏰ Pass 3 retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
+                        print(f"⏰ Waiting {wait_time} seconds before retry...")
+                        import time
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        # Non-retryable error or max retries reached
+                        raise retry_error
             
             assessment_response = response.choices[0].message.content
             response_length = len(assessment_response)
@@ -991,6 +1050,85 @@ Provide your complete assessment:"""
                 "success": False
             }
     
+    def _adaptive_chunking_pass2(self, all_descriptions: List[Dict], model: str, reasoning_level: str, verbosity_level: str) -> str:
+        """
+        ADAPTIVE CHUNKING: Handle context length errors by processing descriptions in chunks
+        """
+        print(f"🔄 ADAPTIVE CHUNKING: Processing {len(all_descriptions)} descriptions in chunks")
+        
+        # Calculate chunk size - start with half the descriptions
+        chunk_size = max(1, len(all_descriptions) // 2)
+        chunk_narratives = []
+        
+        for i in range(0, len(all_descriptions), chunk_size):
+            chunk = all_descriptions[i:i + chunk_size]
+            print(f"📦 Processing chunk {i//chunk_size + 1}: descriptions {i} to {min(i+chunk_size-1, len(all_descriptions)-1)}")
+            
+            # Format chunk descriptions
+            descriptions_text = "\n\n".join([
+                f"TIMESTAMP: {desc['timestamp_range']}\nFRAMES: {desc['frame_count']}\nSURGICAL DESCRIPTION: {desc['analysis']}"
+                for desc in chunk
+            ])
+            
+            # Use shorter character limit for chunks
+            max_chunk_length = 50000  # Reduced from 100000
+            if len(descriptions_text) > max_chunk_length:
+                print(f"⚠️ CHUNK TRUNCATION: {len(descriptions_text):,} chars, truncating to {max_chunk_length:,}")
+                descriptions_text = descriptions_text[:max_chunk_length] + "\n\n[CHUNK TRUNCATED]"
+            
+            narrative_prompt = self._build_video_narrative_prompt(descriptions_text)
+            
+            try:
+                response = self.client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": narrative_prompt}],
+                    max_completion_tokens=8000,  # Reduced for chunks
+                    reasoning_effort=reasoning_level,
+                    verbosity=verbosity_level
+                )
+                
+                chunk_narrative = response.choices[0].message.content
+                chunk_narratives.append(chunk_narrative)
+                print(f"✅ CHUNK {i//chunk_size + 1} SUCCESS: {len(chunk_narrative)} chars")
+                
+            except Exception as chunk_error:
+                error_str = str(chunk_error).lower()
+                if "quota_exceeded" in error_str or "insufficient_quota" in error_str:
+                    print(f"💳 CHUNK QUOTA EXCEEDED - FAST FAIL: {chunk_error}")
+                    raise Exception(f"QUOTA_EXCEEDED_FAST_FAIL: {chunk_error}")
+                
+                print(f"❌ CHUNK {i//chunk_size + 1} FAILED: {chunk_error}")
+                chunk_narratives.append(f"[CHUNK FAILED: {chunk_error}]")
+        
+        # Combine all chunk narratives
+        combined_narrative = "\n\n=== SURGICAL VIDEO NARRATIVE (COMBINED FROM CHUNKS) ===\n\n" + \
+                           "\n\n".join(chunk_narratives)
+        
+        # Final pass to create cohesive narrative from chunks
+        try:
+            final_prompt = f"""Combine these surgical video analysis chunks into one cohesive narrative:
+
+{combined_narrative[:80000]}  # Limit input for final pass
+
+Create a single flowing narrative that captures all key surgical observations."""
+            
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": final_prompt}],
+                max_completion_tokens=12000,
+                reasoning_effort=reasoning_level,
+                verbosity=verbosity_level
+            )
+            
+            self.video_narrative = response.choices[0].message.content
+            print(f"✅ ADAPTIVE CHUNKING SUCCESS: Combined into {len(self.video_narrative):,} char narrative")
+            
+        except Exception as final_error:
+            print(f"⚠️ FINAL COMBINATION FAILED: {final_error} - Using chunk combination")
+            self.video_narrative = combined_narrative[:50000]  # Fallback with limit
+        
+        return self.video_narrative
+
     def clear_analysis(self):
         """Clear current analysis data"""
         self.frame_descriptions = []

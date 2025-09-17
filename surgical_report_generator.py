@@ -89,6 +89,13 @@ class SurgicalVOPReportGenerator:
             str: Path to the generated PDF file
         """
         
+        # Ensure output directory exists
+        import os
+        output_dir = os.path.dirname(output_filename)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            print(f"🗂️ DIRECTORY SAFEGUARD: Ensured directory exists: {output_dir}")
+        
         # Create PDF document
         doc = SimpleDocTemplate(
             output_filename,

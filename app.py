@@ -311,8 +311,12 @@ def main():
                 
                 # Show video info
                 with st.expander("📊 Video Information"):
+                    # Ensure temp directory exists for video info extraction
+                    temp_dir = "temp_videos"
+                    os.makedirs(temp_dir, exist_ok=True)
+                    
                     # Save temporarily to get info
-                    temp_path = f"temp_{uploaded_file.name}"
+                    temp_path = os.path.join(temp_dir, f"temp_{uploaded_file.name}")
                     with open(temp_path, "wb") as f:
                         f.write(video_source)
                     

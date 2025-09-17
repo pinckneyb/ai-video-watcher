@@ -830,7 +830,7 @@ def main():
                         current_batch_id = st.session_state.batch_manager.create_batch(video_names, batch_settings)
                         st.info(f"🎯 **Batch Created**: {current_batch_id}")
                         
-                        # Process each video using the existing working function
+                        # Process each video using the existing working function with isolation
                         for i, (file, temp_path) in enumerate(zip(uploaded_file, temp_video_paths), 1):
                             file_pattern = st.session_state.detected_patterns.get(file.name, st.session_state.selected_pattern)
                             st.info(f"Processing {i}/{len(uploaded_file)}: {file.name} ({file_pattern})")
@@ -840,6 +840,7 @@ def main():
                                 current_batch_id, file.name, "processing"
                             )
                             
+                            # Process isolation: Each video in its own try-catch to prevent batch crashes
                             try:
                                 # Clear previous video's session state to avoid conflicts
                                 if hasattr(st.session_state, 'assessment_results'):
@@ -899,13 +900,25 @@ def main():
                                 error_msg = str(e)
                                 st.error(f"❌ Video {i} ({file.name}) failed: {error_msg}")
                                 
-                                # Update batch with failed status
+                                # Enhanced error logging for debugging
+                                import traceback
+                                full_traceback = traceback.format_exc()
+                                print(f"ERROR DETAILS for {file.name}:")
+                                print(f"Error message: {error_msg}")
+                                print(f"Full traceback: {full_traceback}")
+                                
+                                # Update batch with failed status and truncated error
+                                error_summary = error_msg[:200] + "..." if len(error_msg) > 200 else error_msg
                                 st.session_state.batch_manager.update_item_status(
                                     current_batch_id, file.name, "failed",
-                                    error=error_msg
+                                    error=error_summary
                                 )
                                 
-                                # Continue processing next video instead of crashing
+                                # Force memory cleanup before next video
+                                import gc
+                                gc.collect()
+                                
+                                # Continue processing next video instead of crashing entire batch
                                 continue
                             
                             # Add a separator between videos
@@ -1132,15 +1145,32 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             st.error("No frames extracted from video")
             return
         
-        # Convert frames to base64 for GPT-5 processing
+        # Convert frames to base64 for GPT-5 processing with memory optimization
         status_text.text("Converting frames to base64...")
-        base64_frames = video_processor.frames_to_base64(frames)
         
-        # Add base64 data to frames
-        for i, frame in enumerate(frames):
-            frame['base64'] = base64_frames[i]
+        # Memory optimization: Process frames in chunks to avoid memory exhaustion
+        import gc
+        chunk_size = 10  # Process frames in smaller chunks to prevent memory issues
         
-        print(f"DEBUG: Converted {len(frames)} frames to base64")
+        print(f"DEBUG: Converting {len(frames)} frames to base64 in chunks of {chunk_size}")
+        
+        for chunk_start in range(0, len(frames), chunk_size):
+            chunk_end = min(chunk_start + chunk_size, len(frames))
+            frame_chunk = frames[chunk_start:chunk_end]
+            
+            # Convert chunk to base64
+            chunk_base64 = video_processor.frames_to_base64(frame_chunk)
+            
+            # Add base64 data to frames
+            for i, frame in enumerate(frame_chunk):
+                frame['base64'] = chunk_base64[i]
+            
+            # Force garbage collection after each chunk
+            gc.collect()
+            
+            print(f"DEBUG: Processed frames {chunk_start+1}-{chunk_end} of {len(frames)}")
+        
+        print(f"DEBUG: Converted {len(frames)} frames to base64 with memory optimization")
         print(f"DEBUG: First frame base64 length: {len(frames[0]['base64'])}")
         
         st.info(f"Video duration: {video_processor.duration} seconds")
