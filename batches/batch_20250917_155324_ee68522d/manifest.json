@@ -1,0 +1,113 @@
+{
+  "batch_id": "batch_20250917_155324_ee68522d",
+  "created_at": "2025-09-17T15:53:24.838961",
+  "settings": {
+    "pattern": "simple_interrupted",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "2501_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2501_simple_interrupted.mp4_20250917_155924.html",
+      "narrative_path": "narratives/VOP_Assessment_2501_simple_interrupted.mp4_20250917_155924.txt",
+      "score": null,
+      "started_at": "2025-09-17T15:53:24.845770",
+      "completed_at": "2025-09-17T15:59:24.134960",
+      "error": null
+    },
+    {
+      "input_name": "2503_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2503_simple_interrupted.mp4_20250917_160520.html",
+      "narrative_path": "narratives/VOP_Assessment_2503_simple_interrupted.mp4_20250917_160520.txt",
+      "score": null,
+      "started_at": "2025-09-17T15:59:24.137614",
+      "completed_at": "2025-09-17T16:05:20.526211",
+      "error": null
+    },
+    {
+      "input_name": "2504_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2504_simple_interrupted.mp4_20250917_161142.html",
+      "narrative_path": "narratives/VOP_Assessment_2504_simple_interrupted.mp4_20250917_161142.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:05:20.537711",
+      "completed_at": "2025-09-17T16:11:42.534158",
+      "error": null
+    },
+    {
+      "input_name": "2506_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2506_simple_interrupted.mp4_20250917_161722.html",
+      "narrative_path": "narratives/VOP_Assessment_2506_simple_interrupted.mp4_20250917_161722.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:11:42.536672",
+      "completed_at": "2025-09-17T16:17:22.836777",
+      "error": null
+    },
+    {
+      "input_name": "2507_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2507_simple_interrupted.mp4_20250917_162407.html",
+      "narrative_path": "narratives/VOP_Assessment_2507_simple_interrupted.mp4_20250917_162407.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:17:22.839431",
+      "completed_at": "2025-09-17T16:24:07.295378",
+      "error": null
+    },
+    {
+      "input_name": "2509_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2509_simple_interrupted.mp4_20250917_162944.html",
+      "narrative_path": "narratives/VOP_Assessment_2509_simple_interrupted.mp4_20250917_162944.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:24:07.306142",
+      "completed_at": "2025-09-17T16:29:44.320443",
+      "error": null
+    },
+    {
+      "input_name": "2511_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2511_simple_interrupted.mp4_20250917_163443.html",
+      "narrative_path": "narratives/VOP_Assessment_2511_simple_interrupted.mp4_20250917_163443.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:29:44.326695",
+      "completed_at": "2025-09-17T16:34:43.344219",
+      "error": null
+    },
+    {
+      "input_name": "2515_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2515_simple_interrupted.mp4_20250917_163915.html",
+      "narrative_path": "narratives/VOP_Assessment_2515_simple_interrupted.mp4_20250917_163915.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:34:43.346750",
+      "completed_at": "2025-09-17T16:39:15.365529",
+      "error": null
+    },
+    {
+      "input_name": "2516_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2516_simple_interrupted.mp4_20250917_164406.html",
+      "narrative_path": "narratives/VOP_Assessment_2516_simple_interrupted.mp4_20250917_164406.txt",
+      "score": null,
+      "started_at": "2025-09-17T16:39:15.367267",
+      "completed_at": "2025-09-17T16:44:06.610368",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-17T16:44:06.610383"
+}
