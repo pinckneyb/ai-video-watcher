@@ -1,0 +1,56 @@
+Here is the **Subcuticular** narrative revised to explicitly reference each rubric point from your `unified_rubric.JSON`.
+
+---
+
+### Subcuticular (Four Bites, Narrative with Rubric Fulfilment)
+
+**Initial field**
+A straight incision lies clean and aligned. The operator positions instruments close to the wound and maintains them there, already demonstrating **Economy of time and motion (pid 7)**.
+
+**Anchor**
+
+* The suture is introduced just beyond the wound edge, and the knot is buried to the side. This establishes the starting point without a surface bridge. Knotting is square and lies off the wound, satisfying **Square, secure knots (pid 5)**.
+
+**Bite 1**
+
+* The needle enters just inside the near margin, arcs horizontally through the dermis, and exits just inside the far margin. The bite length and depth match the standard, confirming **Consistent dermal bites (pid 1)**.
+* The exit on the far side mirrors the entry point on the near side, showing **Opposing entry/exit symmetry (pid 2)**.
+* The track remains subcuticular, with no stray puncture through epidermis, fulfilling **No unintended surface breaches (pid 3)**.
+* Edge is stabilized with one light grasp, not multiple pinches, meeting **Gentle tissue handling (pid 4)**.
+* Closure at this span is flat, edges just meeting, which demonstrates **Flat, well-approximated skin (pid 6)**.
+
+**Bite 2**
+
+* The needle re-enters on the far side a short distance forward, arcs across, and emerges on the near side at the same level. The smooth repetition confirms **pid 1**.
+* Entry and exit remain directly opposed, confirming **pid 2**.
+* The bite passes subcuticularly without unintended puncture (**pid 3**).
+* Handling is light and deliberate (**pid 4**).
+* Approximation remains flat, edges flush, no gapping or ridging (**pid 6**).
+
+**Bite 3**
+
+* On the near side, the needle takes another equal subdermal bite, emerging on the far side. The sequence shows consistent equal dermal bites (**pid 1**) and mirrored symmetry (**pid 2**).
+* No breaches are visible at the surface, only small aligned puncture marks at entry/exit sites (**pid 3**).
+* Forceps use remains single and gentle per edge (**pid 4**).
+* Closure remains flat and linear (**pid 6**).
+
+**Bite 4**
+
+* The needle again advances with a uniform dermal bite and emerges symmetrically (**pid 1, pid 2**).
+* No unintended breach appears (**pid 3**).
+* Handling continues to be minimal and gentle (**pid 4**).
+* Wound edges lie flat and well approximated across the full four-bite span (**pid 6**).
+* At the end, the suture is exteriorized off to the side and secured with a square knot (**pid 5**).
+
+**Completion appearance**
+
+* The wound shows a smooth linear closure, skin edges precisely coapted.
+* Dermal bites are consistent, running evenly along the track (**pid 1**).
+* Each entry/exit mirrors its opposite (**pid 2**).
+* No stray needle punctures are visible at the wound line (**pid 3**).
+* Forceps use was minimal and gentle (**pid 4**).
+* Start and finish knots are secure and square (**pid 5**).
+* Skin surface is flat and continuous, with no ridging or gaps (**pid 6**).
+* Operator’s movements remained efficient and confined to the wound field (**pid 7**).
+
+The closure presents as an “invisible” suture line, all rubric points for the **Subcuticular** pattern satisfied.
