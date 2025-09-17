@@ -331,14 +331,13 @@ def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, i
                         point_id = int(point_id.strip())
                         score = int(score_str.strip())
                         
-                        # Apply 0.7 multiplier and round up to adjust for GPT-5 over-scoring
-                        adjusted_score = int(score * 0.7 + 0.999)  # Multiply by 0.7 and round up
-                        
+                        # Use raw score directly - no multiplier adjustment
                         # Validate score is in range
-                        if 1 <= adjusted_score <= 5:
-                            scores[point_id] = adjusted_score
+                        if 1 <= score <= 5:
+                            scores[point_id] = score
                         else:
-                            st.warning(f"Adjusted score {adjusted_score} for point {point_id} is out of range (1-5)")
+                            st.warning(f"Score {score} for point {point_id} is out of range (1-5), using default of 3")
+                            scores[point_id] = 3
                     except (ValueError, IndexError) as e:
                         st.warning(f"Could not parse score line: {line}")
                         continue
