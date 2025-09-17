@@ -190,6 +190,14 @@ OUTPUT: Brief observations for each rubric point with timestamps."""
         """Create context condensation prompt for surgical assessment continuity."""
         return """Condense surgical assessment progress in 100 words max. Include key technique observations, errors noted, and current suturing phase. Maintain clinical tone."""
 
+def _generate_rubric_scores_block(assessment_points) -> str:
+    """Generate dynamic RUBRIC_SCORES format based on actual rubric points."""
+    score_lines = ["RUBRIC_SCORES_START"]
+    for point in assessment_points:
+        score_lines.append(f"{point['pid']}: X")
+    score_lines.append("RUBRIC_SCORES_END")
+    return "\n".join(score_lines)
+
 def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_key: str, pattern_id: str, rubric_engine: RubricEngine) -> str:
     """Create enhanced surgical VOP narrative using GPT-5 - copied from working app.py structure."""
     try:
@@ -244,15 +252,7 @@ Then write a summative paragraph that:
 - Must be useful observations and nothing else
 
 MANDATORY SCORING:
-RUBRIC_SCORES_START
-1: X
-2: X  
-3: X
-4: X
-5: X
-6: X
-7: X
-RUBRIC_SCORES_END"""
+{_generate_rubric_scores_block(assessment_points)}"""
 
         # Check input lengths and provide warnings (EXACT COPY from app.py)
         transcript_length = len(raw_transcript)

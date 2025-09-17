@@ -440,7 +440,7 @@ class GPT5VisionClient:
             # Sanitize output to remove disallowed phrases and process references
             assessment_response = self._sanitize_assessment_output(assessment_response)
             
-            parsed_response = self._parse_assessment_response(assessment_response, rubric_engine)
+            parsed_response = self._parse_assessment_response(assessment_response, rubric_engine, pattern_id)
             parse_success = parsed_response.get('success', False)
             print(f"📊 PASS 3 PARSE SUCCESS: {parse_success}")
             print(f"📊 PASS 3 STATS: Success rate {self.error_stats['pass3_successful_attempts']}/{self.error_stats['pass3_total_attempts']}")
@@ -722,23 +722,22 @@ LANGUAGE AND OUTPUT RULES (MANDATORY):
 - If making any failing claim, include a brief parenthetical with cited evidence times (e.g., "(breaches at ~11:32:55 and ~11:33:13)").
 
 RUBRIC ASSESSMENT FORMAT:
-For each rubric point (1-7), provide a 1-2 sentence comment and a 1-5 score. Apply the caps above before writing the final number.
+For each rubric point, provide a 1-2 sentence comment and a 1-5 score. Apply the caps above before writing the final number.
 
 IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns.
 
 Format each rubric point exactly like this:
 
-RUBRIC_POINT_1:
-Comment: [Your 1-2 sentence assessment]
-Score: [1-5]
-
-...
+{self._generate_rubric_format_example(rubric_data['points'])}
 
 SUMMATIVE_ASSESSMENT:
 [Write a holistic 2-3 paragraph assessment of the entire procedure focusing on flow, hand coordination, plane integrity, and overall competence. Do NOT mention images, frames, or narratives.]
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
+
+MANDATORY SCORING OUTPUT:
+{self._generate_rubric_scores_format(rubric_data['points'])}
 
 Provide your complete assessment:"""
             return prompt
@@ -807,6 +806,9 @@ SUMMATIVE_ASSESSMENT:
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
+
+MANDATORY SCORING OUTPUT:
+{self._generate_rubric_scores_format(rubric_data['points'])}
 
 Provide your complete assessment:"""
         
@@ -903,6 +905,9 @@ SUMMATIVE_ASSESSMENT:
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
 
+MANDATORY SCORING OUTPUT:
+{self._generate_rubric_scores_format(rubric_data['points'])}
+
 Provide your complete assessment:"""
         
         return prompt
@@ -972,15 +977,47 @@ Provide your complete assessment:"""
             for desc in self.frame_descriptions
         ]
     
-    def _parse_assessment_response(self, response: str, rubric_engine) -> Dict[str, Any]:
+    def _generate_rubric_format_example(self, rubric_points) -> str:
+        """Generate dynamic rubric format example based on actual rubric points."""
+        examples = []
+        for i, point in enumerate(rubric_points[:2]):  # Show first 2 as examples
+            examples.append(f"RUBRIC_POINT_{point['pid']}:\nComment: [Your 1-2 sentence assessment]\nScore: [1-5]\n")
+        examples.append("...")
+        return "\n".join(examples)
+    
+    def _generate_rubric_scores_format(self, rubric_points) -> str:
+        """Generate dynamic RUBRIC_SCORES format based on actual rubric points."""
+        score_lines = ["RUBRIC_SCORES_START"]
+        for point in rubric_points:
+            score_lines.append(f"{point['pid']}: X")
+        score_lines.append("RUBRIC_SCORES_END")
+        return "\n".join(score_lines)
+    
+    def _parse_assessment_response(self, response: str, rubric_engine, pattern_id: str = None) -> Dict[str, Any]:
         """Parse GPT-5 assessment response"""
         try:
             # Extract rubric scores and comments from structured format
             scores = {}
             rubric_comments = {}
             
+            # Get expected rubric points from rubric engine using pattern_id
+            expected_points = []
+            if rubric_engine and pattern_id:
+                try:
+                    pattern_data = rubric_engine.get_pattern_rubric(pattern_id)
+                    if pattern_data and 'points' in pattern_data:
+                        expected_points = [point['pid'] for point in pattern_data['points']]
+                        print(f"📊 Dynamic scoring: Found {len(expected_points)} rubric points for {pattern_id}: {expected_points}")
+                except Exception as e:
+                    print(f"⚠️ Error getting rubric points for {pattern_id}: {e}")
+            
+            # Fallback to 1-7 only as last resort with warning
+            if not expected_points:
+                expected_points = list(range(1, 8))
+                print(f"⚠️ FALLBACK: Using default 1-7 rubric points (pattern_id={pattern_id})")
+            
             # Parse each RUBRIC_POINT_X section
-            for i in range(1, 8):  # Points 1-7
+            for i in expected_points:
                 point_pattern = f"RUBRIC_POINT_{i}:"
                 if point_pattern in response:
                     # Extract the section for this rubric point
@@ -1023,12 +1060,36 @@ Provide your complete assessment:"""
                 if summative_start != -1:
                     summative = response[summative_start + len("Summative assessment:"):].strip()
             
+            # Validate scores - ensure all expected points have scores
+            missing_points = [pid for pid in expected_points if pid not in scores]
+            invalid_scores = {pid: score for pid, score in scores.items() if not (1 <= score <= 5)}
+            
+            # Auto-repair: set missing scores to default of 3
+            for pid in missing_points:
+                scores[pid] = 3
+                print(f"⚠️ Missing score for rubric point {pid}, defaulting to 3")
+            
+            # Auto-repair: clamp invalid scores to 1-5 range
+            for pid, invalid_score in invalid_scores.items():
+                if invalid_score < 1:
+                    scores[pid] = 1
+                elif invalid_score > 5:
+                    scores[pid] = 5
+                else:
+                    scores[pid] = 3
+                print(f"⚠️ Invalid score {invalid_score} for rubric point {pid}, corrected to {scores[pid]}")
+            
             return {
                 'success': True,
                 'rubric_scores': scores,
                 'rubric_comments': rubric_comments,
                 'summative_assessment': summative,
-                'full_response': response
+                'full_response': response,
+                'validation_warnings': {
+                    'missing_points': missing_points,
+                    'invalid_scores': invalid_scores,
+                    'expected_points': expected_points
+                }
             }
             
         except Exception as e:
