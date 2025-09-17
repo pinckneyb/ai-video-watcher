@@ -579,9 +579,8 @@ Focus ONLY on surgically critical details of the ACTIVE suture line:
 2. HAND POSITIONS: Where are hands positioned relative to the ACTIVE suture line? What instruments are held?
 3. NEEDLE HANDLING: How is the needle grasped and positioned for the ACTIVE suture?
 4. TISSUE INTERACTION: What tissue is being manipulated at the ACTIVE suture line? How are wound edges handled?
-5. SUTURE PROGRESSION: How many sutures are present at the ACTIVE line? Are new sutures being added?
-6. SUTURE COUNTING: Count the exact number of completed sutures visible in these frames on the active line.
-7. SPATIAL RELATIONSHIPS: How are hands positioned relative to the ACTIVE suture line and each other?
+5. SUTURE PROGRESSION: Are new sutures being added at the ACTIVE line?
+6. SPATIAL RELATIONSHIPS: How are hands positioned relative to the ACTIVE suture line and each other?
 
 OUTPUT: Concise, factual observations only. No color commentary. 150-300 words maximum.
 Focus internally on the active suture line, but describe the procedure naturally without mentioning "active suture line" or "focus" in your output.
@@ -650,22 +649,15 @@ Throughout the narrative, you must track the single suture line being worked on.
 
 Focus on:
 1. ACTIVE SUTURE LINE TRACKING: Which incision line is being worked on throughout the procedure? (This will be the same line throughout the entire video)
-2. SUTURE PROGRESSION: How many sutures are added to the active line? What is the pattern of suture placement?
-3. SUTURE COUNTING: Count the total number of completed sutures visible at the end of the procedure. Track how this number increases throughout the video.
+2. SUTURE PROGRESSION: What is the pattern of suture placement and technique development on the active line?
+3. TECHNIQUE PROGRESSION: Track how the suturing technique develops throughout the video.
 4. HAND POSITION EVOLUTION: How do hand positions change relative to the active suture line over time?
 5. TECHNIQUE CONSISTENCY: How does the suturing technique evolve on the active line?
 6. SPATIAL RELATIONSHIPS: How do hands and instruments move relative to the active suture line?
-7. FINAL STATE: Describe the final state of the suture line - how many completed sutures are visible?
+7. FINAL STATE: Describe the final state of the suture line closure.
 
 CRITICAL SUTURE COUNTING REQUIREMENT:
-You must carefully count and report the EXACT number of completed sutures visible in the final state of the procedure. Look at the final frame descriptions to see how many sutures are actually present. Do not make assumptions - count what you can actually see. This count is crucial for accurate assessment.
-
-MANDATORY SUTURE COUNT VERIFICATION:
-Before completing your narrative, you MUST:
-1. Count the total number of completed sutures visible in the final frames
-2. State this count explicitly in your narrative (e.g., "The procedure resulted in 4 completed sutures")
-3. Describe the final state of the suture line with the exact count
-4. Track how the suture count increases throughout the procedure
+Focus on describing the progression and completion of the suturing technique without emphasizing specific counts.
 
 OUTPUT: Write a comprehensive, detailed chronological narrative that connects the frame observations into a coherent story of the surgical technique. Include ALL important details from the frame descriptions. Be thorough and detailed - it's better to be comprehensive than to miss critical elements. Describe the procedure naturally without mentioning "active suture line" or internal focusing processes.
 
@@ -776,10 +768,9 @@ PATTERN ASSESSMENT RULES:
 - Assess the performance against the {rubric_data['display_name']} criteria only
 - If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
 - Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
-- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
-- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
-- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
-- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
+- FOCUS ON TECHNIQUE QUALITY: Evaluate the overall technique execution and closure quality rather than specific counts
+- ASSESS SPACING AND DISTRIBUTION: Look for even spacing and appropriate distribution without emphasizing exact numbers
+- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, use it to assess closure quality and technique execution
 
 LANGUAGE AND OUTPUT RULES (MANDATORY):
 - Do NOT say "no full passes were recorded/captured". Draw conclusions from visible evidence.
@@ -859,10 +850,9 @@ PATTERN ASSESSMENT RULES:
 - Assess the performance against the {rubric_data['display_name']} criteria only
 - If the technique doesn't match {rubric_data['display_name']} standards, give low scores but don't suggest alternative patterns
 - Assume the surgeon intended to perform {rubric_data['display_name']} and evaluate accordingly
-- COUNT SUTURES CAREFULLY: Count the total number of completed sutures visible in the final state of the procedure
-- VERIFY SUTURE COUNT: Before making any assessment about spacing or technique, verify the actual number of completed sutures from the narrative
-- MANDATORY SUTURE COUNT CHECK: The narrative should explicitly state the total number of completed sutures. If it doesn't, look for evidence of suture progression throughout the procedure and count them yourself
-- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, you MUST use it to verify suture counts. Look at the image and count the actual sutures visible. Trust what you see in the image over any narrative description
+- FOCUS ON TECHNIQUE QUALITY: Evaluate the overall technique execution and closure quality rather than specific counts
+- ASSESS SPACING AND DISTRIBUTION: Look for even spacing and appropriate distribution without emphasizing exact numbers
+- FINAL PRODUCT IMAGE VERIFICATION: If you have access to the final product image, use it to assess closure quality and technique execution
 
 STRICT SCORING GUIDELINES:
 - Score 1 = Major deficiencies - technique significantly below standard
