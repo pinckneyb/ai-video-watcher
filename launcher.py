@@ -86,10 +86,21 @@ def main():
             - **Text transcription** and event timelines
             """)
         
-        if st.button("🚀 Launch AI Video Watcher", type="primary", use_container_width=True):
-            st.success("Starting AI Video Watcher...")
-            # Replace current process with app.py
-            os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "app.py")
+        if st.button("🚀 Launch AI Video Watcher", type="primary", use_container_width=True, key="launch_watcher"):
+            # Set launching state to prevent multiple clicks
+            if 'launching_watcher' not in st.session_state:
+                st.session_state.launching_watcher = True
+                st.success("🚀 Starting AI Video Watcher...")
+                st.info("⏳ Please wait while the application loads...")
+                
+                # Add a brief delay and then replace process
+                import time
+                time.sleep(0.5)
+                
+                # Replace current process with app.py
+                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "app.py")
+            else:
+                st.warning("🔄 Application is already starting... Please wait.")
     
     with col2:
         st.markdown("""
@@ -112,10 +123,21 @@ def main():
             - **Medical education focused** interface
             """)
         
-        if st.button("🏥 Launch Surgical VOP Assessment", type="primary", use_container_width=True):
-            st.success("Starting Surgical VOP Assessment...")
-            # Replace current process with surgical_vop_app.py
-            os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "surgical_vop_app.py")
+        if st.button("🏥 Launch Surgical VOP Assessment", type="primary", use_container_width=True, key="launch_surgical"):
+            # Set launching state to prevent multiple clicks
+            if 'launching_surgical' not in st.session_state:
+                st.session_state.launching_surgical = True
+                st.success("🚀 Starting Surgical VOP Assessment...")
+                st.info("⏳ Please wait while the application loads...")
+                
+                # Add a brief delay and then replace process
+                import time
+                time.sleep(0.5)
+                
+                # Replace current process with surgical_vop_app.py
+                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "surgical_vop_app.py")
+            else:
+                st.warning("🔄 Application is already starting... Please wait.")
     
     # Information section
     st.markdown("---")
