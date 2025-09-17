@@ -1332,7 +1332,6 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             report_gen._return_pil_for_html = True  # Flag to return PIL Image
             
             # Retry logic for image extraction with timeout
-            import time
             max_retries = 3
             retry_delay = 2
             

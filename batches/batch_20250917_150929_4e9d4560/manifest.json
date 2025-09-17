@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_20250917_150929_4e9d4560",
+  "created_at": "2025-09-17T15:09:29.462737",
+  "settings": {
+    "pattern": "simple_interrupted",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "2501_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": null,
+      "score": null,
+      "started_at": "2025-09-17T15:09:29.468344",
+      "completed_at": "2025-09-17T15:09:37.664639",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-17T15:09:37.664651"
+}

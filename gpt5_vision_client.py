@@ -7,6 +7,7 @@ Handles both image analysis and flow interpretation using GPT-5
 import base64
 import json
 import re
+import time
 from typing import List, Dict, Any, Tuple
 from openai import OpenAI
 
@@ -112,7 +113,6 @@ class GPT5VisionClient:
                     wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
                     print(f"⏰ Retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
                     print(f"⏰ Waiting {wait_time} seconds before retry...")
-                    import time
                     time.sleep(wait_time)
                     continue
                 else:
@@ -290,7 +290,6 @@ class GPT5VisionClient:
                         wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
                         print(f"⏰ Pass 2 retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
                         print(f"⏰ Waiting {wait_time} seconds before retry...")
-                        import time
                         time.sleep(wait_time)
                         continue
                     else:
@@ -422,7 +421,6 @@ class GPT5VisionClient:
                         wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
                         print(f"⏰ Pass 3 retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
                         print(f"⏰ Waiting {wait_time} seconds before retry...")
-                        import time
                         time.sleep(wait_time)
                         continue
                     else:
