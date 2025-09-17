@@ -225,7 +225,7 @@ STRICT SCORING GUIDELINES:
 - Score 5 = Exemplary - technique demonstrates mastery and serves as a model
 
 CRITICAL SCORING PHILOSOPHY:
-- Score 2 should be your DEFAULT for safe, functional technique
+- Score 3 should be your DEFAULT for competent, standard technique
 - Score 4 means you would use this video to teach other attendings
 - Score 5 means this is among the best technique you've seen in your entire career
 - Assume EVERY technique has flaws until proven otherwise

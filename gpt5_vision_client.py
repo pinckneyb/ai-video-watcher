@@ -698,7 +698,7 @@ MANDATORY EVIDENCE & THRESHOLDS:
 - Ignore artifacts (forceps indentations, glare/adhesive, blanching) as breaches.
 
 STRICT SCORING CALIBRATION (Subcuticular):
-- Default score for a criterion is 2 (safe but below full standard) unless strong, high‑confidence evidence supports higher.
+- Default score for a criterion is 3 (competent, standard technique) unless strong evidence supports higher or lower.
 - Confidence caps: if CONFIDENCE = LOW → cap all points at 2; if MEDIUM → cap all points at 3; only HIGH may reach 4–5.
 - Breach caps (apply to points 1, 2, 3, 5, 6): if BREACHES_AGGREGATED ≥ 1 (mid‑run), cap at 3; if ≥ 2, cap at 2.
 - Award 4 ONLY with explicit high‑confidence evidence of continuous intradermal progression (with citations) and zero mid‑run breaches.
@@ -862,7 +862,7 @@ STRICT SCORING GUIDELINES:
 - Score 5 = Exemplary - technique demonstrates mastery and serves as a model
 
 CRITICAL SCORING PHILOSOPHY:
-- Score 2 should be your DEFAULT for safe, functional technique
+- Score 3 should be your DEFAULT for competent, standard technique
 - Score 3 means the technique is competent but has room for improvement
 - Score 4 means you would use this video to teach other attendings - RARE
 - Score 5 means this is among the best technique you've seen in your entire career - EXTREMELY RARE
