@@ -16,5 +16,7 @@ reportlab>=4.0.0
 matplotlib>=3.7.0
 fpdf2>=2.7.0
 
-# System dependencies
-ffmpeg
+# Note: FFmpeg system binary must be installed separately
+# Ubuntu/Debian: sudo apt install ffmpeg
+# MacOS: brew install ffmpeg
+# Windows: Download from https://ffmpeg.org/

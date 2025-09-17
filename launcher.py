@@ -97,8 +97,8 @@ def main():
                 import time
                 time.sleep(0.5)
                 
-                # Replace current process with app.py
-                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "app.py")
+                # Replace current process with ai-video-watcher/app.py
+                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "ai-video-watcher/app.py")
             else:
                 st.warning("🔄 Application is already starting... Please wait.")
     
@@ -134,8 +134,8 @@ def main():
                 import time
                 time.sleep(0.5)
                 
-                # Replace current process with surgical_vop_app.py
-                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "surgical_vop_app.py")
+                # Replace current process with surgical-vop-assessment/surgical_vop_app.py
+                os.execl(sys.executable, sys.executable, "-m", "streamlit", "run", "surgical-vop-assessment/surgical_vop_app.py")
             else:
                 st.warning("🔄 Application is already starting... Please wait.")
     

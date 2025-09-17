@@ -35,7 +35,10 @@ A powerful video analysis application that uses GPT-4o to "watch" and narrate vi
 ### Prerequisites
 - Python 3.8+
 - OpenAI API key (GPT-4o and GPT-5 access)
-- FFmpeg installed on your system
+- FFmpeg system binary installed:
+  - **Ubuntu/Debian**: `sudo apt install ffmpeg`
+  - **MacOS**: `brew install ffmpeg`
+  - **Windows**: Download from https://ffmpeg.org/
 
 ### Installation
 
