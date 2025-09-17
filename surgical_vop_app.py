@@ -986,7 +986,7 @@ def main():
                 st.warning("🛑 Analysis stopped by user")
                 st.stop()
             
-            if st.session_state.vop_analysis_complete:
+            if st.session_state.get('vop_analysis_complete', False):
                 display_assessment_results(rubric_engine)
             else:
                 st.info("Click 'Start VOP Assessment' to begin evaluation")

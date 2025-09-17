@@ -5,6 +5,13 @@
       "created_at": "2025-09-16T23:53:44.246506",
       "video_count": 9,
       "status": "running"
+    },
+    {
+      "batch_id": "batch_20250917_150227_0e100e42",
+      "created_at": "2025-09-17T15:02:27.843772",
+      "video_count": 1,
+      "status": "completed",
+      "finished_at": "2025-09-17T15:02:34.066835"
     }
   ]
 }
