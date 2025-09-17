@@ -73,19 +73,47 @@ class GPT5VisionClient:
         # Track batch processing
         self.error_stats['pass1_total_batches'] += 1
         
+        # Robust retry logic for API calls
+        max_retries = 5
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                print(f"DEBUG: Sending {len(frames)} frames to GPT-5 for surgical description (attempt {attempt + 1}/{max_retries})")
+                print(f"DEBUG: Frame timestamps: {frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s")
+                print(f"DEBUG: Base64 data length: {len(base64_frames[0]) if base64_frames else 'None'}")
+                print(f"📊 PASS 1 BATCH {self.error_stats['pass1_total_batches']}: Processing {len(frames)} frames")
+                
+                response = self.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_completion_tokens=4000,
+                    reasoning_effort=reasoning_level,
+                    verbosity=verbosity_level
+                )
+                
+                # Success - break out of retry loop
+                break
+                
+            except Exception as retry_error:
+                error_str = str(retry_error).lower()
+                is_retryable = any(keyword in error_str for keyword in [
+                    'rate_limit', 'timeout', 'connection', 'server_error', 'internal_error',
+                    'service_unavailable', 'temporary', 'throttl'
+                ])
+                
+                if attempt < max_retries - 1 and is_retryable:
+                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    print(f"⏰ Retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
+                    print(f"⏰ Waiting {wait_time} seconds before retry...")
+                    import time
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    # Non-retryable error or max retries reached
+                    raise retry_error
+        
         try:
-            print(f"DEBUG: Sending {len(frames)} frames to GPT-5 for surgical description")
-            print(f"DEBUG: Frame timestamps: {frames[0]['timestamp']:.1f}s - {frames[-1]['timestamp']:.1f}s")
-            print(f"DEBUG: Base64 data length: {len(base64_frames[0]) if base64_frames else 'None'}")
-            print(f"📊 PASS 1 BATCH {self.error_stats['pass1_total_batches']}: Processing {len(frames)} frames")
-            
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                max_completion_tokens=4000,
-                reasoning_effort=reasoning_level,
-                verbosity=verbosity_level
-            )
             
             frame_analysis = response.choices[0].message.content
             print(f"DEBUG: GPT-5 response length: {len(frame_analysis)}")
@@ -208,13 +236,40 @@ class GPT5VisionClient:
             print(f"DEBUG: Full descriptions text length: {len(descriptions_text)}")
             print(f"DEBUG: Prompt length: {len(narrative_prompt)}")
             
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
-                reasoning_effort=reasoning_level,
-                verbosity=verbosity_level
-            )
+            # Robust retry logic for Pass 2 API calls
+            max_retries = 5 
+            retry_delay = 2
+            
+            for attempt in range(max_retries):
+                try:
+                    print(f"API call attempt {attempt + 1}/{max_retries}")
+                    response = self.client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
+                        reasoning_effort=reasoning_level,
+                        verbosity=verbosity_level
+                    )
+                    # Success - break out of retry loop
+                    break
+                    
+                except Exception as retry_error:
+                    error_str = str(retry_error).lower()
+                    is_retryable = any(keyword in error_str for keyword in [
+                        'rate_limit', 'timeout', 'connection', 'server_error', 'internal_error',
+                        'service_unavailable', 'temporary', 'throttl'
+                    ])
+                    
+                    if attempt < max_retries - 1 and is_retryable:
+                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                        print(f"⏰ Pass 2 retryable error (attempt {attempt + 1}/{max_retries}): {retry_error}")
+                        print(f"⏰ Waiting {wait_time} seconds before retry...")
+                        import time
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        # Non-retryable error or max retries reached
+                        raise retry_error
             
             self.video_narrative = response.choices[0].message.content
             narrative_length = len(self.video_narrative)

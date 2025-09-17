@@ -1288,26 +1288,52 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         # PASS 3: Rubric assessment based on video narrative with final product image
         status_text.text("PASS 3: Applying rubric assessment to video narrative with final product image...")
         
-        # Extract final product image for verification
+        # Extract final product image for verification with robust error handling
         final_product_image = None
         try:
+            status_text.text("Extracting final product image...")
+            progress_bar.progress(0.85)
+            
             from surgical_report_generator import SurgicalVOPReportGenerator
             report_gen = SurgicalVOPReportGenerator()
             # Use the actual temp video path that exists, not original filename
             actual_video_path = temp_video_path if 'temp_video_path' in locals() else video_path
             assessment_data_for_image = {'video_path': actual_video_path, 'api_key': api_key}
             report_gen._return_pil_for_html = True  # Flag to return PIL Image
-            final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
-            if final_product_image:
-                print("✅ Final product image extracted for Pass 3 assessment")
-                # Store in session state for HTML generation
-                st.session_state.final_product_image = final_product_image
-            else:
-                print("⚠️ Could not extract final product image, proceeding without it")
+            
+            # Retry logic for image extraction with timeout
+            import time
+            max_retries = 3
+            retry_delay = 2
+            
+            for attempt in range(max_retries):
+                try:
+                    status_text.text(f"Extracting final product image (attempt {attempt + 1}/{max_retries})...")
+                    final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
+                    if final_product_image:
+                        print("✅ Final product image extracted for Pass 3 assessment")
+                        st.session_state.final_product_image = final_product_image
+                        break
+                    else:
+                        print(f"⚠️ Image extraction attempt {attempt + 1} returned None")
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                except Exception as img_error:
+                    print(f"⚠️ Image extraction attempt {attempt + 1} failed: {str(img_error)}")
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                    else:
+                        raise img_error
+            
+            if not final_product_image:
+                print("⚠️ Could not extract final product image after all retries, proceeding without it")
                 st.session_state.final_product_image = None
+                
         except Exception as e:
-            print(f"⚠️ Error extracting final product image: {e}, proceeding without it")
+            print(f"Warning: Final product image extraction failed completely: {str(e)}")
+            st.warning(f"⚠️ Could not extract final product image: {str(e)[:100]}...")
             st.session_state.final_product_image = None
+            # Continue processing even without image
         
         # For subcuticular assessments, disable final image usage in Pass 3
         image_for_pass3 = None if current_pattern == 'subcuticular' else final_product_image
