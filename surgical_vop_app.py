@@ -331,8 +331,8 @@ def extract_rubric_scores_from_narrative(enhanced_narrative: str) -> Dict[int, i
                         point_id = int(point_id.strip())
                         score = int(score_str.strip())
                         
-                        # Apply 6.5 multiplier and round up to adjust for GPT-5 under-scoring
-                        adjusted_score = int(score * 6.5 + 0.999)  # Multiply by 6.5 and round up
+                        # Apply 0.7 multiplier and round up to adjust for GPT-5 over-scoring
+                        adjusted_score = int(score * 0.7 + 0.999)  # Multiply by 0.7 and round up
                         
                         # Validate score is in range
                         if 1 <= adjusted_score <= 5:
@@ -1436,40 +1436,18 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             txt_filename = os.path.join("narratives", f"{base_filename}.txt")
             html_filename = os.path.join("html_reports", f"{base_filename}.html")
             
-            # Generate TXT report
+            # Generate TXT report with FULL Pass 2 narrative
             with open(txt_filename, 'w', encoding='utf-8') as f:
+                f.write(f"SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE\n")
                 f.write(f"Video: {original_filename}\n")
-                f.write(f"Pattern: {current_pattern.replace('_', ' ').title()}\n\n")
-                
-                if enhanced_narrative and isinstance(enhanced_narrative, dict):
-                    full_response = enhanced_narrative.get('full_response', '')
-                    if full_response and "RUBRIC_SCORES_START" in full_response:
-                        rubric_commentary = full_response.split("RUBRIC_SCORES_START")[0].strip()
-                        lines = rubric_commentary.split('\n')
-                        for line in lines:
-                            f.write(line)
-                            if line.strip() and line.strip()[0].isdigit() and '.' in line:
-                                point_num = int(line.split('.')[0])
-                                score = extracted_scores.get(point_num, 3)
-                                if score >= 4.0:
-                                    adj = "exemplary"
-                                elif score >= 3.0:
-                                    adj = "proficient"
-                                elif score >= 2.0:
-                                    adj = "competent"
-                                elif score >= 1.0:
-                                    adj = "developing"
-                                else:
-                                    adj = "inadequate"
-                                f.write(f" {score}/5 {adj}")
-                            f.write("\n")
-                        f.write("\n")
-                    
-                    summative = enhanced_narrative.get('summative_assessment', '')
-                    if summative:
-                        f.write("Summative assessment:\n")
-                        f.write(summative)
-                        f.write("\n\n")
+                f.write(f"Pattern: {current_pattern.replace('_', ' ').title()}\n")
+                f.write(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"{'='*60}\n\n")
+                f.write("COMPLETE VIDEO NARRATIVE:\n")
+                f.write(f"{'='*60}\n")
+                f.write(video_narrative)  # Write the FULL Pass 2 narrative
+                f.write(f"\n\n{'='*60}\n")
+                f.write("END OF NARRATIVE")
             
             # Generate HTML report with properly stacked images
             with open(html_filename, 'w', encoding='utf-8') as f:

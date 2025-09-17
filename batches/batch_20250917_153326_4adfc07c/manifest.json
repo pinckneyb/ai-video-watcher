@@ -7,18 +7,19 @@
     "batch_size": 15,
     "max_concurrent_batches": 100
   },
-  "status": "running",
+  "status": "completed",
   "items": [
     {
       "input_name": "2501_simple_interrupted.mp4",
       "detected_pattern": "simple_interrupted",
-      "status": "processing",
-      "html_path": null,
-      "narrative_path": null,
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_2501_simple_interrupted.mp4_20250917_153938.html",
+      "narrative_path": "narratives/VOP_Assessment_2501_simple_interrupted.mp4_20250917_153938.txt",
       "score": null,
       "started_at": "2025-09-17T15:33:26.265550",
-      "completed_at": null,
+      "completed_at": "2025-09-17T15:39:38.331234",
       "error": null
     }
-  ]
+  ],
+  "finished_at": "2025-09-17T15:39:38.331245"
 }
