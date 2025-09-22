@@ -6,6 +6,7 @@ Handles both image analysis and flow interpretation using GPT-5
 
 import base64
 import json
+import math
 import re
 import time
 from typing import List, Dict, Any, Tuple
@@ -1044,7 +1045,11 @@ Provide your complete assessment:"""
                         score_match = re.search(r'Score:\s*(\d+)', point_section)
                         if score_match:
                             try:
-                                scores[i] = int(score_match.group(1))
+                                raw_score = int(score_match.group(1))
+                                # Apply 0.7 multiplier and round up to correct scoring
+                                adjusted_score = math.ceil(raw_score * 0.7)
+                                # Ensure score stays within 1-5 range
+                                scores[i] = max(1, min(5, adjusted_score))
                             except ValueError:
                                 continue
             
