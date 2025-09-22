@@ -458,9 +458,9 @@ class SurgicalVOPReportGenerator:
             
             # Map pattern IDs to gold standard images
             gold_standard_images = {
-                'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
-                'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
-                'subcuticular': 'subcuticular_example.png'
+                'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
+                'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
+                'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
             }
             
             gold_standard_path = gold_standard_images.get(pattern_id)

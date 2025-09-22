@@ -1578,11 +1578,11 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 try:
                     # Use correct gold standard image filenames
                     gold_standard_mapping = {
-                        'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
-                        'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
-                        'subcuticular': 'subcuticular_example.png'
+                        'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
+                        'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
+                        'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
                     }
-                    gold_standard_path = gold_standard_mapping.get(current_pattern, f"gold_standard_{current_pattern}.jpg")
+                    gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
                     if os.path.exists(gold_standard_path):
                         with open(gold_standard_path, "rb") as img_file:
                             import base64 as b64
@@ -1943,12 +1943,12 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     f.write("<h3>Gold Standard Reference</h3>\n")
                     try:
                         gold_standard_mapping = {
-                            'simple_interrupted': 'Simple_Interrupted_Suture_example.png',
-                            'vertical_mattress': 'Vertical_Mattress_Suture_example.png',
-                            'subcuticular': 'subcuticular_example.png'
+                            'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
+                            'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
+                            'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
                         }
                         current_pattern = results['video_info']['pattern']
-                        gold_standard_path = gold_standard_mapping.get(current_pattern, f"gold_standard_{current_pattern}.jpg")
+                        gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
                         if os.path.exists(gold_standard_path):
                             with open(gold_standard_path, "rb") as img_file:
                                 import base64 as b64
