@@ -9,7 +9,6 @@ import json
 import re
 import base64
 import gc
-import psutil
 from typing import List, Dict, Any, Optional, Tuple
 import time
 from datetime import datetime
@@ -24,7 +23,6 @@ from utils import (
     save_transcript, extract_video_info, sanitize_filename
 )
 from batch_manager import BatchManager
-from crash_recovery import CrashRecoveryManager, create_resilient_batch_processor
 
 # Page configuration
 st.set_page_config(
@@ -997,8 +995,8 @@ def main():
         st.info("👆 Please upload a video, confirm the suture pattern, and enter your API key to begin assessment")
 
 
-def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches, recovery_manager=None, job_id=None):
-    """Process batches concurrently using GPT-5 with crash recovery and resource management"""
+def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_bar, status_text, total_batches, max_concurrent_batches):
+    """Process batches concurrently using GPT-5 for descriptive analysis"""
     import concurrent.futures
     import threading
     import time
@@ -1006,36 +1004,6 @@ def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_b
     context_lock = threading.Lock()
     successful_batches = 0
     batch_times = []
-    
-    # Resource management
-    original_max_workers = max_concurrent_batches
-    current_max_workers = max_concurrent_batches
-    checkpoint_interval = max(5, total_batches // 10)  # Save checkpoint every 5 batches or 10% of total
-    
-    def _check_system_health():
-        """Check system resources and adjust concurrency"""
-        nonlocal current_max_workers
-        try:
-            memory_percent = psutil.virtual_memory().percent
-            cpu_percent = psutil.cpu_percent(interval=0.1)
-            
-            if memory_percent > 85:  # High memory usage
-                current_max_workers = max(1, current_max_workers // 2)
-                print(f"⚠️ High memory ({memory_percent:.1f}%), reducing concurrency to {current_max_workers}")
-                gc.collect()
-                return False
-            elif cpu_percent > 90:  # High CPU usage
-                current_max_workers = max(1, current_max_workers // 2)
-                print(f"⚠️ High CPU ({cpu_percent:.1f}%), reducing concurrency to {current_max_workers}")
-                return False
-            elif memory_percent < 70 and cpu_percent < 70 and current_max_workers < original_max_workers:
-                # Resources recovered, gradually increase concurrency
-                current_max_workers = min(original_max_workers, current_max_workers + 1)
-                print(f"✅ Resources recovered, increasing concurrency to {current_max_workers}")
-            
-            return True
-        except Exception:
-            return True  # If can't check, assume OK
     
     def process_single_batch_gpt5(batch, profile, batch_idx, total_batches, context_lock):
         """Process a single batch with GPT-5"""
@@ -1102,6 +1070,10 @@ def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_b
             progress = completed / total_batches
             progress_bar.progress(progress)
             status_text.text(f"Processed {completed}/{total_batches} batches...")
+            
+            # Minimal crash prevention: periodic garbage collection
+            if completed % 5 == 0:
+                gc.collect()
     
     return {
         'successful_batches': successful_batches,
@@ -1151,27 +1123,11 @@ def _process_batches_sequentially_gpt5(batches, gpt5_client, profile, progress_b
     }
 
 
-def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: str = None, checkpoint=None):
-    """Start the VOP analysis process using the proven video analysis architecture with crash recovery."""
+def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: str = None):
+    """Start the VOP analysis process using the proven video analysis architecture."""
     
     progress_bar = st.progress(0)
     status_text = st.empty()
-    
-    # Initialize crash recovery system
-    recovery_manager = CrashRecoveryManager()
-    
-    # Show existing checkpoints
-    existing_checkpoints = recovery_manager.list_checkpoints()
-    if existing_checkpoints and not checkpoint:
-        st.sidebar.subheader("🔄 Recovery Options")
-        checkpoint_options = ["None"] + [f"{cp['video']} ({cp['progress']}) - {cp['timestamp'][:10]}" for cp in existing_checkpoints]
-        selected_checkpoint = st.sidebar.selectbox("Resume from checkpoint:", checkpoint_options)
-        
-        if selected_checkpoint != "None":
-            checkpoint_idx = checkpoint_options.index(selected_checkpoint) - 1
-            checkpoint = recovery_manager.load_checkpoint(existing_checkpoints[checkpoint_idx]['job_id'])
-            if checkpoint:
-                st.success(f"🔄 Resuming from checkpoint: {checkpoint['completed_batches']}/{checkpoint['total_batches']} batches completed")
     
     try:
         # Initialize components using single GPT-5 approach
@@ -1249,12 +1205,8 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             st.info(f"⚡ Using concurrent processing: {max_concurrent_batches} batches simultaneously")
             
             start_time = time.time()
-            # Generate job ID for checkpointing
-            job_id = recovery_manager._generate_job_id(video_path, batch_size, fps)
-            
             performance_metrics = _process_batches_concurrently_gpt5(
-                batches, gpt5_client, surgical_profile, progress_bar, status_text, total_batches, max_concurrent_batches,
-                recovery_manager=recovery_manager, job_id=job_id
+                batches, gpt5_client, surgical_profile, progress_bar, status_text, total_batches, max_concurrent_batches
             )
             end_time = time.time()
             processing_time = end_time - start_time

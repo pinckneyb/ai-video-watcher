@@ -10,8 +10,6 @@ import math
 import re
 import time
 import gc
-import psutil
-import os
 from typing import List, Dict, Any, Tuple
 from openai import OpenAI
 
@@ -49,70 +47,6 @@ class GPT5VisionClient:
             'other_api_errors': 0
         }
         
-        # Memory and crash prevention
-        self.memory_threshold = 80  # Percent
-        self.max_retries = 5
-        self.base_retry_delay = 2  # seconds
-    
-    def _check_memory_usage(self) -> bool:
-        """Check if memory usage is below safe threshold"""
-        try:
-            memory_percent = psutil.virtual_memory().percent
-            if memory_percent > self.memory_threshold:
-                print(f"⚠️ High memory usage: {memory_percent:.1f}%")
-                gc.collect()  # Force garbage collection
-                return False
-            return True
-        except Exception:
-            return True  # If can't check, assume OK
-    
-    def _safe_api_call(self, api_call_func, *args, **kwargs):
-        """Make API call with retry logic and error handling"""
-        last_exception = None
-        
-        for attempt in range(self.max_retries):
-            try:
-                # Check memory before expensive operations
-                if not self._check_memory_usage():
-                    time.sleep(1)  # Brief pause for memory cleanup
-                    
-                result = api_call_func(*args, **kwargs)
-                return result
-                
-            except Exception as e:
-                last_exception = e
-                error_msg = str(e).lower()
-                
-                # Classify error types
-                if "rate limit" in error_msg:
-                    self.error_stats['rate_limit_errors'] += 1
-                    retry_delay = self.base_retry_delay * (2 ** attempt)  # Exponential backoff
-                    print(f"🔄 Rate limit hit, retrying in {retry_delay}s (attempt {attempt + 1}/{self.max_retries})")
-                    time.sleep(retry_delay)
-                    
-                elif "context_length_exceeded" in error_msg or "context length" in error_msg:
-                    self.error_stats['context_length_errors'] += 1
-                    print(f"❌ Context length exceeded (attempt {attempt + 1}/{self.max_retries})")
-                    if attempt < self.max_retries - 1:
-                        # Try to reduce context in next attempt
-                        time.sleep(1)
-                    else:
-                        break  # No point retrying context length errors
-                        
-                elif "quota" in error_msg or "billing" in error_msg:
-                    self.error_stats['quota_exceeded_errors'] += 1
-                    print(f"❌ API quota exceeded: {error_msg}")
-                    break  # No point retrying quota errors
-                    
-                else:
-                    self.error_stats['other_api_errors'] += 1
-                    retry_delay = self.base_retry_delay
-                    print(f"⚠️ API error: {error_msg} (attempt {attempt + 1}/{self.max_retries})")
-                    time.sleep(retry_delay)
-        
-        # If all retries failed
-        print(f"❌ All {self.max_retries} attempts failed. Last error: {last_exception}")
-        return None
 
     def pass1_surgical_description(self, frames: List[Dict], context_state: str = "", model: str = "gpt-5", reasoning_level: str = "low", verbosity_level: str = "medium") -> Tuple[str, List[Dict]]:
         """
