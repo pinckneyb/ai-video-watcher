@@ -1,5 +1,0 @@
-Video: 215_Simple Interrupted.m4v
-Pattern: Simple Interrupted
-
-RUBRIC ASSESSMENT:
-1) Perpendicular needle passes: Entries are consistently perpendicular with symmetric depth, and the arc is wrist-driven to minimize shear. Completing some passes across both edges in one continuous sweep introduces a small risk of exit-angle drift, so this is excellent but not flawless. Score: 4
