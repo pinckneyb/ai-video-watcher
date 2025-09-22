@@ -1,5 +1,5 @@
 [server]
-port = 5001
+port = 5000
 address = "0.0.0.0"
 headless = true
 maxUploadSize = 2048
@@ -7,7 +7,7 @@ maxUploadSize = 2048
 [browser]
 gatherUsageStats = false
 serverAddress = "0.0.0.0"
-serverPort = 5001
+serverPort = 5000
 
 [client]
 toolbarMode = "minimal"
