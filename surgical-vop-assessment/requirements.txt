@@ -2,7 +2,6 @@
 # Core Streamlit and video processing
 streamlit>=1.28.0
 opencv-python>=4.8.0
-ffmpeg-python>=0.2.0
 pillow>=10.0.0
 numpy>=1.24.0
 requests>=2.31.0
@@ -16,7 +15,4 @@ reportlab>=4.0.0
 matplotlib>=3.7.0
 fpdf2>=2.7.0
 
-# Note: FFmpeg system binary must be installed separately
-# Ubuntu/Debian: sudo apt install ffmpeg
-# MacOS: brew install ffmpeg
-# Windows: Download from https://ffmpeg.org/
+# Note: Video processing is now handled entirely by OpenCV

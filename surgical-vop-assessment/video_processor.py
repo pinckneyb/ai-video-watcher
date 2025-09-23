@@ -3,7 +3,6 @@ Video processing module for frame extraction and video handling.
 """
 
 import cv2
-import ffmpeg
 import numpy as np
 from typing import List, Tuple, Optional, Union
 import os
@@ -80,34 +79,29 @@ class VideoProcessor:
         return temp_file.name
     
     def _get_video_properties(self):
-        """Extract video properties using ffmpeg."""
+        """Extract video properties using OpenCV."""
         try:
-            probe = ffmpeg.probe(self.video_path)
-            video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
-            
-            self.duration = float(probe['format']['duration'])
-            self.total_frames = int(video_info['nb_frames'])
-            print(f"FFmpeg: Duration={self.duration}, Frames={self.total_frames}")
-            
-        except Exception as e:
-            print(f"Error getting video properties with FFmpeg: {e}")
-            # Fallback to OpenCV
             cap = cv2.VideoCapture(self.video_path)
             if cap.isOpened():
                 self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
                 fps_orig = cap.get(cv2.CAP_PROP_FPS)
                 self.duration = self.total_frames / fps_orig if fps_orig > 0 else 0
-                print(f"OpenCV fallback: Duration={self.duration}, Frames={self.total_frames}, FPS={fps_orig}")
+                print(f"OpenCV: Duration={self.duration}, Frames={self.total_frames}, FPS={fps_orig}")
             else:
                 print("Failed to open video with OpenCV")
                 self.duration = 0
                 self.total_frames = 0
             cap.release()
+            
+        except Exception as e:
+            print(f"Error getting video properties with OpenCV: {e}")
+            self.duration = 0
+            self.total_frames = 0
     
     def extract_frames(self, start_time: float = 0.0, end_time: Optional[float] = None, 
                       custom_fps: Optional[float] = None) -> List[dict]:
         """
-        Extract frames from video with metadata using robust FFmpeg approach.
+        Extract frames from video with metadata using OpenCV.
         
         Args:
             start_time: Start time in seconds
@@ -131,16 +125,7 @@ class VideoProcessor:
         
         print(f"Extracting frames: start={start_time}, end={end_time}, fps={fps}, duration={self.duration}")
         
-        # Try FFmpeg extraction first (more robust)
-        try:
-            frames = self._extract_frames_ffmpeg(start_time, end_time, fps)
-            if frames:
-                print(f"Extracted {len(frames)} frames using FFmpeg")
-                return frames
-        except Exception as e:
-            print(f"FFmpeg extraction failed: {e}, falling back to OpenCV")
-        
-        # Fallback to OpenCV with more resilient frame seeking
+        # Use OpenCV for frame extraction
         frames = []
         cap = cv2.VideoCapture(self.video_path)
         
@@ -162,9 +147,6 @@ class VideoProcessor:
         while current_time < end_time and consecutive_failures < max_failures:
             # Try frame-based positioning as alternative to time-based
             frame_number = int(current_time * video_fps)
-            
-            # Try both time-based and frame-based positioning
-            success = False
             
             # Method 1: Time-based
             cap.set(cv2.CAP_PROP_POS_MSEC, current_time * 1000)
@@ -197,57 +179,9 @@ class VideoProcessor:
             current_time += frame_interval
         
         cap.release()
-        print(f"Extracted {len(frames)} frames")
+        print(f"Extracted {len(frames)} frames using OpenCV")
         return frames
     
-    def _extract_frames_ffmpeg(self, start_time: float, end_time: float, fps: float) -> List[dict]:
-        """Extract frames using FFmpeg for better compatibility."""
-        import tempfile
-        import os
-        import glob
-        
-        frames = []
-        
-        # Create temporary directory for frames
-        with tempfile.TemporaryDirectory() as temp_dir:
-            output_pattern = os.path.join(temp_dir, "frame_%06d.jpg")
-            
-            # Use FFmpeg to extract frames
-            try:
-                (
-                    ffmpeg
-                    .input(self.video_path, ss=start_time, t=(end_time - start_time))
-                    .filter('fps', fps=fps)
-                    .output(output_pattern)
-                    .overwrite_output()
-                    .run(capture_stdout=True, capture_stderr=True)
-                )
-            except ffmpeg.Error as e:
-                raise Exception(f"FFmpeg frame extraction failed: {e.stderr.decode()}")
-            
-            # Load extracted frames
-            frame_files = sorted(glob.glob(os.path.join(temp_dir, "frame_*.jpg")))
-            
-            for i, frame_file in enumerate(frame_files):
-                timestamp = start_time + (i / fps)
-                if timestamp >= end_time:
-                    break
-                
-                # Load frame using PIL
-                frame_pil = Image.open(frame_file)
-                frame_rgb = np.array(frame_pil)
-                
-                frame_data = {
-                    'frame_id': len(frames),
-                    'timestamp': timestamp,
-                    'timestamp_formatted': self._format_timestamp(timestamp),
-                    'frame': frame_rgb,
-                    'frame_pil': frame_pil
-                }
-                
-                frames.append(frame_data)
-        
-        return frames
     
     def _format_timestamp(self, seconds: float) -> str:
         """Format seconds to HH:MM:SS format."""
