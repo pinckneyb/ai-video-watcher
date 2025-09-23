@@ -131,6 +131,13 @@
       "video_count": 8,
       "status": "completed",
       "finished_at": "2025-09-23T21:52:24.669031"
+    },
+    {
+      "batch_id": "batch_20250923_220607_14320d29",
+      "created_at": "2025-09-23T22:06:07.957838",
+      "video_count": 1,
+      "status": "completed",
+      "finished_at": "2025-09-23T22:11:21.678761"
     }
   ]
 }

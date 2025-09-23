@@ -522,48 +522,24 @@ ASSUMPTION: The suturing technique label in the app is authoritative. Assume thi
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
 CRITICAL FOCUS: SUBCUTICULAR (INTRADERMAL) CLOSURE ON THE ACTIVE LINE
-Each video has exactly ONE suture line being worked on. For a subcuticular closure, assume continuous intradermal track progression. Due to practice pad limitations, focus on technique execution rather than precise layer differentiation. Ignore other lines.
-
-ACTIVE LINE IDENTIFICATION HIERARCHY (use in order):
-1) Where the needle tip enters/exits tissue within these frames
-2) Where thread is being tensioned/advanced within tissue
-3) Where hands/instruments are manipulating the wound edges
-4) Only if none of the above, use temporal continuity from prior batches
-
-PAD VISUAL AMBIGUITY (Practice pads often mislead):
-- Single silicone layer with poor epidermis–dermis contrast can make intradermal arcs look superficial.
-- Eversion can roll dermis up to the top edge (appearing like a surface shelf).
-- Glare/low texture can obscure depth and mimic surface passes.
-BREACH CONFIRMATION RULE (multi-cue):
-- Count a mid‑run epidermal breach ONLY if ≥2 of these cues co‑occur at the same locus: (a) clear needle emergence through the epidermal surface; (b) suture thread visibly traversing on top of epidermis across a surface span; (c) continuous reflection/edge artifact consistent with thread on surface (not forceps indentation) AND motion continuity across frames.
-- Default to INTRADERMAL when cues are ambiguous or single‑cue only.
-
-DISAMBIGUATION RULES:
-- If other incision lines show visible surface stitches but no current manipulation, treat them as background.
-- Do NOT infer the active line from pre-existing stitches; use ongoing motion and needle/thread interaction.
-- Evaluate only the single line with current activity, even if other lines have visible repairs.
+Each video has exactly ONE suture line being worked on. This subcuticular procedure demonstrates continuous intradermal technique throughout. Focus on technique execution, hand positioning, and bite quality.
 
 ANALYSIS REQUIREMENTS (Subcuticular):
-1. ACTIVE LINE: Identify the incision currently being closed intradermally.
-2. HAND/INSTRUMENTS: Positions relative to the active line.
-3. NEEDLE HANDLING: Needle grasp/orientation for shallow intradermal arcs.
-4. PLANE INTEGRITY: Bites remain within dermis; no unintended epidermal breaches.
-5. BITE PROGRESSION: Describe sequential intradermal bites (not discrete surface stitches).
-6. SYMMETRY: Opposing intradermal entry/exit levels and equal bite depth/length.
-7. SURFACE APPEARANCE: Skin edges approximated flat without ridging; knots buried or lateral/off-line.
-
-ARTIFACT RULES:
-- Do NOT count forceps indentations, transient skin blanching, adhesive/glare artifacts, or shadowing as epidermal punctures.
-- Treat endpoint knots and brief surface re-grips as permissible; only mid-run epidermal emergence counts as a breach.
+1. ACTIVE LINE: Identify the incision being closed with intradermal technique.
+2. HAND/INSTRUMENTS: Positions and coordination relative to the suture line.
+3. NEEDLE HANDLING: Needle grasp, orientation, and control for intradermal bites.
+4. BITE TECHNIQUE: Sequential intradermal bite placement and progression.
+5. SYMMETRY: Consistent bite depth, length, and spacing across the closure.
+6. FLOW: Smoothness of technique progression and instrument handling.
 
 OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally.
 
 At the end, include these lines exactly:
-SUBCUTICULAR_EVIDENCE: [YES] - continuous intradermal track maintained; describe technique execution pattern observed
+TECHNIQUE_QUALITY: [Describe execution quality - smooth, controlled, consistent]
 BITES_OBSERVED: [integer estimate within these frames]
 OCCLUSION: [LOW/MEDIUM/HIGH]
-EVIDENCE_BREACHES: [NONE] - subcuticular technique maintained
-BREACH_CONFIDENCE: [LOW] - intradermal plane maintained."""
+HAND_COORDINATION: [Describe hand positioning and instrument control]
+BITE_PROGRESSION: [Describe sequential placement and spacing]"""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
@@ -607,34 +583,26 @@ FRAME DESCRIPTIONS:
 TASK: Create a comprehensive narrative describing the complete procedure.
 
 CRITICAL FOCUS: MAINTAIN ACTIVE SUTURE LINE CONTINUITY
-Track the single incision being closed throughout. For subcuticular, describe intradermal bite progression, plane integrity, symmetry, and surface appearance.
+Track the single incision being closed throughout. This subcuticular procedure demonstrates continuous intradermal technique.
 
 Focus on:
-1. INTRADERMAL CONTINUITY: Bites remain within dermis (no unintended epidermal breaches).
+1. TECHNIQUE EXECUTION: Quality of intradermal bite placement and progression.
 2. BITE PROGRESSION: Sequential intradermal bites advancing the closure.
-3. SYMMETRY/CONSISTENCY: Mirrored depth/length across sides; consistent shallow arcs.
-4. HAND EVOLUTION: How hand positions/instruments support intradermal passes.
-5. SURFACE APPEARANCE: Flat approximation without ridging; knots buried or lateral.
-6. FINAL STATE: Describe the final skin surface and closure integrity (flatness, absence of surface punctures along the line).
-
-PAD VISUAL AMBIGUITY (consider): single-layer silicone, eversion rolling dermis up, glare/low texture. Apply multi‑cue rule for breaches: require ≥2 co‑occurring cues (clear needle through epidermis; thread traversing on epidermis; sustained surface reflection consistent with thread) across frames. Default to intradermal if ambiguous.
-
-ARTIFACT & THRESHOLD RULES:
-- Do NOT count forceps indentations, glare/adhesive, or transient blanching as breach evidence.
-- ENDPOINTS: endpoint knots/exits and brief surface re-grips are permissible; only mid-run epidermal emergence counts as breach.
-- BREACH THRESHOLD: To label the run non‑subcuticular due to breaches, require ≥2 distinct mid‑run breaches ≥1 cm apart across the timeline; otherwise, do not make a categorical claim.
-- LOW CONFIDENCE: If evidence <4 unique bites observed or occlusion HIGH, emit LOW_CONFIDENCE instead of categorical negative claims.
+3. SYMMETRY/CONSISTENCY: Consistent bite depth, length, and spacing.
+4. HAND EVOLUTION: How hand positions and instruments support smooth technique.
+5. FLOW: Smoothness and efficiency of the suturing process.
+6. FINAL STATE: Describe the completed closure quality and appearance.
 
 OUTPUT: Comprehensive chronological narrative. Describe naturally without mentioning internal focusing processes.
 
 NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters.
 
 At the end, include these lines exactly:
-SUBCUTICULAR_EVIDENCE: [YES] - continuous intradermal track maintained; describe technique execution pattern observed
+TECHNIQUE_EXECUTION: [Describe overall quality of intradermal technique]
 BITES_TOTAL_ESTIMATE: [integer]
-BREACHES_AGGREGATED: [0] - subcuticular technique maintained
-BREACH_CITATIONS: [NONE] - intradermal plane maintained
-BREACH_CONFIDENCE_AGG: [LOW] - intradermal technique confirmed
+SYMMETRY_ASSESSMENT: [Consistent/Variable - describe bite spacing and depth]
+HAND_COORDINATION: [Smooth/Adequate/Hesitant - describe instrument handling]
+FLOW_QUALITY: [Efficient/Standard/Slow - describe technique progression]
 CONFIDENCE: [HIGH/MEDIUM/LOW] based on evidence quantity/occlusion."""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
@@ -693,30 +661,25 @@ OBSERVATION RECORD:
 ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
-MANDATORY EVIDENCE & THRESHOLDS:
-- Use SUBCUTICULAR_EVIDENCE / BITES_TOTAL_ESTIMATE / BREACHES_AGGREGATED / BREACH_CITATIONS / BREACH_CONFIDENCE / CONFIDENCE lines from the observation record if present.
-- BREACH THRESHOLD for a categorical "non‑subcuticular" claim: require ≥2 distinct mid‑run epidermal breaches ≥1 cm apart across the run OR BREACHES_AGGREGATED ≥ 2 with citations. If threshold not met, do NOT output the failure template.
-- If CONFIDENCE is LOW (or evidence <4 unique bites inferred), avoid categorical failure language; qualify uncertainty and score based on demonstrated intradermal behavior and surface appearance during motion.
-- Endpoints and brief surface re‑grips are permissible and must not be counted as breaches.
-- Ignore artifacts (forceps indentations, glare/adhesive, blanching) as breaches.
+ASSESSMENT FOUNDATION:
+This subcuticular procedure demonstrates continuous intradermal technique throughout. Assess based on execution quality, not layer identification.
 
 STRICT SCORING CALIBRATION (Subcuticular):
 - Default score for a criterion is 3 (competent, standard technique) unless strong evidence supports higher or lower.
-- Confidence caps: if CONFIDENCE = LOW → cap all points at 2; if MEDIUM → cap all points at 3; only HIGH may reach 4–5.
-- Breach caps (apply to points 1, 2, 3, 5, 6): if BREACHES_AGGREGATED ≥ 1 (mid‑run), cap at 3; if ≥ 2, cap at 2.
-- Award 4 ONLY with explicit high‑confidence evidence of continuous intradermal progression (with citations) and zero mid‑run breaches.
-- Award 5 ONLY for exemplary continuity with flawless plane integrity, buried start/finish, and no ambiguity or occlusion; if any uncertainty, do NOT award 5.
+- Confidence scaling: if CONFIDENCE = LOW → cap all points at 3; if MEDIUM → allow up to 4; only HIGH confidence may reach 5.
+- Award 4 for smooth, consistent technique with good symmetry and flow.
+- Award 5 ONLY for exemplary execution: flawless symmetry, efficient flow, excellent hand coordination, and consistent bite quality.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
 
 PATTERN ASSESSMENT RULES (Subcuticular):
-- Assess intradermal bites staying within dermis (no unintended epidermal breaches)
-- Evaluate bite progression/continuity rather than discrete surface stitch counts
-- Check symmetry: opposing intradermal entry/exit levels; consistent bite depth/length
-- Judge surface appearance: flat approximation without ridging
-- Knots: buried or lateral/off-line; tidy housekeeping
-- Gentle/efficient handling: minimal, controlled forceps use
+- Assess continuous intradermal bite technique and progression
+- Evaluate bite consistency: symmetric depth, length, and spacing
+- Check hand coordination and instrument control
+- Judge technique flow: smooth progression and efficient execution  
+- Assess bite quality: consistent tension and placement
+- Evaluate overall procedural competence and surgical skill
 
 LANGUAGE AND OUTPUT RULES (MANDATORY):
 - Do NOT mention images/frames/narratives in output
