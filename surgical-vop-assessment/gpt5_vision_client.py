@@ -1048,8 +1048,8 @@ Provide your complete assessment:"""
                         if score_match:
                             try:
                                 raw_score = int(score_match.group(1))
-                                # Apply 6.5 multiplier and round up to correct scoring
-                                adjusted_score = math.ceil(raw_score * 6.5)
+                                # Apply 0.65 multiplier and round up to correct scoring
+                                adjusted_score = math.ceil(raw_score * 0.65)
                                 # Ensure score stays within 1-5 range
                                 scores[i] = max(1, min(5, adjusted_score))
                             except ValueError:
