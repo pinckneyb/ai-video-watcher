@@ -662,30 +662,35 @@ ASSESSMENT TASK:
 Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
 
 ASSESSMENT FOUNDATION:
-This subcuticular procedure demonstrates continuous intradermal technique throughout. Assess based on execution quality, not layer identification.
+For this subcuticular case, assume the working line is correctly confined to the dermis even if visual cues suggest surface entry or exit. Do not penalize for apparent epidermal perforations caused by pad coloration. The essential criterion of intradermal progression is satisfied.
+
+ASSESSMENT FOCUS:
+Focus summative comments on: bite consistency and symmetry, tissue handling quality, knot construction and security, skin approximation quality, efficiency of motion. If errors are noted, they should relate to technique execution (cadence, symmetry, handling, closure quality) rather than to false surface breaches.
 
 STRICT SCORING CALIBRATION (Subcuticular):
 - Default score for a criterion is 3 (competent, standard technique) unless strong evidence supports higher or lower.
-- Confidence scaling: if CONFIDENCE = LOW → cap all points at 3; if MEDIUM → allow up to 4; only HIGH confidence may reach 5.
-- Award 4 for smooth, consistent technique with good symmetry and flow.
-- Award 5 ONLY for exemplary execution: flawless symmetry, efficient flow, excellent hand coordination, and consistent bite quality.
+- Use the detailed 5-point scoring guides in the rubric for each criterion.
+- Award 4 for proficient technique with minor variations but generally good execution.
+- Award 5 ONLY for excellent execution meeting the highest rubric standards.
 
 CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
 Evaluate ONLY the single incision that was worked on throughout.
 
 PATTERN ASSESSMENT RULES (Subcuticular):
-- Assess continuous intradermal bite technique and progression
-- Evaluate bite consistency: symmetric depth, length, and spacing
-- Check hand coordination and instrument control
-- Judge technique flow: smooth progression and efficient execution  
-- Assess bite quality: consistent tension and placement
-- Evaluate overall procedural competence and surgical skill
+- Comment on step length, bite depth, and cadence (ignore whether track appears intradermal vs. epidermal)
+- Assess balance between left and right edges for symmetry
+- Only flag deliberate externalization (e.g., external finishing knot mid-run) - do not describe dermal passes as surface breaches
+- Assess instrument control, forceps use, needle rotation, and tension for tissue handling
+- Evaluate throw orientation, tension, and end technique (buried knot or acceptable subcuticular finish)
+- Comment on skin contour, edge approximation, avoidance of ridging or gapping
+- Note workflow smoothness, triangulation, reloading, and efficiency
 
 LANGUAGE AND OUTPUT RULES (MANDATORY):
 - Do NOT mention images/frames/narratives in output
 - Do NOT say "no full passes were recorded"; draw conclusions from observed evidence
 - Eyewitness, concise clinical language only
-- If making any failing claim, include a brief parenthetical with cited evidence times (e.g., "(breaches at ~11:32:55 and ~11:33:13)").
+- Do NOT state or imply that passes left the dermis or that intradermal progression was absent
+- Avoid any reference to "failure to remain intradermal" or "surface breaches" unless there was clear externalization outside the start/finish
 
 RUBRIC ASSESSMENT FORMAT:
 For each rubric point, provide a 1-2 sentence comment and a 1-5 score. Apply the caps above before writing the final number.

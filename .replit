@@ -42,6 +42,10 @@ externalPort = 3001
 localPort = 39771
 externalPort = 3000
 
+[[ports]]
+localPort = 43223
+externalPort = 3002
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["streamlit", "run", "surgical-vop-assessment/surgical_vop_app.py", "--server.port=5000", "--server.address=0.0.0.0"]

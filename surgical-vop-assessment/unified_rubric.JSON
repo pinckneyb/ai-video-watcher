@@ -131,55 +131,105 @@
       "display_name": "Subcuticular",
       "gold_standard_image": "subcuticular_example.png",
       "ideal_narrative_guide": "subcuticular_narrative.txt",
+      "key_instruction": "For cases labeled subcuticular, assume the working line is correctly confined to the dermis even if visual cues suggest surface entry or exit. Do not penalize for apparent epidermal perforations caused by pad coloration. Assess all other criteria normally.",
       "points": [
         {
           "pid": 1,
           "title": "Consistent dermal bites (running path)",
           "type": "motion",
-          "what_you_assess": "Advances smoothly in dermis; consistent bite size.",
-          "ideal_result": "Smooth subdermal track with equal bites."
+          "what_you_assess": "Regular, even spacing and depth of bites, advancing smoothly in a continuous path. Judge only on cadence, spacing, and flow.",
+          "ideal_result": "Uniform depth and step length, continuous smooth progression.",
+          "scoring_guide": {
+            "5": "Excellent: Bites uniform in depth and spacing; progression smooth and uninterrupted.",
+            "4": "Proficient: Mostly even bites with only minor variation.",
+            "3": "Competent: Noticeable variability in spacing or depth, but overall progression maintained.",
+            "2": "Developing: Frequent irregularity in bite pattern requiring corrections.",
+            "1": "Poor: Inconsistent and erratic progression; path lacks continuity."
+          }
         },
         {
           "pid": 2,
           "title": "Opposing entry/exit symmetry",
           "type": "motion",
-          "what_you_assess": "Each entry mirrors prior exit.",
-          "ideal_result": "Straight, symmetric path."
+          "what_you_assess": "Left and right bites mirror one another in depth and distance from wound edge.",
+          "ideal_result": "Symmetry consistently achieved.",
+          "scoring_guide": {
+            "5": "Excellent: Consistent mirror symmetry of bites across both wound edges.",
+            "4": "Proficient: Generally symmetric, with only slight asymmetry in a few passes.",
+            "3": "Competent: Symmetry inconsistent, but closure still serviceable.",
+            "2": "Developing: Frequent lopsided or uneven entry/exit points.",
+            "1": "Poor: Symmetry absent; bites misaligned throughout."
+          }
         },
         {
           "pid": 3,
           "title": "No unintended surface breaches",
           "type": "motion",
-          "what_you_assess": "Avoids extra punctures through epidermis.",
-          "ideal_result": "Passes stay subcuticular."
+          "what_you_assess": "Ignore false surface perforations due to pad color. Only downgrade if there are clear, deliberate external exits (e.g., external loop tied mid-run).",
+          "ideal_result": "No externalization beyond starting/finishing anchors.",
+          "scoring_guide": {
+            "5": "Excellent: No externalization beyond start or finish anchors.",
+            "4": "Proficient: One minor loop or tail visible externally.",
+            "3": "Competent: Occasional externalization noted, but limited impact on closure.",
+            "2": "Developing: Multiple externalized loops or knots detracting from result.",
+            "1": "Poor: Frequent externalization; finish not confined to intended plane."
+          }
         },
         {
           "pid": 4,
           "title": "Gentle tissue handling",
           "type": "motion",
-          "what_you_assess": "Avoids multiple forceps grasps.",
-          "ideal_result": "Single light grasp per bite."
+          "what_you_assess": "Handling minimizes trauma. Controlled needle driving, correct tension, and atraumatic forceps use.",
+          "ideal_result": "Consistently atraumatic handling with precise control.",
+          "scoring_guide": {
+            "5": "Excellent: Consistently atraumatic handling with precise control.",
+            "4": "Proficient: Mostly atraumatic with occasional minor excess tension or force.",
+            "3": "Competent: Generally careful, but noticeable moments of rough handling.",
+            "2": "Developing: Frequent heavy force or poor control, risking tissue trauma.",
+            "1": "Poor: Rough, careless handling causing significant tissue stress."
+          }
         },
         {
           "pid": 5,
           "title": "Square, secure knots",
           "type": "still",
-          "what_you_assess": "Knot security/type from still; benefit of doubt if unclear.",
-          "ideal_result": "Secure, appropriate finish."
+          "what_you_assess": "Knots correctly oriented, tensioned, and buried (or finished by approved subcuticular end-loop).",
+          "ideal_result": "Secure, squared, properly hidden.",
+          "scoring_guide": {
+            "5": "Excellent: All knots secure, squared, properly oriented, and well hidden.",
+            "4": "Proficient: Knots secure and mostly square; occasional excess tail length.",
+            "3": "Competent: Some knots slightly uneven or prominent but still hold.",
+            "2": "Developing: Multiple knots poorly formed or loosely tensioned.",
+            "1": "Poor: Knots insecure, slipping, or improperly constructed."
+          }
         },
         {
           "pid": 6,
           "title": "Flat, well-approximated skin",
           "type": "still",
-          "what_you_assess": "Flat closure without ridging/gapping.",
-          "ideal_result": "Smooth, flat line with correct tension."
+          "what_you_assess": "Final closure shows smooth skin apposition without ridging, gapping, or step-off.",
+          "ideal_result": "Flat, aesthetically pleasing approximation.",
+          "scoring_guide": {
+            "5": "Excellent: Closure flat, edges precisely apposed, minimal contour change.",
+            "4": "Proficient: Nearly flat, with very slight ridging or contour variation.",
+            "3": "Competent: General approximation achieved, but ridges or small gaps evident.",
+            "2": "Developing: Frequent misalignment or edge irregularity.",
+            "1": "Poor: Edges gapping, overlapping, or markedly uneven."
+          }
         },
         {
           "pid": 7,
           "title": "Economy of time and motion",
           "type": "motion",
-          "what_you_assess": "Count hand/instrument departures from work area. Note efficiency patterns.",
-          "ideal_result": "Hands remain near suture pad; minimal off-screen movements."
+          "what_you_assess": "Efficient, organized technique with minimal wasted movement.",
+          "ideal_result": "Smooth, continuous workflow, no fumbling.",
+          "scoring_guide": {
+            "5": "Excellent: Workflow smooth, efficient, with no wasted motion.",
+            "4": "Proficient: Generally efficient, with minor pauses or corrections.",
+            "3": "Competent: Steady pace but with noticeable inefficiencies.",
+            "2": "Developing: Frequent reloading problems, pauses, or disorganized sequence.",
+            "1": "Poor: Chaotic, inefficient, frequent errors disrupting progress."
+          }
         }
       ]
     }

@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_20250923_222440_4954ced2",
+  "created_at": "2025-09-23T22:24:40.664062",
+  "settings": {
+    "pattern": "subcuticular",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "115_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_115_subcuticular.M4V_20250923_222908.html",
+      "narrative_path": "narratives/VOP_Assessment_115_subcuticular.M4V_20250923_222908.txt",
+      "score": null,
+      "started_at": "2025-09-23T22:24:40.669424",
+      "completed_at": "2025-09-23T22:29:08.543410",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-23T22:29:08.543423"
+}
