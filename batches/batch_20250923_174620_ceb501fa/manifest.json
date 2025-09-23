@@ -1,0 +1,79 @@
+{
+  "batch_id": "batch_20250923_174620_ceb501fa",
+  "created_at": "2025-09-23T17:46:20.138697",
+  "settings": {
+    "pattern": "simple_interrupted",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "running",
+  "items": [
+    {
+      "input_name": "515_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_515_simple_interrupted.M4V_20250923_175010.html",
+      "narrative_path": "narratives/VOP_Assessment_515_simple_interrupted.M4V_20250923_175010.txt",
+      "score": null,
+      "started_at": "2025-09-23T17:46:20.142474",
+      "completed_at": "2025-09-23T17:50:10.375753",
+      "error": null
+    },
+    {
+      "input_name": "516_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_516_simple_interrupted.M4V_20250923_175444.html",
+      "narrative_path": "narratives/VOP_Assessment_516_simple_interrupted.M4V_20250923_175444.txt",
+      "score": null,
+      "started_at": "2025-09-23T17:50:10.377717",
+      "completed_at": "2025-09-23T17:54:44.495602",
+      "error": null
+    },
+    {
+      "input_name": "517_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "processing",
+      "html_path": null,
+      "narrative_path": null,
+      "score": null,
+      "started_at": "2025-09-23T17:54:44.497710",
+      "completed_at": null,
+      "error": null
+    },
+    {
+      "input_name": "615_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "pending",
+      "html_path": null,
+      "narrative_path": null,
+      "score": null,
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    {
+      "input_name": "616_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "pending",
+      "html_path": null,
+      "narrative_path": null,
+      "score": null,
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    {
+      "input_name": "617_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "pending",
+      "html_path": null,
+      "narrative_path": null,
+      "score": null,
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  ]
+}

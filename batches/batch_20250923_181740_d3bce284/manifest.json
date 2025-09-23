@@ -1,0 +1,58 @@
+{
+  "batch_id": "batch_20250923_181740_d3bce284",
+  "created_at": "2025-09-23T18:17:40.580389",
+  "settings": {
+    "pattern": "simple_interrupted",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "517_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_517_simple_interrupted.M4V_20250923_182247.html",
+      "narrative_path": "narratives/VOP_Assessment_517_simple_interrupted.M4V_20250923_182247.txt",
+      "score": null,
+      "started_at": "2025-09-23T18:17:40.591444",
+      "completed_at": "2025-09-23T18:22:47.040597",
+      "error": null
+    },
+    {
+      "input_name": "615_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_615_simple_interrupted.M4V_20250923_182743.html",
+      "narrative_path": "narratives/VOP_Assessment_615_simple_interrupted.M4V_20250923_182743.txt",
+      "score": null,
+      "started_at": "2025-09-23T18:22:47.045701",
+      "completed_at": "2025-09-23T18:27:43.681679",
+      "error": null
+    },
+    {
+      "input_name": "616_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_616_simple_interrupted.M4V_20250923_183500.html",
+      "narrative_path": "narratives/VOP_Assessment_616_simple_interrupted.M4V_20250923_183500.txt",
+      "score": null,
+      "started_at": "2025-09-23T18:27:43.683020",
+      "completed_at": "2025-09-23T18:35:01.004351",
+      "error": null
+    },
+    {
+      "input_name": "617_simple_interrupted.M4V",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_617_simple_interrupted.M4V_20250923_184001.html",
+      "narrative_path": "narratives/VOP_Assessment_617_simple_interrupted.M4V_20250923_184001.txt",
+      "score": null,
+      "started_at": "2025-09-23T18:35:01.008294",
+      "completed_at": "2025-09-23T18:40:01.085488",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-23T18:40:01.085501"
+}

@@ -90,6 +90,47 @@
       "created_at": "2025-09-23T15:26:44.717526",
       "video_count": 10,
       "status": "running"
+    },
+    {
+      "batch_id": "batch_20250923_162332_9e181427",
+      "created_at": "2025-09-23T16:23:32.587070",
+      "video_count": 1,
+      "status": "completed",
+      "finished_at": "2025-09-23T16:28:01.394302"
+    },
+    {
+      "batch_id": "batch_20250923_163811_3d7ebf44",
+      "created_at": "2025-09-23T16:38:11.753192",
+      "video_count": 10,
+      "status": "completed",
+      "finished_at": "2025-09-23T17:21:44.252321"
+    },
+    {
+      "batch_id": "batch_20250923_174620_ceb501fa",
+      "created_at": "2025-09-23T17:46:20.139140",
+      "video_count": 6,
+      "status": "running"
+    },
+    {
+      "batch_id": "batch_20250923_181740_d3bce284",
+      "created_at": "2025-09-23T18:17:40.584710",
+      "video_count": 4,
+      "status": "completed",
+      "finished_at": "2025-09-23T18:40:01.085596"
+    },
+    {
+      "batch_id": "batch_20250923_185247_e9c566b8",
+      "created_at": "2025-09-23T18:52:47.317184",
+      "video_count": 6,
+      "status": "completed",
+      "finished_at": "2025-09-23T19:18:24.376688"
+    },
+    {
+      "batch_id": "batch_20250923_211412_78cc701d",
+      "created_at": "2025-09-23T21:14:12.296063",
+      "video_count": 8,
+      "status": "completed",
+      "finished_at": "2025-09-23T21:52:24.669031"
     }
   ]
 }

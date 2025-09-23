@@ -1,0 +1,102 @@
+{
+  "batch_id": "batch_20250923_211412_78cc701d",
+  "created_at": "2025-09-23T21:14:12.295086",
+  "settings": {
+    "pattern": "subcuticular",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "115_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_115_subcuticular.M4V_20250923_211808.html",
+      "narrative_path": "narratives/VOP_Assessment_115_subcuticular.M4V_20250923_211808.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:14:12.302746",
+      "completed_at": "2025-09-23T21:18:08.813221",
+      "error": null
+    },
+    {
+      "input_name": "116_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_116_subcuticular.M4V_20250923_212258.html",
+      "narrative_path": "narratives/VOP_Assessment_116_subcuticular.M4V_20250923_212258.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:18:08.814375",
+      "completed_at": "2025-09-23T21:22:58.150137",
+      "error": null
+    },
+    {
+      "input_name": "117_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_117_subcuticular.M4V_20250923_212715.html",
+      "narrative_path": "narratives/VOP_Assessment_117_subcuticular.M4V_20250923_212715.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:22:58.151266",
+      "completed_at": "2025-09-23T21:27:15.171555",
+      "error": null
+    },
+    {
+      "input_name": "118_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_118_subcuticular.M4V_20250923_213224.html",
+      "narrative_path": "narratives/VOP_Assessment_118_subcuticular.M4V_20250923_213224.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:27:15.172746",
+      "completed_at": "2025-09-23T21:32:24.957550",
+      "error": null
+    },
+    {
+      "input_name": "215_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_215_subcuticular.M4V_20250923_213752.html",
+      "narrative_path": "narratives/VOP_Assessment_215_subcuticular.M4V_20250923_213752.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:32:24.958586",
+      "completed_at": "2025-09-23T21:37:52.143752",
+      "error": null
+    },
+    {
+      "input_name": "216_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_216_subcuticular.M4V_20250923_214322.html",
+      "narrative_path": "narratives/VOP_Assessment_216_subcuticular.M4V_20250923_214322.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:37:52.144771",
+      "completed_at": "2025-09-23T21:43:22.070933",
+      "error": null
+    },
+    {
+      "input_name": "217_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_217_subcuticular.M4V_20250923_214801.html",
+      "narrative_path": "narratives/VOP_Assessment_217_subcuticular.M4V_20250923_214801.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:43:22.072215",
+      "completed_at": "2025-09-23T21:48:01.849054",
+      "error": null
+    },
+    {
+      "input_name": "218_subcuticular.M4V",
+      "detected_pattern": "subcuticular",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_218_subcuticular.M4V_20250923_215224.html",
+      "narrative_path": "narratives/VOP_Assessment_218_subcuticular.M4V_20250923_215224.txt",
+      "score": null,
+      "started_at": "2025-09-23T21:48:01.850274",
+      "completed_at": "2025-09-23T21:52:24.668954",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-23T21:52:24.668965"
+}

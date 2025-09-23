@@ -519,10 +519,12 @@ class GPT5VisionClient:
 
 ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
 
+PRACTICE PAD LIMITATION: Practice pads and recordings do not display good differentiation between epidermal and dermal layers. Therefore, assume that a video labeled subcuticular consists of a continuous intradermal track regardless of surface appearance.
+
 CONTEXT SO FAR: {context_state if context_state else 'Beginning of video analysis'}
 
 CRITICAL FOCUS: SUBCUTICULAR (INTRADERMAL) CLOSURE ON THE ACTIVE LINE
-Each video has exactly ONE suture line being worked on. For a subcuticular closure, bites run within the dermis, and the skin surface should show minimal/absent epidermal punctures. Ignore other lines.
+Each video has exactly ONE suture line being worked on. For a subcuticular closure, assume continuous intradermal track progression. Due to practice pad limitations, focus on technique execution rather than precise layer differentiation. Ignore other lines.
 
 ACTIVE LINE IDENTIFICATION HIERARCHY (use in order):
 1) Where the needle tip enters/exits tissue within these frames
@@ -559,11 +561,11 @@ ARTIFACT RULES:
 OUTPUT: Concise, factual observations only (150–300 words). Do not mention 'active line' explicitly in output; describe naturally.
 
 At the end, include these lines exactly:
-SUBCUTICULAR_EVIDENCE: [YES/NO] - one sentence citing strongest visual evidence (e.g., intradermal arcs, absence of surface breaches, flat surface)
+SUBCUTICULAR_EVIDENCE: [YES] - assume continuous intradermal track due to practice pad limitations; describe technique execution pattern observed
 BITES_OBSERVED: [integer estimate within these frames]
 OCCLUSION: [LOW/MEDIUM/HIGH]
-EVIDENCE_BREACHES: [semicolon-separated list of mid-run breach observations with brief frame/time descriptors, or NONE] (exclude endpoints and brief re-grips)
-BREACH_CONFIDENCE: [HIGH/MEDIUM/LOW] based on multi-cue rule and pad ambiguity (default LOW if ambiguous)."""
+EVIDENCE_BREACHES: [NONE - assume subcuticular technique maintained] due to practice pad limitation in layer differentiation
+BREACH_CONFIDENCE: [LOW] - practice pad cannot reliably show epidermal vs dermal layers."""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
             prompt = f"""You are analyzing still images from a surgical suturing procedure. These are {len(frames)} consecutive frames from {timestamp_range}.
@@ -601,6 +603,8 @@ Analyze these {len(frames)} frames:"""
 
 ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
 
+PRACTICE PAD LIMITATION: Practice pads and recordings do not display good differentiation between epidermal and dermal layers. Therefore, assume that a video labeled subcuticular consists of a continuous intradermal track regardless of surface appearance.
+
 FRAME DESCRIPTIONS:
 {descriptions_text}
 
@@ -630,11 +634,11 @@ OUTPUT: Comprehensive chronological narrative. Describe naturally without mentio
 NARRATIVE LENGTH REQUIREMENT: Aim for 8,000–12,000 characters.
 
 At the end, include these lines exactly:
-SUBCUTICULAR_EVIDENCE: [YES/NO] - cite strongest evidence in one sentence
+SUBCUTICULAR_EVIDENCE: [YES] - assume continuous intradermal track due to practice pad limitations; describe technique execution pattern observed
 BITES_TOTAL_ESTIMATE: [integer]
-BREACHES_AGGREGATED: [number of distinct mid-run breaches counted]
-BREACH_CITATIONS: [semicolon-separated frame/time descriptors for each, or NONE]
-BREACH_CONFIDENCE_AGG: [HIGH/MEDIUM/LOW]
+BREACHES_AGGREGATED: [0] - assume subcuticular technique maintained due to practice pad limitations
+BREACH_CITATIONS: [NONE] - practice pad cannot reliably differentiate layers
+BREACH_CONFIDENCE_AGG: [LOW] - practice pad limitations prevent reliable layer assessment
 CONFIDENCE: [HIGH/MEDIUM/LOW] based on evidence quantity/occlusion."""
         else:
             label_text = pattern.replace('_', ' ') if pattern else 'the selected technique'
@@ -684,6 +688,8 @@ NARRATIVE LENGTH REQUIREMENT: Generate a substantial narrative that captures the
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
 
 ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is subcuticular; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as subcuticular.
+
+PRACTICE PAD LIMITATION: Practice pads and recordings do not display good differentiation between epidermal and dermal layers. Therefore, assume that a video labeled subcuticular consists of a continuous intradermal track regardless of surface appearance.
 
 You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
 
