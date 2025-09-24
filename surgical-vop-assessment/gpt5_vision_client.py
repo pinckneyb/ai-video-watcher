@@ -48,7 +48,7 @@ class GPT5VisionClient:
         }
         
 
-    def pass1_surgical_description(self, frames: List[Dict], context_state: str = "", model: str = "gpt-5", reasoning_level: str = "low", verbosity_level: str = "medium") -> Tuple[str, List[Dict]]:
+    def pass1_surgical_description(self, frames: List[Dict], context_state: str = "", model: str = "gpt-5-mini", reasoning_level: str = "low", verbosity_level: str = "low") -> Tuple[str, List[Dict]]:
         """
         PASS 1: Describe frames in surgical terms relevant to suturing procedure
         Pure observation without assessment bias
@@ -211,7 +211,7 @@ class GPT5VisionClient:
             
             return error_msg, self.frame_descriptions
     
-    def pass2_video_narrative(self, all_descriptions: List[Dict], model: str = "gpt-5", reasoning_level: str = "medium", verbosity_level: str = "high") -> str:
+    def pass2_video_narrative(self, all_descriptions: List[Dict], model: str = "gpt-5-mini", reasoning_level: str = "medium", verbosity_level: str = "medium") -> str:
         """
         PASS 2: Assemble descriptions into video narrative with flow analysis
         Focus on motion, connections, and temporal relationships
@@ -344,7 +344,7 @@ class GPT5VisionClient:
             print(f"📊 PASS 2 ERROR SUMMARY: {self.error_stats['pass2_api_errors']} errors of {self.error_stats['pass2_total_attempts']} attempts")
             return error_msg
     
-    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine, final_product_image=None, model: str = "gpt-5", reasoning_level: str = "high", verbosity_level: str = "medium") -> Dict[str, Any]:
+    def pass3_rubric_assessment(self, pattern_id: str, rubric_engine, final_product_image=None, model: str = "gpt-5-mini", reasoning_level: str = "low", verbosity_level: str = "low") -> Dict[str, Any]:
         """
         PASS 3: Compare video narrative to rubric for final assessment
         Focus on scoring against specific criteria

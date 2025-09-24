@@ -556,7 +556,7 @@ def main():
             gpt5_model_pass1 = st.selectbox(
                 "Model",
                 options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
-                index=0,  # Default to gpt-5
+                index=1,  # Default to gpt-5-mini
                 help="Choose the GPT-5 model for frame analysis. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
                 key="model_pass1"
             )
@@ -574,7 +574,7 @@ def main():
             verbosity_level_pass1 = st.selectbox(
                 "Verbosity Level",
                 options=["low", "medium", "high"],
-                index=1,  # Default to medium
+                index=0,  # Default to low
                 help="Controls response detail for frame observations: low (terse), medium (balanced), high (verbose explanations).",
                 key="verbosity_pass1"
             )
@@ -588,7 +588,7 @@ def main():
             gpt5_model_pass2 = st.selectbox(
                 "Model",
                 options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
-                index=0,  # Default to gpt-5
+                index=1,  # Default to gpt-5-mini
                 help="Choose the GPT-5 model for narrative synthesis. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
                 key="model_pass2"
             )
@@ -606,7 +606,7 @@ def main():
             verbosity_level_pass2 = st.selectbox(
                 "Verbosity Level",
                 options=["low", "medium", "high"],
-                index=2,  # Default to high for detailed narratives
+                index=1,  # Default to medium for detailed narratives
                 help="Controls response detail for narrative synthesis: low (terse), medium (balanced), high (verbose explanations).",
                 key="verbosity_pass2"
             )
@@ -620,7 +620,7 @@ def main():
             gpt5_model_pass3 = st.selectbox(
                 "Model",
                 options=["gpt-5", "gpt-5-mini", "gpt-5-nano"],
-                index=0,  # Default to gpt-5
+                index=1,  # Default to gpt-5-mini
                 help="Choose the GPT-5 model for rubric assessment. gpt-5 offers highest quality, gpt-5-mini is balanced, gpt-5-nano is fastest.",
                 key="model_pass3"
             )
@@ -629,7 +629,7 @@ def main():
             reasoning_level_pass3 = st.selectbox(
                 "Reasoning Level",
                 options=["minimal", "low", "medium", "high"],
-                index=3,  # Default to high for precise rubric evaluation
+                index=1,  # Default to low for precise rubric evaluation
                 help="Controls computational effort for rubric assessment: minimal (speed-optimized), low (balanced), medium (default), high (maximum quality).",
                 key="reasoning_pass3"
             )
@@ -638,7 +638,7 @@ def main():
             verbosity_level_pass3 = st.selectbox(
                 "Verbosity Level",
                 options=["low", "medium", "high"],
-                index=1,  # Default to medium for structured scoring
+                index=0,  # Default to low for structured scoring
                 help="Controls response detail for rubric scoring: low (terse), medium (balanced), high (verbose explanations).",
                 key="verbosity_pass3"
             )
@@ -1018,9 +1018,9 @@ def _process_batches_concurrently_gpt5(batches, gpt5_client, profile, progress_b
             # PASS 1: Surgical description of frames
             analysis, descriptions = gpt5_client.pass1_surgical_description(
                 batch, current_context,
-                model=st.session_state.get('gpt5_model_pass1', 'gpt-5'),
+                model=st.session_state.get('gpt5_model_pass1', 'gpt-5-mini'),
                 reasoning_level=st.session_state.get('reasoning_level_pass1', 'low'),
-                verbosity_level=st.session_state.get('verbosity_level_pass1', 'medium')
+                verbosity_level=st.session_state.get('verbosity_level_pass1', 'low')
             )
             
             with context_lock:
@@ -1095,9 +1095,9 @@ def _process_batches_sequentially_gpt5(batches, gpt5_client, profile, progress_b
             # PASS 1: Surgical description of frames
             analysis, descriptions = gpt5_client.pass1_surgical_description(
                 batch, gpt5_client.context_state,
-                model=st.session_state.get('gpt5_model_pass1', 'gpt-5'),
+                model=st.session_state.get('gpt5_model_pass1', 'gpt-5-mini'),
                 reasoning_level=st.session_state.get('reasoning_level_pass1', 'low'),
-                verbosity_level=st.session_state.get('verbosity_level_pass1', 'medium')
+                verbosity_level=st.session_state.get('verbosity_level_pass1', 'low')
             )
             
             batch_time = time.time() - start_time
@@ -1247,9 +1247,9 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             video_narrative = gpt5_client.pass2_video_narrative(
                 gpt5_client.frame_descriptions,
-                model=st.session_state.get('gpt5_model_pass2', 'gpt-5'),
+                model=st.session_state.get('gpt5_model_pass2', 'gpt-5-mini'),
                 reasoning_level=st.session_state.get('reasoning_level_pass2', 'medium'),
-                verbosity_level=st.session_state.get('verbosity_level_pass2', 'high')
+                verbosity_level=st.session_state.get('verbosity_level_pass2', 'medium')
             )
             
             progress_text.text("🔄 Generating comprehensive narrative...")
@@ -1373,9 +1373,9 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         
         enhanced_narrative = gpt5_client.pass3_rubric_assessment(
             current_pattern, rubric_engine, image_for_pass3,
-            model=st.session_state.get('gpt5_model_pass3', 'gpt-5'),
-            reasoning_level=st.session_state.get('reasoning_level_pass3', 'high'),
-            verbosity_level=st.session_state.get('verbosity_level_pass3', 'medium')
+            model=st.session_state.get('gpt5_model_pass3', 'gpt-5-mini'),
+            reasoning_level=st.session_state.get('reasoning_level_pass3', 'low'),
+            verbosity_level=st.session_state.get('verbosity_level_pass3', 'low')
         )
         
         if not enhanced_narrative.get('success', False):

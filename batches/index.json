@@ -150,7 +150,34 @@
       "batch_id": "batch_20250923_224642_6c9a2822",
       "created_at": "2025-09-23T22:46:42.761990",
       "video_count": 1,
+      "status": "completed",
+      "finished_at": "2025-09-23T22:49:32.854892"
+    },
+    {
+      "batch_id": "batch_20250923_225146_f8456666",
+      "created_at": "2025-09-23T22:51:46.824972",
+      "video_count": 61,
       "status": "running"
+    },
+    {
+      "batch_id": "batch_20250924_155104_8a5886c4",
+      "created_at": "2025-09-24T15:51:04.951956",
+      "video_count": 9,
+      "status": "running"
+    },
+    {
+      "batch_id": "batch_20250924_155859_a9dfc9f5",
+      "created_at": "2025-09-24T15:58:59.839583",
+      "video_count": 10,
+      "status": "completed",
+      "finished_at": "2025-09-24T16:30:53.498309"
+    },
+    {
+      "batch_id": "batch_20250924_175206_23372142",
+      "created_at": "2025-09-24T17:52:06.301561",
+      "video_count": 12,
+      "status": "completed",
+      "finished_at": "2025-09-24T18:58:08.123795"
     }
   ]
 }

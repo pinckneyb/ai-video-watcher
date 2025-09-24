@@ -1,0 +1,57 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: 616_subcuticular.M4V
+Pattern: Subcuticular
+Analysis Date: 2025-09-24 16:24:02
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+This recording follows a single horizontal cut on a synthetic suture pad from the beginning of repair through final knot tensioning and tail trimming. The same midline incision is addressed for the entire procedure; a short slit above it remains untouched throughout and a lower incision on the pad shows a pre-existing line of completed stitches that is never engaged. The narrative below traces the continuous work on that central wound, describing how the operator places successive bites, handles the needle and suture, coordinates the two hands and a small set of instruments, and ultimately seats and trims the repair. Where the frame descriptions conflict with the labeled technique, those discrepancies are highlighted but treated as maneuvers integrated into the declared technique and overall plan.
+
+Initial approach and first bites (0.0–44.0 s)
+The case begins with a focused, two-handed approach to the central horizontal incision. From the outset the operator uses a needle driver in one hand and fine tissue forceps in the other, maintaining a working triangle immediately over the left third of the wound while keeping the previously sutured lower incision out of the field. The curved needle is consistently grasped toward its proximal-to-mid third in the jaws of the driver and is oriented nearly perpendicular to the skin as the operator prepares each pass. The forceps oppose the driver across the wound, gently lifting and presenting the dermal edge for entry and producing slight eversion to facilitate a symmetric bite.
+
+During the earliest frames a first stitch is prepared at the left end: the needle tip describes a controlled arc and is plunged into the near epidermal/dermal tissue, guided across the gap toward the opposite edge. The suture tail trails off to the side as the needle passes, and the left-hand forceps are repositioned to receive or assist the tip as the bite completes. Instrument positions are consistent: the driver approaches from above/superior and slightly lateral, while the forceps come from the inferior side or the opposite lateral to oppose and evert the edges.
+
+Progressing across the mid-portion (45.0–104.0 s)
+After initial placement the operator advances along the mid-portion of the incision. Hands slide along the wound in parallel: the needle driver remains superior and just off the incision while the forceps work inferiorly, alternating to present the next bite site. Bites are taken with the curved needle held at the proximal/near-proximal third and driven with a controlled rotational motion so that the needle exits on the far side at an even dermal depth. Each pass is followed by drawing the suture through so the edges approximate without excessive gapping or crushing. Where forceps pick up the wound edge they do so delicately, producing mild eversion that will help appose epidermal margins once the repair is completed.
+
+Throughout this middle segment the operator alternates which hand is dominant for the driver and which for the forceps depending on the bite location, but the relationship remains constant: driver superior, forceps inferior, hands close to the wound and working parallel to one another. There is no evidence of full-thickness bites that would penetrate beyond the dermis; instead, needle paths follow the curvature intended for dermal/subcuticular purchase.
+
+Establishing a running pattern and advancing laterally (105.0–179.0 s)
+As the sequence continues, the pattern of placement becomes clearly continuous: a series of closely spaced, evenly spaced passes progress from the left toward the center and then toward the right end of the incision. The needle continues to be re-grasped mid-procedure to maintain orientation and to reorient the curve for each bite. The operator’s left hand frequently handles the driver (or vice versa at times), while the opposite hand manipulates the forceps to elevate the right or left wound edge depending on direction of travel. The forceps guide the emerging needle tip and control bite symmetry; the needle exits near the epidermal-dermal junction to maintain shallow depth and to keep the resultant closure cosmetically favorable.
+
+There are brief moments where the right hand momentarily releases to handle the free strand or to reposition, and the driver is reloaded to take the next bite. These regrips are deliberate and consistent with maintaining a continuous subdermal line: the same strand is used to perform sequential passes, the line is drawn through after each pass, and slack is managed continuously so the incision lies approximated as the repair advances.
+
+Rightward advancement, reloading and controlled bite depth (180.0–254.0 s)
+Work progresses steadily to the right with reloading of the needle after each pass. The operator places mirror-image bites with carefully matched depth, lifting the near edge to evert it immediately before entry. The needle is oriented tangentially to take shallow subcuticular passes in many frames—this consistent arc and depth suggest an intent to employ a running intradermal/subcuticular technique across much of the incision.
+
+As the continuous line approaches the right terminus, the operator begins to consolidate and prepare to secure the end of the closure. The hands converge at the right end with the driver held vertical/superior to the wound and the forceps adjacent to the margin to manage the suture tail. There are instrument throws performed by the driver while the forceps manipulate the short limb to seat successive throws that will secure the line. At times scissors or a scissor-like instrument appear briefly to assist, and the operator shifts between controlling the needle, manipulating the suture strand, and preparing for knot-tying.
+
+Knotting, securing and occasional interrupted maneuvers (255.0–330.0 s)
+Near the right end the rhythm shifts from placing sequential passes to completing securing maneuvers. The driver is used to form instrument throws while the forceps tension and guide the short limb. Multiple throws are made until the operator is satisfied with the knot security. In most frames this sequence is consistent with finishing a continuous running closure: the long limb is drawn upward and the short limb is held under guidance to seat the knot over the closed tissue.
+
+There are moments, however, where the descriptions indicate the presence of completed interrupted knots or an isolated interrupted stitch being tightened and trimmed on the central incision. Where such descriptions appear, they are treated as either transient securing sutures or as small technique variations used to anchor the continuous line. These instances are noted as departures from a purely uninterrupted running pattern, but they are integrated into the overall plan: securing the continuous closure with tying maneuvers and final trimming of tails.
+
+Final bites, tensioning and trimming (330.0–362.0 s)
+After the line has been advanced fully across the incision and the knotting sequence at the right end has been started, the operator completes final tightening. One hand maintains control of the suture to protect tension and positioning while the other forms and seats the final throws with the driver. The forceps intervene to hold the short limb and to present the tissue during each instrument throw, ensuring that successive throws are seated without slippage and that the wound edges remain neatly approximated.
+
+Once the knot is secured, scissors are brought in to trim the tails. The operator cuts the suture close to the knot, leaving short, trimmed tails adjacent to the wound. The wound edges appear approximated with mild eversion—visible in the final frames—and the line presents as a neat sequence of small, evenly spaced bites spanning the original incision. In the final frames the needle is no longer visible; no further passes are attempted, and the suture line rests undisturbed with short tails around the secured knot.
+
+Hand and instrument evolution throughout the repair
+Early on the driver and forceps maintain a stable spatial relationship: the driver tracks superior and perpendicular to the incision while the forceps oppose inferiorly or laterally to elevate and evert tissue. As the repair progresses, the operator’s hands travel along the wound, preserving a parallel, close relationship to the incision. Regripping of the needle in the driver and intermittent repositioning of the forceps are common: after each pass the driver is often reloaded to adjust angle and grip position, and the forceps alternate between presentational and receiving roles to guide the emerging needle tip.
+
+Near the end, the driver and forceps roles briefly shift into knot-tying choreography. The driver manipulates the suture limb to create instrument throws while the forceps manage the short limb; scissors are introduced for trimming while the other hand maintains suture control. Throughout, hands remain close to the right end during finalization and then relax from the wound after trimming.
+
+Technique consistency and deviations
+The overall strategy is consistent with a continuous running intradermal/subcuticular approach: successive shallow, dermal-level passes following the curve of the needle, even bite depth, consistent eversion for cosmetic approximation, and continuous management of a single suture strand that traverses the wound until secured. This approach is maintained for the majority of the procedure.
+
+Occasional deviations appear in the frame descriptions: at times individual interrupted knots are described as being placed or already present on the central incision, and some sequences document instrument tying of individual stitches. These occurrences are interpreted as anchoring or securing maneuvers used to start or finish the continuous line rather than a wholesale change of technique. They are noted as minor inconsistencies but do not alter the continuity of the single line repair: the same incision is addressed and the same strand is progressed, tensioned and secured to close the defect.
+
+Final status of the repair
+By the end of the recorded sequence the central horizontal incision is neatly approximated along its entire length. The closure displays evenly spaced, small dermal bites with slight eversion of the margins to aid epidermal approximation once the tissue settles. The securing knot at the right terminus has been seated and trimmed, leaving short suture tails adjacent to the wound. No further passes are made, the needle is out of view, and the operator pauses with the line tensioned and tidy.
+
+Throughout the procedure the superior slit above the working incision remains untouched and the lower horizontal line with previously completed interrupted stitches is left undisturbed. The recorded work focuses solely on the central cut: initial entry at the left, measured advancement across the midline, reloading and reorientation of the needle as necessary, final securing at the right, and careful trimming—resulting in a symmetric, cosmetically oriented dermal approximation suitable for healing with minimal scarring.
+
+============================================================
+END OF NARRATIVE
