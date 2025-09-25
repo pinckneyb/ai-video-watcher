@@ -1,0 +1,63 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: 1415_subcuticular.M4V
+Pattern: Subcuticular
+Analysis Date: 2025-09-24 22:11:27
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The sequence documents a focused interrupted-suture closure performed on a single linear incision on a foam/silicone skin simulator. From the opening frames through to the final camera views, the operator consistently works along the same vertical wound located near the midline of the pad (described in various frames as the central/midline incision, slightly right of center). The workflow follows a methodical, sequential placement of individual interrupted skin bites along the length of the slit, with instrument exchanges, tissue stabilization, knot-tying and occasional trimming and adjustment punctuating needle passes. A single discontinuity in the dataset (a brief late-frame description referencing a horizontal incision) is noted below as a likely framing or annotation discrepancy; otherwise the entire procedure is focused on the central vertical incision.
+
+Early approach and first passes (0–74 s)
+The procedure begins with both gloved hands coming into the field and establishing a close, controlled working zone directly over the vertical slit. One hand consistently holds a needle driver while the opposite hand controls fine toothed forceps (Adson-style) to evert and steady the near wound edge. The needle in these early frames is a curved, swaged practice needle grasped in the driver typically at a point along the shaft ranging from roughly one‑third to two‑thirds from the tip. The driver is oriented so the arc of the needle will enter the near edge and exit the far edge in a shallow-to-mid‑dermal bite. Needle trajectory is usually perpendicular to oblique with short controlled arcs rather than wide sweeps.
+
+Tissue handling is careful and localized: the forceps lifts and slightly everts the epidermal edge to present tissue for the needle, while the driver advances the needle through the opposing side. As the needle is pulled through, the suture tail is drawn, then tensioned to approximate the edges. In these initial passes the hands are closely opposed — tips of instruments converge within a couple of centimeters over the incision — with the needle driver approaching from the left/lateral-superior quadrant and the forceps from the right/medial-inferior quadrant in many frames. One camera view shows the driver approaching from above/cephalad with the forceps from below, but the functional relationship (driver advances needle, forceps provide counter-traction) remains consistent.
+
+Sequential interrupted technique established (75–149 s)
+After the first successful bites, the operator establishes a steady rhythm of placing interrupted stitches sequentially along the wound. The pattern is to position each new bite adjacent to existing knots, often filling the gaps between previously placed sutures. Needle handling remains consistent: the curved needle is gripped mid-shaft by the driver for controlled purchase, advanced through tissue from one edge toward the other, and sometimes transferred between instruments (for example, after passing the needle the operator will occasionally receive or reposition the tip with the contralateral instrument before withdrawing). Throughout this portion the operator works from proximal toward distal (with descriptions explicitly noting work at the superior or proximal ends at times), alternating the precise approach angle to accommodate the spacing of prior bites.
+
+Hand positions remain tightly coordinated: one hand steadies and approximates tissue, often resting fingertips on the pad edge for stability, while the other manipulates the needle. The operator frequently rests parts of the gloved hand on the tray to dampen movement and achieve fine control. The instrument separation across the incision is small (often 1–3 cm), allowing precise needle transfer and bite placement. Bites traverse the synthetic dermis and are shallow to mid-depth; the operator avoids excessive tension or inversion, producing slight eversion at the knots which aids epithelial edge apposition.
+
+Mid-procedure adjustments and instrument exchanges (150–239 s)
+As further interrupted sutures are placed, there are intermittent frames that show temporary withdrawal or repositioning of instruments. The operator occasionally brings in ancillary instruments — curved hemostats or a second needle driver — to assist with suture control or knot formation. In several segments the needle is not visible because the operator is arranging suture tails, preparing to tie, or simply inspecting the line. Fingertip stabilization by the non-dominant hand is used repeatedly to align edges while the dominant hand maneuvers the needle.
+
+A handful of frames document tying and trimming maneuvers: after drawing the suture through, the operator secures the knot with short, controlled throws and organizes suture tails by bringing them lateral to the wound and trimming as needed. Scissors or suture-cutting instruments appear intermittently in the left field and are used to trim excess material. At one point a gowned, ungloved hand points at the central suture row, consistent with an inspection or verbal coaching moment. These inspection frames show the line approximated and functioning, and they may represent intermittent quality checks.
+
+Technique refinement, proximal completion and occasional continuity moments (240–299 s)
+The operator continues placing interrupted bites into remaining open portions of the slit, approaching the superior/central area at times with instruments entering from top-left and top-right. Needle grasp position varies slightly between mid-shaft and more proximal holds depending on the arc needed for a given bite, but the technique — controlled passage through dermis, counter-traction with forceps, tensioning and knot-tying — remains consistent.
+
+Some frames indicate activity that is focused less on fresh needle passes and more on adjustment and finalization: repositioning suture material, adjusting tension to even out approximation, and arranging suture tails. The hand proximities increase slightly when switching from needle passage to knot-tying, reflecting a movement from larger instrument arcs to finer manual manipulation.
+
+Late-stage passes, pull-throughs and trimming (300–314 s)
+In the late sequence the operator places a final set of stitches to close the remaining gap. Needle approaches are similar to earlier technique: the driver approaches from the lower-left or upper-left, the opposing hand stabilizes tissue and sometimes accepts the needle tip for controlled extraction. Needle passages are short, deliberate arcs with the tip exiting close to the epidermal margin to ensure edge-to-edge approximation.
+
+There are also short segments where the operator appears to be drawing a suture limb through a previously created pass or pulling excess suture out to prepare for a knot — the motion is consistent with finalizing a pass before cutting. By the end of this phase instruments are withdrawn from the working zone and the suture line is arranged for final inspection.
+
+Final frames, inspection and a noted discrepancy (315–316 s)
+The last annotated frames describe hands placed at the top/upper-left and right edges of the pad, with an unused pair of scissors lying to the left and a short suture tail evident at the right end of the central incision. No active needle grasp is visible; multiple previously placed interrupted knots approximate the wound edges with slight eversion. These frames depict final positioning and stabilization rather than an active pass.
+
+It is important to note that these two final frames reference a “middle horizontal incision” at the center of the board — a description that conflicts with the entirety of the prior observations, which consistently describe a vertical midline slit being worked. Given that nearly every timestamped segment documents activity on the same vertical central incision and specifically describes sequential interrupted closures along that line, the horizontal-incision note is likely an annotation or framing inconsistency rather than evidence that the operator switched to a different wound. Regardless, the functional status in those frames — stabilized pad, previously placed interrupted knots, a loose suture tail suggesting a recent pass — aligns with completion of the single-line interrupted closure.
+
+Overall technique characteristics and evolution
+Throughout the procedure the suturing technique remains an interrupted skin closure performed with a curved needle and standard needle driver/forceps coordination. Technique hallmarks that persist and occasionally evolve include:
+
+- Needle grips: The driver frequently grips the needle at variable points along the shaft (from roughly one‑third to two‑thirds from the tip) depending on the bite geometry; this slight variation facilitates controlled needle arc and reduces tip wobble during passes.
+
+- Trajectory: Passes are generally perpendicular-to-oblique to the skin surface, with short controlled arcs to seat the needle through the dermis without over-penetration.
+
+- Tissue handling: The non-dominant hand (forceps, fingertip stabilization) consistently elevates and everts the near edge to present tissue and to reduce inversion on tying. This deliberate everted edge alignment results in consistent epithelial approximation after knot-tying.
+
+- Knot technique and suture management: Each bite is followed by tensioning and knot formation; suture tails are organized and trimmed as needed. Where instruments are repositioned or temporary withdrawals occur, the operator uses those moments to assess tension uniformity along the line and to smooth suture tails.
+
+- Spatial control: Hands remain close to the wound throughout — instrument tips typically within a few centimeters of each other — and the operator frequently rests fingers on the pad for stability, indicating attention to fine motor control. When switching from needle passage to tying, hands come even closer together to perform precise throws.
+
+Consistency and final state
+The method is consistent from start to finish: interrupted bites are placed in sequence, gaps between existing sutures are filled as the operator advances along the incision, and each pass follows the same interplay of needle delivery, tissue counter-traction, and knot-tying. Minor variations occur naturally — slight differences in needle grip, approach angle, or which hand provides stabilization at a given instant — but these are adaptations to the local geometry of the wound rather than fundamental changes in technique.
+
+At procedure end the wound is fully approximated along its length by a regular row of interrupted sutures. Edges lie in close apposition with modest eversion at the knot sites to promote epidermal alignment. Suture tails have been managed and trimmed where appropriate; instruments have been set aside or rest at the pad margins. The operator performs at least one final inspection pass, occasionally touching the superior portion of the line and adjusting suture tension with a fingertip or forceps, before instruments are withdrawn.
+
+Summary impression
+This recording captures a straightforward, well-executed interrupted skin closure on a single vertical midline incision of a synthetic pad. The operator demonstrates controlled needle handling with a curved, swaged needle and coordinated two-handed technique: forceps provide tissue control and eversion while the needle driver advances and seats bites, followed by knot tying and suture management. The workflow is sequential and methodical, closing the wound along its length with evenly spaced interrupted sutures, and culminates in a neatly approximated closure ready for final inspection. A minor discrepancy in late-frame incision description (horizontal vs. vertical) appears to be an annotation or framing inconsistency and does not change the overall conclusion that one continuous, interrupted closure was performed on a single vertical incision.
+
+============================================================
+END OF NARRATIVE
