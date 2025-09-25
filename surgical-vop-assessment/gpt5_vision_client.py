@@ -707,9 +707,6 @@ SUMMATIVE_ASSESSMENT:
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
 
-MANDATORY SCORING OUTPUT:
-{self._generate_rubric_scores_format(rubric_data['points'])}
-
 Provide your complete assessment:"""
             return prompt
         
@@ -777,9 +774,6 @@ SUMMATIVE_ASSESSMENT:
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
-
-MANDATORY SCORING OUTPUT:
-{self._generate_rubric_scores_format(rubric_data['points'])}
 
 Provide your complete assessment:"""
         
@@ -875,9 +869,6 @@ SUMMATIVE_ASSESSMENT:
 
 RUBRIC POINTS TO ASSESS:
 {json.dumps(rubric_data['points'], indent=2)}
-
-MANDATORY SCORING OUTPUT:
-{self._generate_rubric_scores_format(rubric_data['points'])}
 
 Provide your complete assessment:"""
         
