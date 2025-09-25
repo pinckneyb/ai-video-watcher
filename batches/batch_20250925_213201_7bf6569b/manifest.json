@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_20250925_213201_7bf6569b",
+  "created_at": "2025-09-25T21:32:01.007666",
+  "settings": {
+    "pattern": "vertical_mattress",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "116_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_116_vertical_mattress.M4V_20250925_213308.html",
+      "narrative_path": "narratives/VOP_Assessment_116_vertical_mattress.M4V_20250925_213308.txt",
+      "score": null,
+      "started_at": "2025-09-25T21:32:01.009291",
+      "completed_at": "2025-09-25T21:33:08.578141",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-25T21:33:08.578168"
+}

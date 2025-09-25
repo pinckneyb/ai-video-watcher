@@ -710,6 +710,70 @@ RUBRIC POINTS TO ASSESS:
 Provide your complete assessment:"""
             return prompt
         
+        if pattern == "vertical_mattress":
+            prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
+
+SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
+
+ASSUMPTION: The suturing technique label in the app is authoritative. Assume this procedure is vertical mattress; do NOT reclassify the pattern. If observations conflict, note deficiencies but continue to assess as vertical mattress.
+
+You have just observed a complete surgical video of suturing technique. The following is your detailed observation record from watching the procedure:
+
+OBSERVATION RECORD:
+{video_narrative}
+
+ASSESSMENT TASK:
+Evaluate this surgical performance against the specific rubric criteria. Base your assessment on what you directly observed in the video, not on any written description.
+
+ASSESSMENT FOUNDATION:
+For this vertical mattress case, assume that the far-far (deep) and near-near (superficial) pass pattern is being correctly executed even if individual passes are difficult to distinguish visually. Due to practice pad limitations and video resolution, the distinct deep and superficial components may appear as single bites when they are actually proper vertical mattress technique. Do not penalize for apparent "single bites" when the video is labeled as vertical mattress - assume the technique includes the required deep and superficial passes.
+
+ASSESSMENT FOCUS:
+Focus summative comments on: pass symmetry and spacing, tissue handling quality, knot construction and security, tension balance between deep and superficial components, eversion quality, and efficiency of motion. If errors are noted, they should relate to technique execution quality rather than apparent missing deep/superficial distinction.
+
+STRICT SCORING CALIBRATION (Vertical Mattress):
+- Default score for "Correct deep (far-far) and superficial (near-near) passes" is 3 (competent, standard technique) unless strong evidence of poor execution warrants lower scoring.
+- For videos labeled vertical mattress, assume the dual-pass technique is present even if visually subtle.
+- Use the detailed 5-point scoring guides in the rubric for each criterion.
+- Award 4 for proficient technique with good execution and clear eversion.
+- Award 5 ONLY for excellent execution meeting the highest rubric standards.
+
+CRITICAL FOCUS: ACTIVE SUTURE LINE ASSESSMENT
+Evaluate ONLY the single incision that was worked on throughout.
+
+PATTERN ASSESSMENT RULES (Vertical Mattress):
+- Assume far-far (deep) and near-near (superficial) pass components are present in labeled vertical mattress videos
+- Comment on pass symmetry, spacing, and perpendicularity to wound edges
+- Assess tension balance between deep support and superficial closure
+- Evaluate eversion quality and skin approximation
+- Assess instrument control, forceps use, needle handling, and overall tissue management
+- Comment on knot security, placement, and consistency
+- Note workflow efficiency, hand positioning, and technique smoothness
+
+LANGUAGE AND OUTPUT RULES (MANDATORY):
+- Do NOT mention images/frames/narratives in output
+- Do NOT say "single bites without distinct components" for videos labeled vertical mattress
+- Eyewitness, concise clinical language only
+- Assume dual-pass technique is executed unless there is overwhelming evidence to the contrary
+
+RUBRIC ASSESSMENT FORMAT:
+For each rubric point, provide a 1-2 sentence comment and a 1-5 score. Apply the guidelines above before writing the final number.
+
+IMPORTANT: Assess only against {rubric_data['display_name']} criteria. Do not mention other suture patterns.
+
+Format each rubric point exactly like this:
+
+{self._generate_rubric_format_example(rubric_data['points'])}
+
+SUMMATIVE_ASSESSMENT:
+[Write a holistic 2-3 paragraph assessment of the entire procedure focusing on pass execution, tension balance, eversion quality, and overall competence. Do NOT mention images, frames, or narratives.]
+
+RUBRIC POINTS TO ASSESS:
+{json.dumps(rubric_data['points'], indent=2)}
+
+Provide your complete assessment:"""
+            return prompt
+        
         prompt = f"""YOU ARE A STRICT ATTENDING SURGEON WHO DEMANDS EXCELLENCE. You are training surgeons who will operate on real patients. Assume EVERY technique has flaws until proven otherwise.
 
 SURGICAL ASSESSMENT: {rubric_data['display_name']} Suturing Technique
