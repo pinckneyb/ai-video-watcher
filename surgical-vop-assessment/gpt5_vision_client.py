@@ -897,25 +897,39 @@ Provide your complete assessment:"""
     def _parse_flow_response(self, response: str, rubric_engine) -> Dict[str, Any]:
         """Parse GPT-5 flow analysis response"""
         try:
-            # Extract rubric scores
+            # Extract rubric scores (no longer looking for RUBRIC_SCORES_START markers)
             scores = {}
-            if "RUBRIC_SCORES_START" in response and "RUBRIC_SCORES_END" in response:
-                score_section = response.split("RUBRIC_SCORES_START")[1].split("RUBRIC_SCORES_END")[0]
-                for line in score_section.strip().split('\n'):
-                    if ':' in line:
-                        parts = line.split(':', 1)
-                        if len(parts) == 2:
-                            try:
-                                rubric_id = int(parts[0].strip())
-                                score = int(parts[1].strip())
+            # Look for numbered scoring lines after summative assessment
+            for line in response.split('\n'):
+                line = line.strip()
+                if ':' in line and line.split(':')[0].strip().isdigit():
+                    parts = line.split(':', 1)
+                    if len(parts) == 2:
+                        try:
+                            rubric_id = int(parts[0].strip())
+                            score_text = parts[1].strip()
+                            # Extract numeric score from text like "4/5" or just "4"
+                            import re
+                            score_match = re.search(r'(\d+)', score_text)
+                            if score_match:
+                                score = int(score_match.group(1))
                                 scores[rubric_id] = score
-                            except ValueError:
-                                continue
+                        except ValueError:
+                            continue
             
-            # Extract summative assessment
+            # Extract summative assessment (everything before scoring section)
             summative_start = response.find("SUMMATIVE ASSESSMENT:") if "SUMMATIVE ASSESSMENT:" in response else response.find("Summative Assessment:")
             if summative_start != -1:
                 summative = response[summative_start:].replace("SUMMATIVE ASSESSMENT:", "").replace("Summative Assessment:", "").strip()
+                # Remove any trailing scoring lines from summative
+                summative_lines = []
+                for line in summative.split('\n'):
+                    line = line.strip()
+                    # Stop adding lines if we hit a scoring line
+                    if ':' in line and line.split(':')[0].strip().isdigit():
+                        break
+                    summative_lines.append(line)
+                summative = '\n'.join(summative_lines).strip()
             else:
                 summative = response
             
@@ -958,10 +972,9 @@ Provide your complete assessment:"""
     
     def _generate_rubric_scores_format(self, rubric_points) -> str:
         """Generate dynamic RUBRIC_SCORES format based on actual rubric points."""
-        score_lines = ["RUBRIC_SCORES_START"]
+        score_lines = []
         for point in rubric_points:
             score_lines.append(f"{point['pid']}: X")
-        score_lines.append("RUBRIC_SCORES_END")
         return "\n".join(score_lines)
     
     def _parse_assessment_response(self, response: str, rubric_engine, pattern_id: str = None) -> Dict[str, Any]:

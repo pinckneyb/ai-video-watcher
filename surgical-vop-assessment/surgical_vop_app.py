@@ -1319,57 +1319,61 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         except Exception as e:
             st.warning(f"⚠️ Could not export TXT file: {str(e)}")
         
-        # PASS 3: Rubric assessment based on video narrative with final product image
-        status_text.text("PASS 3: Applying rubric assessment to video narrative with final product image...")
+        # PASS 3: Rubric assessment based on video narrative
+        status_text.text("PASS 3: Applying rubric assessment to video narrative...")
         
-        # Extract final product image for verification with robust error handling
-        final_product_image = None
-        try:
-            status_text.text("Extracting final product image...")
-            progress_bar.progress(0.85)
-            
-            from surgical_report_generator import SurgicalVOPReportGenerator
-            report_gen = SurgicalVOPReportGenerator()
-            # Use the actual temp video path that exists, not original filename
-            actual_video_path = temp_video_path if 'temp_video_path' in locals() else video_path
-            assessment_data_for_image = {'video_path': actual_video_path, 'api_key': api_key}
-            report_gen._return_pil_for_html = True  # Flag to return PIL Image
-            
-            # Retry logic for image extraction with timeout
-            max_retries = 3
-            retry_delay = 2
-            
-            for attempt in range(max_retries):
-                try:
-                    status_text.text(f"Extracting final product image (attempt {attempt + 1}/{max_retries})...")
-                    final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
-                    if final_product_image:
-                        print("✅ Final product image extracted for Pass 3 assessment")
-                        st.session_state.final_product_image = final_product_image
-                        break
-                    else:
-                        print(f"⚠️ Image extraction attempt {attempt + 1} returned None")
-                        if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
-                except Exception as img_error:
-                    print(f"⚠️ Image extraction attempt {attempt + 1} failed: {str(img_error)}")
-                    if attempt < max_retries - 1:
-                        time.sleep(retry_delay)
-                    else:
-                        raise img_error
-            
-            if not final_product_image:
-                print("⚠️ Could not extract final product image after all retries, proceeding without it")
-                st.session_state.final_product_image = None
-                
-        except Exception as e:
-            print(f"Warning: Final product image extraction failed completely: {str(e)}")
-            st.warning(f"⚠️ Could not extract final product image: {str(e)[:100]}...")
-            st.session_state.final_product_image = None
-            # Continue processing even without image
+        # COMMENTED OUT FOR RESTORATION - Final Product Image Extraction
+        # final_product_image = None
+        # try:
+        #     status_text.text("Extracting final product image...")
+        #     progress_bar.progress(0.85)
+        #     
+        #     from surgical_report_generator import SurgicalVOPReportGenerator
+        #     report_gen = SurgicalVOPReportGenerator()
+        #     # Use the actual temp video path that exists, not original filename
+        #     actual_video_path = temp_video_path if 'temp_video_path' in locals() else video_path
+        #     assessment_data_for_image = {'video_path': actual_video_path, 'api_key': api_key}
+        #     report_gen._return_pil_for_html = True  # Flag to return PIL Image
+        #     
+        #     # Retry logic for image extraction with timeout
+        #     max_retries = 3
+        #     retry_delay = 2
+        #     
+        #     for attempt in range(max_retries):
+        #         try:
+        #             status_text.text(f"Extracting final product image (attempt {attempt + 1}/{max_retries})...")
+        #             final_product_image = report_gen._extract_final_product_image_enhanced_full(assessment_data_for_image, 400)
+        #             if final_product_image:
+        #                 print("✅ Final product image extracted for Pass 3 assessment")
+        #                 st.session_state.final_product_image = final_product_image
+        #                 break
+        #             else:
+        #                 print(f"⚠️ Image extraction attempt {attempt + 1} returned None")
+        #                 if attempt < max_retries - 1:
+        #                     time.sleep(retry_delay)
+        #         except Exception as img_error:
+        #             print(f"⚠️ Image extraction attempt {attempt + 1} failed: {str(img_error)}")
+        #             if attempt < max_retries - 1:
+        #                 time.sleep(retry_delay)
+        #             else:
+        #                 raise img_error
+        #     
+        #     if not final_product_image:
+        #         print("⚠️ Could not extract final product image after all retries, proceeding without it")
+        #         st.session_state.final_product_image = None
+        #         
+        # except Exception as e:
+        #     print(f"Warning: Final product image extraction failed completely: {str(e)}")
+        #     st.warning(f"⚠️ Could not extract final product image: {str(e)[:100]}...")
+        #     st.session_state.final_product_image = None
+        #     # Continue processing even without image
+        # 
+        # # For subcuticular assessments, disable final image usage in Pass 3
+        # image_for_pass3 = None if current_pattern == 'subcuticular' else final_product_image
+        # END COMMENTED OUT SECTION
         
-        # For subcuticular assessments, disable final image usage in Pass 3
-        image_for_pass3 = None if current_pattern == 'subcuticular' else final_product_image
+        # No final product image for Pass 3
+        image_for_pass3 = None
         
         enhanced_narrative = gpt5_client.pass3_rubric_assessment(
             current_pattern, rubric_engine, image_for_pass3,
@@ -1557,47 +1561,48 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 else:
                     f.write("<p><strong>Assessment scores not available</strong></p>\n")
                 
-                # Learner Final Product Image (first)
-                f.write("<h2>Final Product Comparison</h2>\n")
-                f.write("<div class='image-section'>\n")
-                f.write("<h3>Learner Final Product</h3>\n")
-                try:
-                    # Use the final product image from session state
-                    final_product_image = st.session_state.get('final_product_image', None)
-                    if final_product_image is not None and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
-                        import base64
-                        from io import BytesIO
-                        buffered = BytesIO()
-                        final_product_image.save(buffered, format="JPEG")
-                        img_str = base64.b64encode(buffered.getvalue()).decode()
-                        f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
-                    else:
-                        f.write("<p><em>No suitable final product image found</em></p>\n")
-                except Exception as e:
-                    f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
-                f.write("</div>\n")
-                
-                # Gold Standard Image (below)
-                f.write("<div class='image-section'>\n")
-                f.write("<h3>Gold Standard Reference</h3>\n")
-                try:
-                    # Use correct gold standard image filenames
-                    gold_standard_mapping = {
-                        'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
-                        'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
-                        'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
-                    }
-                    gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
-                    if os.path.exists(gold_standard_path):
-                        with open(gold_standard_path, "rb") as img_file:
-                            import base64 as b64
-                            img_data = b64.b64encode(img_file.read()).decode()
-                            f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
-                    else:
-                        f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
-                except Exception as e:
-                    f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
-                f.write("</div>\n")
+                # COMMENTED OUT FOR RESTORATION - Final Product Comparison Section
+                # f.write("<h2>Final Product Comparison</h2>\n")
+                # f.write("<div class='image-section'>\n")
+                # f.write("<h3>Learner Final Product</h3>\n")
+                # try:
+                #     # Use the final product image from session state
+                #     final_product_image = st.session_state.get('final_product_image', None)
+                #     if final_product_image is not None and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
+                #         import base64
+                #         from io import BytesIO
+                #         buffered = BytesIO()
+                #         final_product_image.save(buffered, format="JPEG")
+                #         img_str = base64.b64encode(buffered.getvalue()).decode()
+                #         f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
+                #     else:
+                #         f.write("<p><em>No suitable final product image found</em></p>\n")
+                # except Exception as e:
+                #     f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
+                # f.write("</div>\n")
+                # 
+                # # Gold Standard Image (below)
+                # f.write("<div class='image-section'>\n")
+                # f.write("<h3>Gold Standard Reference</h3>\n")
+                # try:
+                #     # Use correct gold standard image filenames
+                #     gold_standard_mapping = {
+                #         'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
+                #         'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
+                #         'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
+                #     }
+                #     gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
+                #     if os.path.exists(gold_standard_path):
+                #         with open(gold_standard_path, "rb") as img_file:
+                #             import base64 as b64
+                #             img_data = b64.b64encode(img_file.read()).decode()
+                #             f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
+                #     else:
+                #         f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
+                # except Exception as e:
+                #     f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
+                # f.write("</div>\n")
+                # END COMMENTED OUT SECTION
                 
                 f.write("</body>\n</html>\n")
             
@@ -1924,46 +1929,47 @@ def display_assessment_results(rubric_engine: RubricEngine):
                         else:
                             f.write("</strong></div>\n")
                     
-                    # Add final product image if available
-                    f.write("<h2>Final Product Comparison</h2>\n")
-                    f.write("<div class='image-section'>\n")
-                    f.write("<h3>Learner Final Product</h3>\n")
-                    try:
-                        final_product_image = st.session_state.get('final_product_image', None)
-                        if final_product_image is not None and hasattr(final_product_image, 'save'):
-                            import base64
-                            from io import BytesIO
-                            buffered = BytesIO()
-                            final_product_image.save(buffered, format="JPEG")
-                            img_str = base64.b64encode(buffered.getvalue()).decode()
-                            f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
-                        else:
-                            f.write("<p><em>No final product image available</em></p>\n")
-                    except Exception as e:
-                        f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
-                    f.write("</div>\n")
-                    
-                    # Add gold standard image
-                    f.write("<div class='image-section'>\n")
-                    f.write("<h3>Gold Standard Reference</h3>\n")
-                    try:
-                        gold_standard_mapping = {
-                            'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
-                            'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
-                            'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
-                        }
-                        current_pattern = results['video_info']['pattern']
-                        gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
-                        if os.path.exists(gold_standard_path):
-                            with open(gold_standard_path, "rb") as img_file:
-                                import base64 as b64
-                                img_data = b64.b64encode(img_file.read()).decode()
-                                f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
-                        else:
-                            f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
-                    except Exception as e:
-                        f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
-                    f.write("</div>\n")
+                    # COMMENTED OUT FOR RESTORATION - Final Product Comparison Section
+                    # f.write("<h2>Final Product Comparison</h2>\n")
+                    # f.write("<div class='image-section'>\n")
+                    # f.write("<h3>Learner Final Product</h3>\n")
+                    # try:
+                    #     final_product_image = st.session_state.get('final_product_image', None)
+                    #     if final_product_image is not None and hasattr(final_product_image, 'save'):
+                    #         import base64
+                    #         from io import BytesIO
+                    #         buffered = BytesIO()
+                    #         final_product_image.save(buffered, format="JPEG")
+                    #         img_str = base64.b64encode(buffered.getvalue()).decode()
+                    #         f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
+                    #     else:
+                    #         f.write("<p><em>No final product image available</em></p>\n")
+                    # except Exception as e:
+                    #     f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
+                    # f.write("</div>\n")
+                    # 
+                    # # Add gold standard image
+                    # f.write("<div class='image-section'>\n")
+                    # f.write("<h3>Gold Standard Reference</h3>\n")
+                    # try:
+                    #     gold_standard_mapping = {
+                    #         'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
+                    #         'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
+                    #         'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
+                    #     }
+                    #     current_pattern = results['video_info']['pattern']
+                    #     gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
+                    #     if os.path.exists(gold_standard_path):
+                    #         with open(gold_standard_path, "rb") as img_file:
+                    #             import base64 as b64
+                    #             img_data = b64.b64encode(img_file.read()).decode()
+                    #             f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
+                    #     else:
+                    #         f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
+                    # except Exception as e:
+                    #     f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
+                    # f.write("</div>\n")
+                    # END COMMENTED OUT SECTION
                     
                     f.write("</body>\n</html>\n")
                 
