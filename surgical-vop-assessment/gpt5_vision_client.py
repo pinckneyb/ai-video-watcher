@@ -753,7 +753,9 @@ PATTERN ASSESSMENT RULES (Vertical Mattress):
 LANGUAGE AND OUTPUT RULES (MANDATORY):
 - Do NOT mention images/frames/narratives in output
 - Do NOT say "single bites without distinct components" for videos labeled vertical mattress
-- Eyewitness, concise clinical language only
+- Do NOT reference "assumptions", "instructions", "per guidance", or similar meta-language
+- Use natural clinical language as if observing standard vertical mattress technique execution
+- Eyewitness, concise clinical language only - describe technique execution directly
 - Assume dual-pass technique is executed unless there is overwhelming evidence to the contrary
 
 RUBRIC ASSESSMENT FORMAT:
