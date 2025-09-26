@@ -16,25 +16,28 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Streamlit App"
+args = "Test App"
 
 [[workflows.workflow]]
-name = "Streamlit App"
+name = "Test App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python run_app.py"
-waitForPort = 5000
+args = "echo \"Deployment test ready\""
 
 [workflows.workflow.metadata]
-outputType = "webview"
+outputType = "console"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 33695
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "vm"
-run = ["python", "run_app.py"]
-build = ["pip", "install", "--no-cache-dir", "streamlit==1.49.1", "opencv-python-headless==4.8.1.78", "pillow==10.4.0", "numpy==1.24.4", "requests==2.31.0", "python-dotenv==1.0.1", "openai==1.0.0", "reportlab==4.0.9", "matplotlib==3.7.5", "fpdf2==2.7.9"]
+run = ["python", "-m", "streamlit", "run", "surgical-vop-assessment/surgical_vop_app.py", "--server.port=5000", "--server.address=0.0.0.0", "--server.headless=true"]
+build = ["pip", "install", "--no-deps", "streamlit", "opencv-python-headless", "pillow", "numpy", "requests", "python-dotenv", "openai", "reportlab", "matplotlib", "fpdf2"]
