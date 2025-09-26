@@ -16,25 +16,29 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "AI Video Analysis Suite"
+args = "Streamlit App"
 
 [[workflows.workflow]]
-name = "AI Video Analysis Suite"
+name = "Streamlit App"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run surgical-vop-assessment/surgical_vop_app.py"
+args = "python run_app.py"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 34247
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "vm"
-run = ["streamlit", "run", "surgical-vop-assessment/app.py", "--server.port=5000", "--server.address=0.0.0.0"]
+run = ["python", "run_app.py"]
 build = ["pip", "install", "--no-cache-dir", "streamlit==1.49.1", "opencv-python-headless==4.8.1.78", "pillow==10.4.0", "numpy==1.24.4", "requests==2.31.0", "python-dotenv==1.0.1", "openai==1.0.0", "reportlab==4.0.9", "matplotlib==3.7.5", "fpdf2==2.7.9"]
