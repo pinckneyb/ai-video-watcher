@@ -33,10 +33,6 @@ outputType = "console"
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 33695
-externalPort = 3000
-
 [deployment]
 deploymentTarget = "vm"
 run = ["python", "-m", "streamlit", "run", "surgical-vop-assessment/surgical_vop_app.py", "--server.port=5000", "--server.address=0.0.0.0", "--server.headless=true"]
