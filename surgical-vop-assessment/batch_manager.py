@@ -19,7 +19,7 @@ class BatchManager:
         
         # Ensure directories exist
         os.makedirs(base_dir, exist_ok=True)
-        os.makedirs("html_reports", exist_ok=True)
+        os.makedirs("pdf_reports", exist_ok=True)
         os.makedirs("narratives", exist_ok=True)
     
     def create_batch(self, video_names: List[str], settings: Dict[str, Any]) -> str:
@@ -48,7 +48,7 @@ class BatchManager:
                 "input_name": video_name,
                 "detected_pattern": settings.get("pattern", "unknown"),
                 "status": "pending",
-                "html_path": None,
+                "pdf_path": None,
                 "narrative_path": None,
                 "score": None,
                 "started_at": None,
@@ -69,7 +69,7 @@ class BatchManager:
         return batch_id
     
     def update_item_status(self, batch_id: str, video_name: str, status: str, 
-                          html_path: Optional[str] = None, narrative_path: Optional[str] = None,
+                          pdf_path: Optional[str] = None, narrative_path: Optional[str] = None,
                           score: Optional[str] = None, error: Optional[str] = None):
         """Update status of a specific video in the batch"""
         manifest = self._load_manifest(batch_id)
@@ -85,8 +85,8 @@ class BatchManager:
                 elif status in ["completed", "failed"]:
                     item["completed_at"] = datetime.now().isoformat()
                 
-                if html_path:
-                    item["html_path"] = html_path
+                if pdf_path:
+                    item["pdf_path"] = pdf_path
                 if narrative_path:
                     item["narrative_path"] = narrative_path
                 if score:
@@ -160,10 +160,10 @@ class BatchManager:
                 # Add all completed files
                 for item in manifest["items"]:
                     if item["status"] == "completed":
-                        # Add HTML file
-                        if item["html_path"] and os.path.exists(item["html_path"]):
-                            zf.write(item["html_path"], 
-                                   f"html_reports/{os.path.basename(item['html_path'])}")
+                        # Add PDF file
+                        if item["pdf_path"] and os.path.exists(item["pdf_path"]):
+                            zf.write(item["pdf_path"], 
+                                   f"pdf_reports/{os.path.basename(item['pdf_path'])}")
                         
                         # Add narrative file
                         if item["narrative_path"] and os.path.exists(item["narrative_path"]):
@@ -266,14 +266,14 @@ class BatchManager:
     
     def _create_summary_csv(self, manifest: Dict) -> str:
         """Create a CSV summary of batch results"""
-        lines = ["Video Name,Pattern,Status,Score,HTML File,TXT File"]
+        lines = ["Video Name,Pattern,Status,Score,PDF File,TXT File"]
         
         for item in manifest["items"]:
-            html_filename = os.path.basename(item["html_path"]) if item["html_path"] else ""
+            pdf_filename = os.path.basename(item["pdf_path"]) if item["pdf_path"] else ""
             txt_filename = os.path.basename(item["narrative_path"]) if item["narrative_path"] else ""
             
             lines.append(f'"{item["input_name"]}","{item["detected_pattern"]}",'
                         f'"{item["status"]}","{item.get("score", "")}","'
-                        f'{html_filename}","{txt_filename}"')
+                        f'{pdf_filename}","{txt_filename}"')
         
         return "\n".join(lines)

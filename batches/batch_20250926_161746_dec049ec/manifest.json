@@ -1,0 +1,113 @@
+{
+  "batch_id": "batch_20250926_161746_dec049ec",
+  "created_at": "2025-09-26T16:17:46.288612",
+  "settings": {
+    "pattern": "simple_interrupted",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "2501_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2501_simple_interrupted.mp4_20250926_161913.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:17:46.304778",
+      "completed_at": "2025-09-26T16:19:14.035133",
+      "error": null
+    },
+    {
+      "input_name": "2503_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2503_simple_interrupted.mp4_20250926_162038.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:19:14.036390",
+      "completed_at": "2025-09-26T16:20:39.017424",
+      "error": null
+    },
+    {
+      "input_name": "2504_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2504_simple_interrupted.mp4_20250926_162234.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:20:39.020196",
+      "completed_at": "2025-09-26T16:22:34.488729",
+      "error": null
+    },
+    {
+      "input_name": "2506_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2506_simple_interrupted.mp4_20250926_162433.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:22:34.490844",
+      "completed_at": "2025-09-26T16:24:33.242588",
+      "error": null
+    },
+    {
+      "input_name": "2507_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2507_simple_interrupted.mp4_20250926_162631.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:24:33.245847",
+      "completed_at": "2025-09-26T16:26:31.659834",
+      "error": null
+    },
+    {
+      "input_name": "2509_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2509_simple_interrupted.mp4_20250926_162818.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:26:31.661533",
+      "completed_at": "2025-09-26T16:28:18.353166",
+      "error": null
+    },
+    {
+      "input_name": "2511_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2511_simple_interrupted.mp4_20250926_162948.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:28:18.355423",
+      "completed_at": "2025-09-26T16:29:48.522075",
+      "error": null
+    },
+    {
+      "input_name": "2515_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2515_simple_interrupted.mp4_20250926_163124.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:29:48.523482",
+      "completed_at": "2025-09-26T16:31:24.619426",
+      "error": null
+    },
+    {
+      "input_name": "2516_simple_interrupted.mp4",
+      "detected_pattern": "simple_interrupted",
+      "status": "completed",
+      "html_path": null,
+      "narrative_path": "narratives/VOP_Assessment_2516_simple_interrupted.mp4_20250926_163243.txt",
+      "score": null,
+      "started_at": "2025-09-26T16:31:24.621353",
+      "completed_at": "2025-09-26T16:32:43.085783",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-26T16:32:43.085801"
+}

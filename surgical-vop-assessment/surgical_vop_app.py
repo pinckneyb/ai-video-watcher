@@ -755,14 +755,14 @@ def main():
                                 st.write(f"**{item['input_name']}** - {item['detected_pattern']} - Score: {score}")
                             
                             with col2:
-                                if item["html_path"] and os.path.exists(item["html_path"]):
-                                    with open(item["html_path"], "rb") as f:
+                                if item["pdf_path"] and os.path.exists(item["pdf_path"]):
+                                    with open(item["pdf_path"], "rb") as f:
                                         st.download_button(
-                                            label="🌐 HTML",
+                                            label="📄 PDF",
                                             data=f.read(),
-                                            file_name=os.path.basename(item["html_path"]),
-                                            mime="text/html",
-                                            key=f"html_{selected_batch_id}_{item['input_name']}"
+                                            file_name=os.path.basename(item["pdf_path"]),
+                                            mime="application/pdf",
+                                            key=f"pdf_{selected_batch_id}_{item['input_name']}"
                                         )
                             
                             with col3:
@@ -856,7 +856,7 @@ def main():
                                 
                                 # Extract score from assessment results
                                 score = None
-                                html_path = None
+                                pdf_path = None
                                 narrative_path = None
                                 
                                 if hasattr(st.session_state, 'assessment_results'):
@@ -874,12 +874,12 @@ def main():
                                     if clean_filename.startswith("temp_"):
                                         clean_filename = clean_filename[5:]
                                     
-                                    # Look for HTML and narrative files
+                                    # Look for PDF and narrative files
                                     import glob
-                                    html_pattern = f"html_reports/VOP_Assessment_{clean_filename}_*.html"
-                                    html_files = glob.glob(html_pattern)
-                                    if html_files:
-                                        html_path = max(html_files, key=os.path.getctime)
+                                    pdf_pattern = f"pdf_reports/VOP_Assessment_{clean_filename}_*.pdf"
+                                    pdf_files = glob.glob(pdf_pattern)
+                                    if pdf_files:
+                                        pdf_path = max(pdf_files, key=os.path.getctime)
                                     
                                     txt_pattern = f"narratives/VOP_Assessment_{clean_filename}_*.txt"
                                     txt_files = glob.glob(txt_pattern)
@@ -889,7 +889,7 @@ def main():
                                 # Update batch with completed status
                                 st.session_state.batch_manager.update_item_status(
                                     current_batch_id, file.name, "completed",
-                                    html_path=html_path,
+                                    pdf_path=pdf_path,
                                     narrative_path=narrative_path,
                                     score=score
                                 )

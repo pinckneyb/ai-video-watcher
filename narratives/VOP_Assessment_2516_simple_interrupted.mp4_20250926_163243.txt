@@ -1,0 +1,47 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: 2516_simple_interrupted.mp4
+Pattern: Simple Interrupted
+Analysis Date: 2025-09-26 16:32:43
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The procedure follows a single vertical skin incision on the right side of the practice pad throughout the recording. Although an early frame set briefly described activity at a left‑sided slit, the remainder of the sequence consistently documents work along the short vertical wound on the right third of the pad; that right‑sided incision is therefore the focus of the entire suturing session. The operator works deliberately along this single linear defect, placing and securing a series of simple interrupted stitches while maintaining close instrument coordination and progressive knot management until the wound is fully approximated.
+
+Initial approach and setup
+At the outset the operator positions both gloved hands over the pad, bringing needle driver and fine toothed forceps into close opposition over the right‑side incision. The curved, swaged needle with black monofilament suture is grasped in the driver not at the very tip but along the mid‑to‑proximal shaft; this grip is used repeatedly to rotate the needle in a controlled arc through the dermal layers. The opposite hand holds toothed forceps (Adson‑type) or pickup forceps to elevate, evert and precisely align the epidermal edges. Hands remain within a few centimeters of each other and the wound so movements are compact and coordinated from the start.
+
+Needle passage technique and tissue handling
+Throughout the video the operator favors short, controlled bites taken through the dermal/subdermal thickness of the synthetic skin model. The needle path typically travels lateral‑to‑medial across the short axis of the incision, with the driver approaching roughly perpendicular to oblique over the wound and sweeping the needle tip through the tissue in an arc. The forceps lift the nearby edge to create slight eversion and stabilize the dermal margin while the needle transfixes the opposed side; this combination of elevation with a perpendicular-to-oblique needle trajectory produces close edge apposition with minimal gaping.
+
+Needle grips are consistently pragmatic: the driver often grips the needle a short distance from the tip or near mid‑shaft to maximize purchase on the curve as it is rotated through dense model tissue. The operator occasionally re‑grips the shaft during a pass or to facilitate withdrawal and redirection for the subsequent knot work. Suture material is managed immediately as it is brought through the wound: one hand secures free suture limbs with a clamp or pickup while the other withdraws the needle and organizes the loop for tying.
+
+Sequential placement and knot management
+The suturing proceeds in a sequential fashion along the length of the incision, with the operator placing a stitch and then performing the tightening/tying and tail management before proceeding to the next adjacent bite. Early passes demonstrate the classic workflow: needle is driven through one wound lip, the driver pulls the suture through, the assistant or opposite hand holds the tail to control tension, and the knot is constructed using the needle driver to form throws and the forceps to maintain alignment. In many frames the operator uses the driver both for passage and for forming and tightening knots; at times small ringed clamps or scissors are introduced briefly to control or trim tails.
+
+Knot tying is deliberate and close to the incision. The left and right hands trade roles across sequences — sometimes the left hand holds the driver and the right manipulates the forceps, and at other moments this is reversed — but they consistently remain within a compact working envelope adjacent to the wound. During knot formation the driver is often held in a near‑vertical orientation above the wound while the forceps draw the suture limb laterally and inferiorly to solidify the knot stack. After secure tying the operator trims excess tails and smooths each knot so it produces slight eversion at the stitch site without excessive puckering.
+
+Technique nuances and consistency
+The pattern used is a standard simple interrupted technique executed with technical consistency. Bites are generally shallow to mid‑dermal, intended to bring epidermal edges into close apposition while achieving slight eversion. The operator avoids excessive tension, keeping manipulations gentle to prevent tissue bunching. Across the recording there is little evidence of deep tissue undermining or irregular bite depth; rather, the operator maintains a relatively uniform approach to bite placement and knot tensioning, producing evenly spaced apposed edges with subtle eversion.
+
+Minor variations do occur in handedness and approach angle. In some sequences the needle driver approaches from the superior or medial aspect while forceps work inferiorly and laterally; in others the driver comes from the left side and the forceps from the right. These variations reflect ergonomic adjustments as the operator moves along the incision. Grip location on the needle likewise varies slightly — sometimes a bit nearer the swage to leverage the curve, sometimes more mid‑shaft — but the core movement remains a controlled arc with the opposing forceps stabilizing tissue.
+
+Coordination and spatial relationships
+Hand and instrument movements are tightly coordinated and spatially efficient. The two instruments meet closely over the wound during needle passage so the needle tip can be received and retrieved without large sweeping motions. Suture tails are managed with a combination of clamp and forceps; when preparing to tie the next stitch one hand often secures the free limb near the skin while the other forms the throws. As stitches are placed in sequence, instruments simply slide up the wound to the next locus, maintaining the same small interinstrument distance and the same lateral‑to‑medial needle trajectory.
+
+As the sequence proceeds some frames emphasize finishing tasks rather than new passes: the operator tightens previously placed knots, trims tails, and repositions sutures to ensure uniform approximation. There are brief moments when no hands are visible and the wound is shown with completed, tied sutures in place; these pauses illustrate the methodical pace — place a stitch, secure it, trim and prepare for the next pass.
+
+Evolution of hand positions over time
+At the beginning both hands are positioned high and centered over the incision for initial passes; one hand consistently holds the needle driver while the other controls tissue and suture limbs. Midway through the session the operator sometimes switches which hand holds the driver, reflecting handedness adjustments or ergonomics as attention moves superiorly along the incision. Despite these swaps, the relative positions remain stable: the instrument used to drive the needle approaches from above or slightly lateral, while the pickup forceps hold and evert the edge from the opposite side and slightly inferior. Toward completion the hands remain close, focusing more on knot finishing and tail trimming than on large instrument movements.
+
+Finalization and inspection
+In later frames the operator concentrates on knot tightening, suture tail trimming, and smoothing of knots to ensure consistent eversion and coaptation. The series culminates with the entire length of the incision approximated by a column of evenly placed interrupted stitches, each producing mild eversion and minimal interstitch gapping. The suture tails are clipped to short lengths and lie laterally from the knots, and the reconstructed wound shows uniform alignment across its length without overt puckering or significant tension lines.
+
+Deficiencies and minor inconsistencies
+A small inconsistency in the documentation appears in one early frame set that described activity at a left‑sided slit; this contradicts the prevailing visual evidence in the remainder of the recording that places all activity along the right‑side incision. Aside from that descriptive discrepancy, the technical execution is consistent. There are occasional brief pauses where no instruments are visible, but these correspond to inspection or repositioning rather than changes in the overall technique.
+
+Final condition of the wound
+By the end of the recording the right‑side linear defect is closed with a neat column of interrupted sutures. The edges are well approximated with slight eversion at each knot, suture loops lie evenly spaced, and excess tails have been trimmed. The closure demonstrates a reproducible, reliable simple interrupted technique with careful needle handling, consistent bite depth, and controlled knot tensioning. The wound appears secure, with alignment maintained along the entire treated length and minimal surrounding distortion of the synthetic tissue.
+
+============================================================
+END OF NARRATIVE
