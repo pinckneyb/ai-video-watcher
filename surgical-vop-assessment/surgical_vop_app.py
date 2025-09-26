@@ -1433,7 +1433,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
         try:
             # Ensure directories exist
             os.makedirs("narratives", exist_ok=True)
-            os.makedirs("html_reports", exist_ok=True)
+            os.makedirs("pdf_reports", exist_ok=True)
             
             # Use original filename without temp_ prefix
             clean_filename = original_filename
@@ -1442,7 +1442,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
             
             base_filename = f"VOP_Assessment_{clean_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             txt_filename = os.path.join("narratives", f"{base_filename}.txt")
-            html_filename = os.path.join("html_reports", f"{base_filename}.html")
+            pdf_filename = os.path.join("pdf_reports", f"{base_filename}.pdf")
             
             # Generate TXT report with FULL Pass 2 narrative
             with open(txt_filename, 'w', encoding='utf-8') as f:
@@ -1457,169 +1457,169 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                 f.write(f"\n\n{'='*60}\n")
                 f.write("END OF NARRATIVE")
             
-            # Generate HTML report with properly stacked images
-            with open(html_filename, 'w', encoding='utf-8') as f:
-                f.write("<!DOCTYPE html>\n<html>\n<head>\n")
-                f.write("<title>Surgical VOP Assessment Report</title>\n")
-                f.write("<style>\n")
-                f.write("body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }\n")
-                f.write("h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }\n")
-                f.write("h2 { color: #34495e; margin-top: 30px; }\n")
-                f.write(".rubric-point { margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; }\n")
-                f.write(".summative { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }\n")
-                f.write(".average-score { background-color: #fff3cd; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0; }\n")
-                f.write(".image-section { margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; }\n")
-                f.write(".image-section h3 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 10px; }\n")
-                f.write(".image-section img { max-width: 100%; max-height: 500px; width: auto; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }\n")
-                f.write("</style>\n</head>\n<body>\n")
-                
-                f.write(f"<h1>Surgical VOP Assessment Report</h1>\n")
-                f.write(f"<p><strong>Video:</strong> {original_filename}</p>\n")
-                f.write(f"<p><strong>Pattern:</strong> {current_pattern.replace('_', ' ').title()}</p>\n")
-                
-                # Get the assessment results data
-                assessment_results = st.session_state.get('assessment_results', {})
-                enhanced_narrative = assessment_results.get('enhanced_narrative', {})
-                extracted_scores = assessment_results.get('extracted_scores', {})
-                
-                # Extract assessment data - handle both structured and unstructured formats
-                rubric_comments = {}
-                summative_assessment = ""
-                
-                if enhanced_narrative and isinstance(enhanced_narrative, dict):
-                    # Try to get structured data first
-                    rubric_comments = enhanced_narrative.get('rubric_comments', {})
-                    summative_assessment = enhanced_narrative.get('summative_assessment', '')
-                    
-                    # If no structured data, try to parse from full_response
-                    if not rubric_comments and 'full_response' in enhanced_narrative:
-                        full_response = enhanced_narrative['full_response']
-                        # Parse rubric points from full response
-                        for point_num in range(1, 8):
-                            point_pattern = f"RUBRIC_POINT_{point_num}:"
-                            if point_pattern in full_response:
-                                start_idx = full_response.find(point_pattern)
-                                if start_idx != -1:
-                                    next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
-                                    summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
-                                    end_idx = len(full_response)
-                                    if next_point_idx != -1:
-                                        end_idx = min(end_idx, next_point_idx)
-                                    if summative_idx != -1:
-                                        end_idx = min(end_idx, summative_idx)
-                                    
-                                    point_section = full_response[start_idx:end_idx]
-                                    comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
-                                    if comment_match:
-                                        rubric_comments[point_num] = comment_match.group(1).strip()
-                        
-                        # Parse summative assessment from full response
-                        if not summative_assessment:
-                            if "SUMMATIVE_ASSESSMENT:" in full_response:
-                                summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
-                                summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
-                
-                # Get rubric point titles for proper labeling
-                pattern_data = rubric_engine.get_pattern_rubric(current_pattern)
-                rubric_titles = {}
-                if pattern_data and 'points' in pattern_data:
-                    for point in pattern_data['points']:
-                        rubric_titles[point['pid']] = point['title']
-                
-                # Display rubric assessment points
-                if extracted_scores:
-                    f.write("<h2>Rubric Assessment</h2>\n")
-                    # Display rubric points in order
-                    for point_num in range(1, 8):  # Points 1-7
-                        if point_num in extracted_scores:
-                            comment = rubric_comments.get(point_num, "Assessment comment not available")
-                            score = extracted_scores[point_num]
-                            title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
-                            
-                            # Determine Likert scale level
-                            if score >= 5.0:
-                                competency = "Expert"
-                            elif score >= 4.0:
-                                competency = "Proficient"
-                            elif score >= 3.0:
-                                competency = "Competent"
-                            elif score >= 2.0:
-                                competency = "Novice"
-                            else:
-                                competency = "Remediate"
-                            
-                            f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {score}/5 - {competency}</strong></div>\n")
-                    
-                    # Add average score
-                    avg_score = sum(extracted_scores.values()) / len(extracted_scores)
-                    
-                    f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5</strong></div>\n")
-                    
-                    # Add summative comment if available
-                    if summative_assessment:
-                        f.write(f"<div class='summative'><strong>Summative Assessment:</strong><br>{summative_assessment}</div>\n")
-                else:
-                    f.write("<p><strong>Assessment scores not available</strong></p>\n")
-                
-                # COMMENTED OUT FOR RESTORATION - Final Product Comparison Section
-                # f.write("<h2>Final Product Comparison</h2>\n")
-                # f.write("<div class='image-section'>\n")
-                # f.write("<h3>Learner Final Product</h3>\n")
-                # try:
-                #     # Use the final product image from session state
-                #     final_product_image = st.session_state.get('final_product_image', None)
-                #     if final_product_image is not None and hasattr(final_product_image, 'save'):  # Check if it's a PIL Image
-                #         import base64
-                #         from io import BytesIO
-                #         buffered = BytesIO()
-                #         final_product_image.save(buffered, format="JPEG")
-                #         img_str = base64.b64encode(buffered.getvalue()).decode()
-                #         f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
-                #     else:
-                #         f.write("<p><em>No suitable final product image found</em></p>\n")
-                # except Exception as e:
-                #     f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
-                # f.write("</div>\n")
-                # 
-                # # Gold Standard Image (below)
-                # f.write("<div class='image-section'>\n")
-                # f.write("<h3>Gold Standard Reference</h3>\n")
-                # try:
-                #     # Use correct gold standard image filenames
-                #     gold_standard_mapping = {
-                #         'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
-                #         'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
-                #         'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
-                #     }
-                #     gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
-                #     if os.path.exists(gold_standard_path):
-                #         with open(gold_standard_path, "rb") as img_file:
-                #             import base64 as b64
-                #             img_data = b64.b64encode(img_file.read()).decode()
-                #             f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
-                #     else:
-                #         f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
-                # except Exception as e:
-                #     f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
-                # f.write("</div>\n")
-                # END COMMENTED OUT SECTION
-                
-                f.write("</body>\n</html>\n")
+            # Generate PDF report using reportlab
+            from reportlab.lib.pagesizes import letter, A4
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
+            from reportlab.lib import colors
             
-            st.success(f"✅ TXT and HTML reports auto-generated:")
+            # Create PDF document
+            doc = SimpleDocTemplate(pdf_filename, pagesize=A4)
+            story = []
+            styles = getSampleStyleSheet()
+            
+            # Create custom styles
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                spaceAfter=30,
+                textColor=colors.HexColor('#2c3e50')
+            )
+            
+            heading_style = ParagraphStyle(
+                'CustomHeading',
+                parent=styles['Heading2'],
+                fontSize=14,
+                spaceAfter=12,
+                textColor=colors.HexColor('#34495e')
+            )
+            
+            # Add title
+            story.append(Paragraph("Surgical VOP Assessment Report", title_style))
+            story.append(Spacer(1, 12))
+            
+            # Add video info
+            story.append(Paragraph(f"<b>Video:</b> {original_filename}", styles['Normal']))
+            story.append(Paragraph(f"<b>Pattern:</b> {current_pattern.replace('_', ' ').title()}", styles['Normal']))
+            story.append(Spacer(1, 20))
+            
+            # Get the assessment results data
+            assessment_results = st.session_state.get('assessment_results', {})
+            enhanced_narrative = assessment_results.get('enhanced_narrative', {})
+            extracted_scores = assessment_results.get('extracted_scores', {})
+            
+            # Extract assessment data - handle both structured and unstructured formats
+            rubric_comments = {}
+            summative_assessment = ""
+                
+            if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                # Try to get structured data first
+                rubric_comments = enhanced_narrative.get('rubric_comments', {})
+                summative_assessment = enhanced_narrative.get('summative_assessment', '')
+                
+                # If no structured data, try to parse from full_response
+                if not rubric_comments and 'full_response' in enhanced_narrative:
+                    full_response = enhanced_narrative['full_response']
+                    # Parse rubric points from full response
+                    for point_num in range(1, 8):
+                        point_pattern = f"RUBRIC_POINT_{point_num}:"
+                        if point_pattern in full_response:
+                            start_idx = full_response.find(point_pattern)
+                            if start_idx != -1:
+                                next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
+                                summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
+                                end_idx = len(full_response)
+                                if next_point_idx != -1:
+                                    end_idx = min(end_idx, next_point_idx)
+                                if summative_idx != -1:
+                                    end_idx = min(end_idx, summative_idx)
+                                
+                                point_section = full_response[start_idx:end_idx]
+                                comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
+                                if comment_match:
+                                    rubric_comments[point_num] = comment_match.group(1).strip()
+                    
+                    # Parse summative assessment from full response
+                    if not summative_assessment:
+                        if "SUMMATIVE_ASSESSMENT:" in full_response:
+                            summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
+                            summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
+            
+            # Get rubric point titles for proper labeling
+            pattern_data = rubric_engine.get_pattern_rubric(current_pattern)
+            rubric_titles = {}
+            if pattern_data and 'points' in pattern_data:
+                for point in pattern_data['points']:
+                    rubric_titles[point['pid']] = point['title']
+                
+            # Display rubric assessment points
+            if extracted_scores:
+                story.append(Paragraph("Rubric Assessment", heading_style))
+                story.append(Spacer(1, 12))
+                
+                # Display rubric points in order
+                for point_num in range(1, 8):  # Points 1-7
+                    if point_num in extracted_scores:
+                        comment = rubric_comments.get(point_num, "Assessment comment not available")
+                        score = extracted_scores[point_num]
+                        title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
+                        
+                        # Determine Likert scale level
+                        if score >= 5.0:
+                            competency = "Expert"
+                        elif score >= 4.0:
+                            competency = "Proficient"
+                        elif score >= 3.0:
+                            competency = "Competent"
+                        elif score >= 2.0:
+                            competency = "Novice"
+                        else:
+                            competency = "Remediate"
+                        
+                        # Add rubric point to PDF
+                        story.append(Paragraph(f"<b>{point_num}. {title}</b>", styles['Normal']))
+                        story.append(Paragraph(comment, styles['Normal']))
+                        story.append(Paragraph(f"<b>Score: {score}/5 - {competency}</b>", styles['Normal']))
+                        story.append(Spacer(1, 10))
+                
+                # Add average score
+                avg_score = sum(extracted_scores.values()) / len(extracted_scores)
+                
+                avg_style = ParagraphStyle(
+                    'AvgScore',
+                    parent=styles['Normal'],
+                    fontSize=12,
+                    spaceAfter=12,
+                    alignment=1,  # Center alignment
+                    backColor=colors.HexColor('#fff3cd')
+                )
+                
+                story.append(Paragraph(f"<b>Average Score: {avg_score:.1f}/5</b>", avg_style))
+                story.append(Spacer(1, 15))
+                
+                # Add summative comment if available
+                if summative_assessment:
+                    summative_style = ParagraphStyle(
+                        'Summative',
+                        parent=styles['Normal'],
+                        fontSize=11,
+                        spaceAfter=12,
+                        backColor=colors.HexColor('#e8f5e8')
+                    )
+                    story.append(Paragraph("<b>Summative Assessment:</b>", styles['Normal']))
+                    story.append(Paragraph(summative_assessment, summative_style))
+            else:
+                story.append(Paragraph("<b>Assessment scores not available</b>", styles['Normal']))
+                
+            # Build the PDF
+            doc.build(story)
+            
+            st.success(f"✅ TXT and PDF reports auto-generated:")
             
             # Immediate download section for Pass 3 completion (only if not in batch mode)
             if not st.session_state.get('suppress_individual_downloads', False):
                 st.markdown("### 📥 Save Final Reports to Your Local Machine")
                 
-                # HTML Report Download with local path reminder
-                st.info("💾 **HTML Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\html_reports`")
-                with open(html_filename, "rb") as f:
+                # PDF Report Download with local path reminder
+                st.info("💾 **PDF Report save to:** `C:\\CursorAI_folders\\AI_video_watcher\\pdf_reports`")
+                with open(pdf_filename, "rb") as f:
                     st.download_button(
-                        label="🌐 Download HTML Final Report",
+                        label="📄 Download PDF Final Report",
                         data=f.read(),
-                        file_name=os.path.basename(html_filename),
-                        mime="text/html",
+                        file_name=os.path.basename(pdf_filename),
+                        mime="application/pdf",
                         type="primary"
                     )
                 
@@ -1634,7 +1634,7 @@ def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: in
                     )
             
             # Also show file paths for reference
-            st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(html_filename)}")
+            st.info(f"📁 **Files created**: {os.path.basename(txt_filename)}, {os.path.basename(pdf_filename)}")
         except Exception as report_error:
             st.error(f"❌ **AUTOMATIC REPORT GENERATION FAILED**: {str(report_error)}")
             import traceback
@@ -1803,189 +1803,173 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 unsafe_allow_html=True
             )
         
-        # HTML report generation and download button
-        if st.button("🌐 Generate & Download HTML Report"):
+        # PDF report generation and download button
+        if st.button("📄 Generate & Download PDF Report"):
             try:
-                # Generate HTML filename based on current assessment
-                html_filename = f"html_reports/VOP_Assessment_{results['video_info']['pattern']}_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+                # Generate PDF filename based on current assessment
+                pdf_filename = f"pdf_reports/VOP_Assessment_{results['video_info']['pattern']}_{results['video_info']['filename']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 
-                # Ensure html_reports directory exists
-                os.makedirs("html_reports", exist_ok=True)
+                # Ensure pdf_reports directory exists
+                os.makedirs("pdf_reports", exist_ok=True)
                 
-                # Generate HTML report content
-                with open(html_filename, 'w', encoding='utf-8') as f:
-                    f.write("<!DOCTYPE html>\n<html>\n<head>\n")
-                    f.write("<title>Surgical VOP Assessment Report</title>\n")
-                    f.write("<style>\n")
-                    f.write("body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }\n")
-                    f.write("h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }\n")
-                    f.write("h2 { color: #34495e; margin-top: 30px; }\n")
-                    f.write(".rubric-point { margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; }\n")
-                    f.write(".summative { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }\n")
-                    f.write(".average-score { background-color: #fff3cd; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0; }\n")
-                    f.write(".image-section { margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; }\n")
-                    f.write(".image-section h3 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 10px; }\n")
-                    f.write(".image-section img { max-width: 100%; max-height: 500px; width: auto; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }\n")
-                    f.write("</style>\n</head>\n<body>\n")
+                # Generate PDF report content using reportlab
+                from reportlab.lib.pagesizes import letter, A4
+                from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+                from reportlab.lib import colors
+                
+                # Create PDF document
+                doc = SimpleDocTemplate(pdf_filename, pagesize=A4)
+                story = []
+                styles = getSampleStyleSheet()
+                
+                # Create custom styles
+                title_style = ParagraphStyle(
+                    'CustomTitle',
+                    parent=styles['Heading1'],
+                    fontSize=18,
+                    spaceAfter=30,
+                    textColor=colors.HexColor('#2c3e50')
+                )
+                
+                heading_style = ParagraphStyle(
+                    'CustomHeading',
+                    parent=styles['Heading2'],
+                    fontSize=14,
+                    spaceAfter=12,
+                    textColor=colors.HexColor('#34495e')
+                )
+                
+                # Add title and info
+                story.append(Paragraph("Surgical VOP Assessment Report", title_style))
+                story.append(Spacer(1, 12))
+                story.append(Paragraph(f"<b>Video:</b> {results['video_info']['filename']}", styles['Normal']))
+                story.append(Paragraph(f"<b>Pattern:</b> {results['video_info']['pattern'].replace('_', ' ').title()}", styles['Normal']))
+                story.append(Spacer(1, 20))
+                
+                # Add rubric assessment with GPT-5 generated content
+                enhanced_narrative = results.get('enhanced_narrative', {})
+                extracted_scores = results.get('extracted_scores', {})
+                
+                # Parse GPT-5 comments for each rubric point
+                rubric_comments = {}
+                summative_assessment = ""
+            
+            if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                    # Try to get structured data first
+                    rubric_comments = enhanced_narrative.get('rubric_comments', {})
+                    summative_assessment = enhanced_narrative.get('summative_assessment', '')
                     
-                    f.write(f"<h1>Surgical VOP Assessment Report</h1>\n")
-                    f.write(f"<p><strong>Video:</strong> {results['video_info']['filename']}</p>\n")
-                    f.write(f"<p><strong>Pattern:</strong> {results['video_info']['pattern'].replace('_', ' ').title()}</p>\n")
-                    
-                    # Add rubric assessment with GPT-5 generated content
-                    enhanced_narrative = results.get('enhanced_narrative', {})
-                    extracted_scores = results.get('extracted_scores', {})
-                    
-                    # Parse GPT-5 comments for each rubric point
-                    rubric_comments = {}
-                    summative_assessment = ""
-                    
-                    if enhanced_narrative and isinstance(enhanced_narrative, dict):
-                        # Try to get structured data first
-                        rubric_comments = enhanced_narrative.get('rubric_comments', {})
-                        summative_assessment = enhanced_narrative.get('summative_assessment', '')
+                    # If no structured data, parse from full_response (GPT-5 Pass 3 output)
+                    if not rubric_comments and 'full_response' in enhanced_narrative:
+                        full_response = enhanced_narrative['full_response']
+                        # Parse rubric points from full response
+                        for point_num in range(1, 8):
+                            point_pattern = f"RUBRIC_POINT_{point_num}:"
+                            if point_pattern in full_response:
+                                start_idx = full_response.find(point_pattern)
+                                if start_idx != -1:
+                                    next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
+                                    summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
+                                    end_idx = len(full_response)
+                                    if next_point_idx != -1:
+                                        end_idx = min(end_idx, next_point_idx)
+                                    if summative_idx != -1:
+                                        end_idx = min(end_idx, summative_idx)
+                                    
+                                    point_section = full_response[start_idx:end_idx]
+                                    comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
+                                    if comment_match:
+                                        rubric_comments[point_num] = comment_match.group(1).strip()
                         
-                        # If no structured data, parse from full_response (GPT-5 Pass 3 output)
-                        if not rubric_comments and 'full_response' in enhanced_narrative:
-                            full_response = enhanced_narrative['full_response']
-                            # Parse rubric points from full response
-                            for point_num in range(1, 8):
-                                point_pattern = f"RUBRIC_POINT_{point_num}:"
-                                if point_pattern in full_response:
-                                    start_idx = full_response.find(point_pattern)
-                                    if start_idx != -1:
-                                        next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
-                                        summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
-                                        end_idx = len(full_response)
-                                        if next_point_idx != -1:
-                                            end_idx = min(end_idx, next_point_idx)
-                                        if summative_idx != -1:
-                                            end_idx = min(end_idx, summative_idx)
-                                        
-                                        point_section = full_response[start_idx:end_idx]
-                                        comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
-                                        if comment_match:
-                                            rubric_comments[point_num] = comment_match.group(1).strip()
-                            
-                            # Parse summative assessment from full response
-                            if not summative_assessment:
-                                if "SUMMATIVE_ASSESSMENT:" in full_response:
-                                    summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
-                                    summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
-                    
-                    # Get rubric point titles for proper labeling
-                    rubric_data = st.session_state.get('current_rubric_data', {})
-                    rubric_titles = {}
-                    if 'points' in rubric_data:
-                        for point in rubric_data['points']:
-                            rubric_titles[point['pid']] = point['title']
-                    
-                    f.write("<h2>Rubric Assessment</h2>\n")
-                    # Display rubric points with GPT-5 generated content
-                    for point_num in range(1, 8):
-                        if point_num in extracted_scores:
-                            comment = rubric_comments.get(point_num, "Assessment comment not available")
-                            ai_score = extracted_scores[point_num] 
-                            title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
-                            
-                            # Determine Likert scale level based on AI score
-                            if ai_score >= 5.0:
-                                competency = "Expert"
-                            elif ai_score >= 4.0:
-                                competency = "Proficient"
-                            elif ai_score >= 3.0:
-                                competency = "Competent"
-                            elif ai_score >= 2.0:
-                                competency = "Novice"
-                            else:
-                                competency = "Remediate"
-                            
-                            f.write(f"<div class='rubric-point'><strong>{point_num}. {title}</strong><br>{comment}<br><strong>Score: {ai_score}/5 - {competency}</strong></div>\n")
-                    
-                    # Add AI-generated average score and summative assessment
-                    if extracted_scores:
-                        avg_score = sum(extracted_scores.values()) / len(extracted_scores)
-                        if avg_score >= 5.0:
-                            overall_competency = "Expert"
-                        elif avg_score >= 4.0:
-                            overall_competency = "Proficient"
-                        elif avg_score >= 3.0:
-                            overall_competency = "Competent"
-                        elif avg_score >= 2.0:
-                            overall_competency = "Novice"
+                        # Parse summative assessment from full response
+                        if not summative_assessment:
+                            if "SUMMATIVE_ASSESSMENT:" in full_response:
+                                summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
+                                summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
+                
+                # Get rubric point titles for proper labeling
+                rubric_data = st.session_state.get('current_rubric_data', {})
+                rubric_titles = {}
+                if 'points' in rubric_data:
+                    for point in rubric_data['points']:
+                        rubric_titles[point['pid']] = point['title']
+                
+                # Add rubric assessment section to PDF
+                story.append(Paragraph("Rubric Assessment", heading_style))
+                story.append(Spacer(1, 12))
+                
+                # Display rubric points with GPT-5 generated content
+                for point_num in range(1, 8):
+                    if point_num in extracted_scores:
+                        comment = rubric_comments.get(point_num, "Assessment comment not available")
+                        ai_score = extracted_scores[point_num] 
+                        title = rubric_titles.get(point_num, f"Rubric Point {point_num}")
+                        
+                        # Determine Likert scale level based on AI score
+                        if ai_score >= 5.0:
+                            competency = "Expert"
+                        elif ai_score >= 4.0:
+                            competency = "Proficient"
+                        elif ai_score >= 3.0:
+                            competency = "Competent"
+                        elif ai_score >= 2.0:
+                            competency = "Novice"
                         else:
-                            overall_competency = "Remediate"
+                            competency = "Remediate"
                         
-                        f.write(f"<div class='average-score'><strong>Average Score: {avg_score:.1f}/5</strong></div>\n")
-                        
-                        # Add summative comment if available
-                        if summative_assessment:
-                            f.write(f"<div class='summative'><strong>Summative Assessment:</strong><br>{summative_assessment}</div>\n")
-                    else:
-                        f.write("<p><strong>AI Assessment scores not available - using manual scores</strong></p>\n")
-                        f.write(f"<div class='average-score'><strong>Manual Average Score: {overall_result['average_score']:.1f}/5 ")
-                        if overall_result['pass']:
-                            f.write("</strong></div>\n")
-                        else:
-                            f.write("</strong></div>\n")
-                    
-                    # COMMENTED OUT FOR RESTORATION - Final Product Comparison Section
-                    # f.write("<h2>Final Product Comparison</h2>\n")
-                    # f.write("<div class='image-section'>\n")
-                    # f.write("<h3>Learner Final Product</h3>\n")
-                    # try:
-                    #     final_product_image = st.session_state.get('final_product_image', None)
-                    #     if final_product_image is not None and hasattr(final_product_image, 'save'):
-                    #         import base64
-                    #         from io import BytesIO
-                    #         buffered = BytesIO()
-                    #         final_product_image.save(buffered, format="JPEG")
-                    #         img_str = base64.b64encode(buffered.getvalue()).decode()
-                    #         f.write(f"<img src='data:image/jpeg;base64,{img_str}' alt='Learner Final Product' />\n")
-                    #     else:
-                    #         f.write("<p><em>No final product image available</em></p>\n")
-                    # except Exception as e:
-                    #     f.write(f"<p><em>Error loading final product image: {str(e)}</em></p>\n")
-                    # f.write("</div>\n")
-                    # 
-                    # # Add gold standard image
-                    # f.write("<div class='image-section'>\n")
-                    # f.write("<h3>Gold Standard Reference</h3>\n")
-                    # try:
-                    #     gold_standard_mapping = {
-                    #         'simple_interrupted': 'surgical-vop-assessment/Simple_Interrupted_Suture_example.png',
-                    #         'vertical_mattress': 'surgical-vop-assessment/Vertical_Mattress_Suture_example.png',
-                    #         'subcuticular': 'surgical-vop-assessment/subcuticular_example.png'
-                    #     }
-                    #     current_pattern = results['video_info']['pattern']
-                    #     gold_standard_path = gold_standard_mapping.get(current_pattern, f"surgical-vop-assessment/gold_standard_{current_pattern}.jpg")
-                    #     if os.path.exists(gold_standard_path):
-                    #         with open(gold_standard_path, "rb") as img_file:
-                    #             import base64 as b64
-                    #             img_data = b64.b64encode(img_file.read()).decode()
-                    #             f.write(f"<img src='data:image/jpeg;base64,{img_data}' alt='Gold Standard Reference' />\n")
-                    #     else:
-                    #         f.write(f"<p><em>Gold standard image not found: {gold_standard_path}</em></p>\n")
-                    # except Exception as e:
-                    #     f.write(f"<p><em>Error loading gold standard image: {str(e)}</em></p>\n")
-                    # f.write("</div>\n")
-                    # END COMMENTED OUT SECTION
-                    
-                    f.write("</body>\n</html>\n")
+                        # Add rubric point to PDF
+                        story.append(Paragraph(f"<b>{point_num}. {title}</b>", styles['Normal']))
+                        story.append(Paragraph(comment, styles['Normal']))
+                        story.append(Paragraph(f"<b>Score: {ai_score}/5 - {competency}</b>", styles['Normal']))
+                        story.append(Spacer(1, 10))
                 
-                st.success(f"✅ HTML report generated: {os.path.basename(html_filename)}")
+                # Add AI-generated average score and summative assessment
+                if extracted_scores:
+                    avg_score = sum(extracted_scores.values()) / len(extracted_scores)
+                    
+                    avg_style = ParagraphStyle(
+                        'AvgScore',
+                        parent=styles['Normal'],
+                        fontSize=12,
+                        spaceAfter=12,
+                        alignment=1,  # Center alignment
+                        backColor=colors.HexColor('#fff3cd')
+                    )
+                    
+                    story.append(Paragraph(f"<b>Average Score: {avg_score:.1f}/5</b>", avg_style))
+                    story.append(Spacer(1, 15))
+                    
+                    # Add summative comment if available
+                    if summative_assessment:
+                        summative_style = ParagraphStyle(
+                            'Summative',
+                            parent=styles['Normal'],
+                            fontSize=11,
+                            spaceAfter=12,
+                            backColor=colors.HexColor('#e8f5e8')
+                        )
+                        story.append(Paragraph("<b>Summative Assessment:</b>", styles['Normal']))
+                        story.append(Paragraph(summative_assessment, summative_style))
+                else:
+                    story.append(Paragraph("<b>Assessment scores not available</b>", styles['Normal']))
+                
+                # Build the PDF
+                doc.build(story)
+                
+                st.success(f"✅ PDF report generated: {os.path.basename(pdf_filename)}")
                 
                 # Offer download
-                with open(html_filename, "rb") as html_file:
+                with open(pdf_filename, "rb") as pdf_file:
                     st.download_button(
-                        label="📥 Download HTML Report",
-                        data=html_file.read(),
-                        file_name=os.path.basename(html_filename),
-                        mime="text/html"
+                        label="📄 Download PDF Report",
+                        data=pdf_file.read(),
+                        file_name=os.path.basename(pdf_filename),
+                        mime="application/pdf"
                     )
                     
             except Exception as e:
-                st.error(f"Error generating HTML report: {e}")
+                st.error(f"Error generating PDF report: {e}")
 
 if __name__ == "__main__":
     main()

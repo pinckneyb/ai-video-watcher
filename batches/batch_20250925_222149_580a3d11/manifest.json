@@ -1,0 +1,146 @@
+{
+  "batch_id": "batch_20250925_222149_580a3d11",
+  "created_at": "2025-09-25T22:21:49.732554",
+  "settings": {
+    "pattern": "vertical_mattress",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "617_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_617_vertical_mattress.M4V_20250925_222325.html",
+      "narrative_path": "narratives/VOP_Assessment_617_vertical_mattress.M4V_20250925_222325.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:21:49.734084",
+      "completed_at": "2025-09-25T22:23:25.257159",
+      "error": null
+    },
+    {
+      "input_name": "618_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_618_vertical_mattress.M4V_20250925_222450.html",
+      "narrative_path": "narratives/VOP_Assessment_618_vertical_mattress.M4V_20250925_222450.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:23:25.258142",
+      "completed_at": "2025-09-25T22:24:50.901294",
+      "error": null
+    },
+    {
+      "input_name": "715_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_715_vertical_mattress.M4V_20250925_222614.html",
+      "narrative_path": "narratives/VOP_Assessment_715_vertical_mattress.M4V_20250925_222614.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:24:50.903351",
+      "completed_at": "2025-09-25T22:26:14.810544",
+      "error": null
+    },
+    {
+      "input_name": "716_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_716_vertical_mattress.M4V_20250925_222758.html",
+      "narrative_path": "narratives/VOP_Assessment_716_vertical_mattress.M4V_20250925_222758.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:26:14.812769",
+      "completed_at": "2025-09-25T22:27:58.144128",
+      "error": null
+    },
+    {
+      "input_name": "717_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_717_vertical_mattress.M4V_20250925_222912.html",
+      "narrative_path": "narratives/VOP_Assessment_717_vertical_mattress.M4V_20250925_222912.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:27:58.145203",
+      "completed_at": "2025-09-25T22:29:13.004277",
+      "error": null
+    },
+    {
+      "input_name": "718_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_718_vertical_mattress.M4V_20250925_223025.html",
+      "narrative_path": "narratives/VOP_Assessment_718_vertical_mattress.M4V_20250925_223025.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:29:13.005307",
+      "completed_at": "2025-09-25T22:30:25.532967",
+      "error": null
+    },
+    {
+      "input_name": "815_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_815_vertical_mattress.M4V_20250925_223159.html",
+      "narrative_path": "narratives/VOP_Assessment_815_vertical_mattress.M4V_20250925_223159.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:30:25.534092",
+      "completed_at": "2025-09-25T22:31:59.441158",
+      "error": null
+    },
+    {
+      "input_name": "816_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_816_vertical_mattress.M4V_20250925_223313.html",
+      "narrative_path": "narratives/VOP_Assessment_816_vertical_mattress.M4V_20250925_223313.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:31:59.442265",
+      "completed_at": "2025-09-25T22:33:13.274844",
+      "error": null
+    },
+    {
+      "input_name": "817_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_817_vertical_mattress.M4V_20250925_223433.html",
+      "narrative_path": "narratives/VOP_Assessment_817_vertical_mattress.M4V_20250925_223433.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:33:13.276176",
+      "completed_at": "2025-09-25T22:34:33.817110",
+      "error": null
+    },
+    {
+      "input_name": "915_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_915_vertical_mattress.M4V_20250925_223555.html",
+      "narrative_path": "narratives/VOP_Assessment_915_vertical_mattress.M4V_20250925_223555.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:34:33.818742",
+      "completed_at": "2025-09-25T22:35:55.320071",
+      "error": null
+    },
+    {
+      "input_name": "916_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_916_vertical_mattress.M4V_20250925_223701.html",
+      "narrative_path": "narratives/VOP_Assessment_916_vertical_mattress.M4V_20250925_223701.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:35:55.322416",
+      "completed_at": "2025-09-25T22:37:01.276713",
+      "error": null
+    },
+    {
+      "input_name": "917_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_917_vertical_mattress.M4V_20250925_223813.html",
+      "narrative_path": "narratives/VOP_Assessment_917_vertical_mattress.M4V_20250925_223813.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:37:01.277944",
+      "completed_at": "2025-09-25T22:38:13.265296",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-25T22:38:13.265309"
+}

@@ -1,0 +1,146 @@
+{
+  "batch_id": "batch_20250925_223923_363bffcb",
+  "created_at": "2025-09-25T22:39:23.124137",
+  "settings": {
+    "pattern": "vertical_mattress",
+    "fps": 1.0,
+    "batch_size": 15,
+    "max_concurrent_batches": 100
+  },
+  "status": "completed",
+  "items": [
+    {
+      "input_name": "918_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_918_vertical_mattress.M4V_20250925_224037.html",
+      "narrative_path": "narratives/VOP_Assessment_918_vertical_mattress.M4V_20250925_224037.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:39:23.125756",
+      "completed_at": "2025-09-25T22:40:37.680408",
+      "error": null
+    },
+    {
+      "input_name": "1015_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1015_vertical_mattress.M4V_20250925_224156.html",
+      "narrative_path": "narratives/VOP_Assessment_1015_vertical_mattress.M4V_20250925_224156.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:40:37.681530",
+      "completed_at": "2025-09-25T22:41:56.120076",
+      "error": null
+    },
+    {
+      "input_name": "1016_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1016_vertical_mattress.M4V_20250925_224310.html",
+      "narrative_path": "narratives/VOP_Assessment_1016_vertical_mattress.M4V_20250925_224310.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:41:56.121206",
+      "completed_at": "2025-09-25T22:43:10.410215",
+      "error": null
+    },
+    {
+      "input_name": "1017_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1017_vertical_mattress.M4V_20250925_224424.html",
+      "narrative_path": "narratives/VOP_Assessment_1017_vertical_mattress.M4V_20250925_224424.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:43:10.411579",
+      "completed_at": "2025-09-25T22:44:24.595804",
+      "error": null
+    },
+    {
+      "input_name": "1018_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1018_vertical_mattress.M4V_20250925_224535.html",
+      "narrative_path": "narratives/VOP_Assessment_1018_vertical_mattress.M4V_20250925_224535.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:44:24.597334",
+      "completed_at": "2025-09-25T22:45:35.448946",
+      "error": null
+    },
+    {
+      "input_name": "1115_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1115_vertical_mattress.M4V_20250925_224652.html",
+      "narrative_path": "narratives/VOP_Assessment_1115_vertical_mattress.M4V_20250925_224652.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:45:35.450082",
+      "completed_at": "2025-09-25T22:46:52.082927",
+      "error": null
+    },
+    {
+      "input_name": "1116_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1116_vertical_mattress.M4V_20250925_224821.html",
+      "narrative_path": "narratives/VOP_Assessment_1116_vertical_mattress.M4V_20250925_224821.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:46:52.084001",
+      "completed_at": "2025-09-25T22:48:21.220122",
+      "error": null
+    },
+    {
+      "input_name": "1117_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1117_vertical_mattress.M4V_20250925_224939.html",
+      "narrative_path": "narratives/VOP_Assessment_1117_vertical_mattress.M4V_20250925_224939.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:48:21.221866",
+      "completed_at": "2025-09-25T22:49:39.501393",
+      "error": null
+    },
+    {
+      "input_name": "1118_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1118_vertical_mattress.M4V_20250925_225113.html",
+      "narrative_path": "narratives/VOP_Assessment_1118_vertical_mattress.M4V_20250925_225113.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:49:39.502649",
+      "completed_at": "2025-09-25T22:51:13.097395",
+      "error": null
+    },
+    {
+      "input_name": "1215_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1215_vertical_mattress.M4V_20250925_225240.html",
+      "narrative_path": "narratives/VOP_Assessment_1215_vertical_mattress.M4V_20250925_225240.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:51:13.098427",
+      "completed_at": "2025-09-25T22:52:40.756361",
+      "error": null
+    },
+    {
+      "input_name": "1216_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1216_vertical_mattress.M4V_20250925_225354.html",
+      "narrative_path": "narratives/VOP_Assessment_1216_vertical_mattress.M4V_20250925_225354.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:52:40.757512",
+      "completed_at": "2025-09-25T22:53:54.978820",
+      "error": null
+    },
+    {
+      "input_name": "1217_vertical_mattress.M4V",
+      "detected_pattern": "vertical_mattress",
+      "status": "completed",
+      "html_path": "html_reports/VOP_Assessment_1217_vertical_mattress.M4V_20250925_225506.html",
+      "narrative_path": "narratives/VOP_Assessment_1217_vertical_mattress.M4V_20250925_225506.txt",
+      "score": null,
+      "started_at": "2025-09-25T22:53:54.981358",
+      "completed_at": "2025-09-25T22:55:06.543485",
+      "error": null
+    }
+  ],
+  "finished_at": "2025-09-25T22:55:06.543496"
+}

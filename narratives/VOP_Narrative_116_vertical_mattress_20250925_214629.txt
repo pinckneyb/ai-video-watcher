@@ -1,0 +1,51 @@
+SURGICAL VOP ASSESSMENT - PASS 2 NARRATIVE
+Video: temp_116_vertical_mattress.M4V
+Pattern: vertical_mattress
+Analysis Date: 2025-09-25 21:46:29
+============================================================
+
+COMPLETE VIDEO NARRATIVE:
+============================================================
+The video documents a single, continuous skin‑closure sequence on a short transverse/oblique defect in the lower‑left quadrant of the practice pad. Across the recording the operator repeatedly returns to and advances closure along that same wound, progressing stepwise from individual needle passes to completed instrument‑tied interrupted sutures with careful tissue handling and edge eversion. (A small number of frames include other preclosed or previously sutured lines in the field or briefly show activity at different pad locations; these reflect framing or adjacent practice wounds rather than a change in the working incision.)
+
+Initial approach and setup
+At the outset, the operator establishes the working orientation and instrument roles. The right (dominant) hand habitually holds a needle‑controlling instrument — most often a needle driver with a distinctive red‑marked grip — while the left hand provides tissue manipulation and counter‑traction using toothed forceps, Adson pickups, or a long ringed instrument/needle holder. Hands are placed close around the wound, typically within a few centimeters of the margins, to allow tight instrument control and short, well‑controlled needle arcs. The curved, swaged suture needle is consistently grasped at or near the midshaft (proximal to the tip but not at the very swage), allowing rotation through tissue and predictable curvature during passage.
+
+Beginning needle passes and edge approximation
+Early frames show the operator taking short, perpendicular‑to‑oblique bites through the synthetic dermis. The assistant hand elevates and tents the near edge while the needle driver advances the needle through the far edge, then through the near edge in a classic simple interrupted fashion. Bites are taken at a modest distance from the wound margin — sufficient to capture full‑thickness dermal material in the pad without undue bulk. The left hand’s forceps commonly everts the skin edge as the needle passes, so that the dermal-epidermal layers will evert slightly when the stitch is tied, producing accurate epidermal alignment.
+
+Instrument technique and transfers
+Throughout the sequence the operator displays a consistent instrument choreography. The needle driver in the right hand rotates the needle with a wrist arc; the left hand uses fine pickups to present, stabilize, or receive the needle as needed. When knots are tied, the right hand alternates between maintaining a needle‑grasp and repositioning for instrument ties; the left hand holds the suture limb or receives throws with a hemostat/forceps. Occasionally a second instrument — a long straight forceps or a hemostat with a black clamp — appears briefly to control suture tails or act as an assistant for knot tying and trimming. These intermittent instrument switches are minimal and do not alter the overall technique.
+
+Progression along the line: sequential interrupted placement
+The repair proceeds in a sequential manner along the single wound: the operator places a stitch, draws the suture through, secures and tensions the knot, trims tails as needed, and moves to the adjacent segment. The order of work is consistent: the operator repeatedly positions the left forceps to evert the near edge, drives the needle through the opposing edge using a midshaft grip in the right needle driver, withdraws the needle, pulls the suture through to the desired slack, then performs a series of instrument ties to secure the stitch while maintaining slight eversion and edge apposition.
+
+Needle geometry and bite selection
+Needle orientation is deliberate and conservative. Most passes are perpendicular or slightly oblique to the wound plane, with the driver gripping the shaft about one‑third to midshaft so that rotation follows the needle curvature smoothly through tissue. The operator tends to take full‑thickness dermal bites of the synthetic pad — deep enough to bring the dermal edges into contact — but avoids overly wide bites that bulk the closure. This produces a consistent pattern of small, evenly spaced interrupted bites that approximate the wound edges without puckering.
+
+Edge handling and tissue eversion
+A hallmark of the technique is repeated attention to eversion. At each pass the left hand lifts and everts the incision margin with Adson‑style pickups or toothed forceps, while the needle is introduced into the opposing edge. After passage, gentle traction on the suture draws the edges together and the operator snugly seats the knot to maintain slight outward eversion of the epidermal borders. Instrument tips handle tissue atraumatically; synthetic tissue is approximated without tension that would cause blanching or bunching, and no deep layer suturing is performed.
+
+Knot security and suture management
+Knot tying is performed with instrument ties, often using the needle driver and a secondary pair of forceps/hemostats to manage limbs and loop throws. The operator snugly seats each knot, then trims excess suture with scissors when appropriate. In several segments the operator uses the non‑dominant instrument to hold a short limb while completing multiple throws with the needle driver, demonstrating coordinated, compact knot technique suited for interrupted closure. Suture tails are kept short after trimming and occasionally controlled by a third instrument to prevent entanglement while the operator advances to the next bite.
+
+Hand position evolution over time
+Throughout the video the right hand remains the principal needle manipulator and largely occupies the medial or central position over the wound, while the left hand alternates between lateral counter‑traction and receiving/managing the suture. Hands remain close together — typically 1–6 cm apart depending on the phase of the stitch — with occasional low‑angle crossing when transferring the needle or during knot‑securing maneuvers. As the closure progresses, these relative positions remain stable: the right hand leads needle insertion and extraction, the left hand provides precise local tissue control. In moments when instrument roles switch (for example, when the operator repositions a clamp or picks up scissors), the bilateral coordination pattern persists and immediately returns to the dominant right‑hand needle‑driving configuration.
+
+Adaptation to wound geometry
+Although the general technique stays constant, the operator subtly adapts stitch orientation and bite depth to local wound geometry. At curved or stellate portions the bites are slightly shorter and more closely spaced to accommodate tissue contours; at linear segments the operator takes even, slightly larger bites for consistent closure. In all cases the aim is uniform edge apposition with minimal tissue inversion or gapping.
+
+Consistency and refinement of technique
+From early needle passes to later stitches the operator’s technique remains consistent: midshaft needle grips, perpendicular to oblique passage, forceps‑assisted eversion, instrument‑tied interrupted throws. Some refinement is evident as the sequence progresses — tighter grips for more confident needle rotation, marginally faster instrument transfers, and more economical knot‑tying sequences — reflecting growing familiarity and momentum as the row of interrupted closures lengthens.
+
+Spatial relationships and camera observations
+Throughout, the instruments approach the wound from opposing angles: the right‑hand driver tends to approach from the medial or slightly superior direction, while the left hand arrives from lateral/inferior positions to present tissue and receive suture. Tips frequently converge directly over the bite, enabling controlled needle arcs and safe handoffs. Occasionally the field includes previously placed sutures elsewhere on the pad or briefly shows instrument activity at upper‑midline or other incisions; these are background elements. The operative focus — the single short transverse/oblique lower‑left wound — is where repetitive needle passes, knot‑securing, and suture trimming occur and is consistently returned to throughout the recording.
+
+Completion and final appearance
+By the end of the sequence the wound is uniformly approximated with a row of well‑spaced, snug interrupted sutures. Each knot is securely instrument‑tied, suture tails are trimmed to short lengths, and the edges show slight, purposeful eversion with dermal alignment across the entire defect. There is no evidence of layered closure or deep undermining; the closure is entirely superficial, consisting of neat dermal‑to‑dermal interrupted bites. Instruments are withdrawn in the final frames after the last knot is seated and tails are managed, leaving a clean, evenly approximated linear closure with consistent tension and minimal puckering.
+
+Notes on frame discrepancies
+A minority of frames depict work near other incisions or reference midline/top‑center wounds; these reflect either additional practice targets on the pad or camera reframing. They do not represent shifts in the operative plan. The procedural narrative of the video remains coherent: stepwise placement of instrument‑tied interrupted sutures along the single lower‑left incision, using a midshaft, rotational needle technique with forceps‑assisted eversion and careful knot security, culminating in a tidy, evenly approximated superficial closure.
+
+============================================================
+END OF NARRATIVE
