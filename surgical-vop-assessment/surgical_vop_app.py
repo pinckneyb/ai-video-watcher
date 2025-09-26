@@ -1854,8 +1854,8 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 # Parse GPT-5 comments for each rubric point
                 rubric_comments = {}
                 summative_assessment = ""
-            
-            if enhanced_narrative and isinstance(enhanced_narrative, dict):
+                
+                if enhanced_narrative and isinstance(enhanced_narrative, dict):
                     # Try to get structured data first
                     rubric_comments = enhanced_narrative.get('rubric_comments', {})
                     summative_assessment = enhanced_narrative.get('summative_assessment', '')
@@ -1887,6 +1887,32 @@ def display_assessment_results(rubric_engine: RubricEngine):
                             if "SUMMATIVE_ASSESSMENT:" in full_response:
                                 summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
                                 summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
+                elif enhanced_narrative and isinstance(enhanced_narrative, str):
+                    # Handle string-based enhanced_narrative format
+                    full_response = enhanced_narrative
+                    # Parse rubric points from full response
+                    for point_num in range(1, 8):
+                        point_pattern = f"RUBRIC_POINT_{point_num}:"
+                        if point_pattern in full_response:
+                            start_idx = full_response.find(point_pattern)
+                            if start_idx != -1:
+                                next_point_idx = full_response.find(f"RUBRIC_POINT_{point_num+1}:", start_idx)
+                                summative_idx = full_response.find("SUMMATIVE_ASSESSMENT:", start_idx)
+                                end_idx = len(full_response)
+                                if next_point_idx != -1:
+                                    end_idx = min(end_idx, next_point_idx)
+                                if summative_idx != -1:
+                                    end_idx = min(end_idx, summative_idx)
+                                
+                                point_section = full_response[start_idx:end_idx]
+                                comment_match = re.search(r'Comment:\s*(.+?)(?=Score:|$)', point_section, re.DOTALL)
+                                if comment_match:
+                                    rubric_comments[point_num] = comment_match.group(1).strip()
+                    
+                    # Parse summative assessment from full response
+                    if "SUMMATIVE_ASSESSMENT:" in full_response:
+                        summative_section = full_response.split("SUMMATIVE_ASSESSMENT:")[1].strip()
+                        summative_assessment = summative_section.split('\n')[0].strip() if summative_section else ""
                 
                 # Get rubric point titles for proper labeling
                 rubric_data = st.session_state.get('current_rubric_data', {})
