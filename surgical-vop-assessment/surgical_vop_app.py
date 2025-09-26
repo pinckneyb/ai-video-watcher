@@ -34,11 +34,7 @@ st.set_page_config(
 
 # Set upload limit to 2GB for large MOV files
 import streamlit as st
-try:
-    st._config.set_option('server.maxUploadSize', 2048)
-except:
-    # Fallback if config setting fails
-    pass
+# Upload size limit is now configured in deployment settings
 
 class SuturePatternDetector:
     """Detects suture patterns from folder names and filenames."""
@@ -169,7 +165,8 @@ class SurgicalAssessmentProfile:
             for p in assessment_points
         ])
         
-        prompt = f"""You are conducting a VOP assessment for {pattern_data['display_name']} suturing. Analyze frames for evidence of each rubric point. Be concise.
+        display_name = pattern_data['display_name'] if pattern_data else "unknown pattern"
+        prompt = f"""You are conducting a VOP assessment for {display_name} suturing. Analyze frames for evidence of each rubric point. Be concise.
 
 RUBRIC POINTS TO ASSESS:
 {criteria_text}
@@ -193,6 +190,9 @@ OUTPUT: Brief observations for each rubric point with timestamps."""
 
 def _generate_rubric_scores_block(assessment_points) -> str:
     """Generate dynamic RUBRIC_SCORES format based on actual rubric points."""
+    if not assessment_points:
+        return "RUBRIC_SCORES_START\nRUBRIC_SCORES_END"
+    
     score_lines = ["RUBRIC_SCORES_START"]
     for point in assessment_points:
         score_lines.append(f"{point['pid']}: X")
@@ -285,9 +285,11 @@ MANDATORY SCORING:
             # Ensure proper encoding (EXACT COPY from app.py)
             if isinstance(enhanced_narrative, str):
                 enhanced_narrative = enhanced_narrative.encode('utf-8', errors='replace').decode('utf-8')
+            elif enhanced_narrative is None:
+                enhanced_narrative = ""
             
             st.success(f"✅ **Enhanced narrative created successfully**: {len(enhanced_narrative):,} characters")
-            return enhanced_narrative
+            return enhanced_narrative or ""
             
         except Exception as api_error:
             st.error(f"❌ **GPT-5 API Error**: {api_error}")
@@ -530,12 +532,18 @@ def main():
             # Display selected rubric
             if selected_pattern:
                 pattern_data = rubric_engine.get_pattern_rubric(selected_pattern)
-                st.info(f"📊 **Assessment Rubric**: {pattern_data['display_name']}")
-                
-                with st.expander("View Rubric Details"):
-                    for point in pattern_data["points"]:
-                        st.markdown(f"**{point['pid']}. {point['title']}**")
-                        st.markdown(f"*{point['what_you_assess']}*")
+                if pattern_data:
+                    st.info(f"📊 **Assessment Rubric**: {pattern_data['display_name']}")
+                    
+                    with st.expander("View Rubric Details"):
+                        if "points" in pattern_data and pattern_data["points"]:
+                            for point in pattern_data["points"]:
+                                st.markdown(f"**{point['pid']}. {point['title']}**")
+                                st.markdown(f"*{point['what_you_assess']}*")
+                        else:
+                            st.warning("No rubric points available for this pattern")
+                else:
+                    st.warning("Selected pattern data not found")
         
         # Analysis settings
         st.subheader("⚙️ Analysis Settings")
@@ -1136,11 +1144,12 @@ def _process_batches_sequentially_gpt5(batches, gpt5_client, profile, progress_b
     }
 
 
-def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: str = None):
+def start_vop_analysis(video_path: str, api_key: str, fps: float, batch_size: int, max_concurrent_batches: int = 100, pattern_id: Optional[str] = None):
     """Start the VOP analysis process using the proven video analysis architecture."""
     
     progress_bar = st.progress(0)
     status_text = st.empty()
+    performance_metrics = {}  # Initialize performance metrics
     
     try:
         # Initialize components using single GPT-5 approach
@@ -1834,8 +1843,12 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 from reportlab.pdfbase.ttfonts import TTFont
                 import reportlab.rl_config
                 
-                # Enable font glyph warnings for debugging
-                reportlab.rl_config.warnOnMissingFontGlyphs = 1
+                # Enable font glyph warnings for debugging (if available)
+                try:
+                    reportlab.rl_config.warnOnMissingFontGlyphs = 1
+                except AttributeError:
+                    # Attribute doesn't exist in this version of ReportLab
+                    pass
                 
                 # Configure Unicode-capable TrueType fonts
                 def find_dejavu_font(font_name):
