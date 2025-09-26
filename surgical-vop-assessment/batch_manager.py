@@ -160,10 +160,17 @@ class BatchManager:
                 # Add all completed files
                 for item in manifest["items"]:
                     if item["status"] == "completed":
-                        # Add PDF file
-                        if item["pdf_path"] and os.path.exists(item["pdf_path"]):
-                            zf.write(item["pdf_path"], 
-                                   f"pdf_reports/{os.path.basename(item['pdf_path'])}")
+                        # Add PDF file (with backward compatibility for HTML files)
+                        pdf_path = item.get("pdf_path")
+                        html_path = item.get("html_path")  # Fallback for legacy batches
+                        
+                        if pdf_path and os.path.exists(pdf_path):
+                            zf.write(pdf_path, 
+                                   f"pdf_reports/{os.path.basename(pdf_path)}")
+                        elif html_path and os.path.exists(html_path):
+                            # Legacy HTML file support
+                            zf.write(html_path, 
+                                   f"html_reports/{os.path.basename(html_path)}")
                         
                         # Add narrative file
                         if item["narrative_path"] and os.path.exists(item["narrative_path"]):
@@ -266,14 +273,22 @@ class BatchManager:
     
     def _create_summary_csv(self, manifest: Dict) -> str:
         """Create a CSV summary of batch results"""
-        lines = ["Video Name,Pattern,Status,Score,PDF File,TXT File"]
+        lines = ["Video Name,Pattern,Status,Score,Report File,TXT File"]
         
         for item in manifest["items"]:
-            pdf_filename = os.path.basename(item["pdf_path"]) if item["pdf_path"] else ""
+            # Handle both PDF and HTML files for backward compatibility
+            pdf_path = item.get("pdf_path")
+            html_path = item.get("html_path")
+            file_filename = ""
+            
+            if pdf_path:
+                file_filename = os.path.basename(pdf_path)
+            elif html_path:
+                file_filename = os.path.basename(html_path)
             txt_filename = os.path.basename(item["narrative_path"]) if item["narrative_path"] else ""
             
             lines.append(f'"{item["input_name"]}","{item["detected_pattern"]}",'
                         f'"{item["status"]}","{item.get("score", "")}","'
-                        f'{pdf_filename}","{txt_filename}"')
+                        f'{file_filename}","{txt_filename}"')
         
         return "\n".join(lines)

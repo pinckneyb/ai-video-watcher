@@ -755,14 +755,27 @@ def main():
                                 st.write(f"**{item['input_name']}** - {item['detected_pattern']} - Score: {score}")
                             
                             with col2:
-                                if item["pdf_path"] and os.path.exists(item["pdf_path"]):
-                                    with open(item["pdf_path"], "rb") as f:
+                                # Handle both PDF and HTML files for backward compatibility
+                                pdf_path = item.get("pdf_path")
+                                html_path = item.get("html_path")
+                                
+                                if pdf_path and os.path.exists(pdf_path):
+                                    with open(pdf_path, "rb") as f:
                                         st.download_button(
                                             label="📄 PDF",
                                             data=f.read(),
-                                            file_name=os.path.basename(item["pdf_path"]),
+                                            file_name=os.path.basename(pdf_path),
                                             mime="application/pdf",
                                             key=f"pdf_{selected_batch_id}_{item['input_name']}"
+                                        )
+                                elif html_path and os.path.exists(html_path):
+                                    with open(html_path, "rb") as f:
+                                        st.download_button(
+                                            label="🌐 HTML",
+                                            data=f.read(),
+                                            file_name=os.path.basename(html_path),
+                                            mime="text/html",
+                                            key=f"html_{selected_batch_id}_{item['input_name']}"
                                         )
                             
                             with col3:
