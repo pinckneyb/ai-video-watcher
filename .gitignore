@@ -45,11 +45,20 @@ config.json
 surgical_config.json
 temp_*
 temp_video_*
+temp_videos/
 *_audio.wav
 *.log
 transcript_*.md
 enhanced_*.md
 timeline_*.json
+
+# Deployment exclusions
+.cache/
+.pythonlibs/
+html_reports/
+narratives/
+pdf_reports/
+batches/
 
 # Backup files
 *_backup_*.py
