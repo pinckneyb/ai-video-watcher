@@ -1830,16 +1830,61 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.lib import colors
+                from reportlab.pdfbase import pdfmetrics
+                from reportlab.pdfbase.ttfonts import TTFont
+                import reportlab.rl_config
+                
+                # Enable font glyph warnings for debugging
+                reportlab.rl_config.warnOnMissingFontGlyphs = 1
+                
+                # Configure Unicode-capable TrueType fonts
+                def find_dejavu_font(font_name):
+                    """Find DejaVu font file in common Linux locations"""
+                    dejavu_paths = [
+                        '/usr/share/fonts/truetype/dejavu/',
+                        '/usr/share/fonts/dejavu/',
+                        '/usr/share/fonts/TTF/',
+                        '/usr/share/fonts/truetype/',
+                        '/usr/local/share/fonts/',
+                        os.path.expanduser('~/.fonts/'),
+                        os.path.expanduser('~/.local/share/fonts/')
+                    ]
+                    
+                    for path in dejavu_paths:
+                        font_path = os.path.join(path, font_name)
+                        if os.path.exists(font_path):
+                            return font_path
+                    return None
+
+                # Try to register DejaVu Sans fonts for full Unicode support
+                unicode_font = 'Helvetica'  # fallback
+                unicode_font_bold = 'Helvetica-Bold'  # fallback
+                
+                try:
+                    dejavu_regular = find_dejavu_font('DejaVuSans.ttf')
+                    dejavu_bold = find_dejavu_font('DejaVuSans-Bold.ttf')
+                    
+                    if dejavu_regular and dejavu_bold:
+                        pdfmetrics.registerFont(TTFont('DejaVuSans', dejavu_regular))
+                        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', dejavu_bold))
+                        unicode_font = 'DejaVuSans'
+                        unicode_font_bold = 'DejaVuSans-Bold'
+                        print(f"✓ Registered DejaVu Sans fonts for Unicode support")
+                    else:
+                        print(f"⚠ DejaVu fonts not found, using Helvetica fallback")
+                except Exception as e:
+                    print(f"⚠ Font registration failed: {e}, using Helvetica fallback")
                 
                 # Create PDF document
                 doc = SimpleDocTemplate(pdf_filename, pagesize=A4)
                 story = []
                 styles = getSampleStyleSheet()
                 
-                # Create custom styles
+                # Create custom styles with Unicode support
                 title_style = ParagraphStyle(
                     'CustomTitle',
                     parent=styles['Heading1'],
+                    fontName=unicode_font_bold,
                     fontSize=18,
                     spaceAfter=30,
                     textColor=colors.HexColor('#2c3e50')
@@ -1848,16 +1893,39 @@ def display_assessment_results(rubric_engine: RubricEngine):
                 heading_style = ParagraphStyle(
                     'CustomHeading',
                     parent=styles['Heading2'],
+                    fontName=unicode_font_bold,
                     fontSize=14,
                     spaceAfter=12,
                     textColor=colors.HexColor('#34495e')
                 )
                 
+                # Create a Unicode-capable normal style  
+                unicode_normal_style = ParagraphStyle(
+                    'UnicodeNormal',
+                    parent=styles['Normal'],
+                    fontName=unicode_font,
+                    fontSize=10
+                )
+                
                 # Add title and info
                 story.append(Paragraph("Surgical VOP Assessment Report", title_style))
                 story.append(Spacer(1, 12))
-                story.append(Paragraph(f"<b>Video:</b> {results['video_info']['filename']}", styles['Normal']))
-                story.append(Paragraph(f"<b>Pattern:</b> {results['video_info']['pattern'].replace('_', ' ').title()}", styles['Normal']))
+                # Normalize dash variants to standard hyphens for consistent display
+                def normalize_dashes(text):
+                    """Convert em dashes, en dashes, and other dash variants to standard hyphens"""
+                    if not isinstance(text, str):
+                        text = str(text)
+                    # Replace em dash (—), en dash (–), minus sign (−) with standard hyphen-minus (-)
+                    dash_variants = ['—', '–', '−', '‒', '―']
+                    for variant in dash_variants:
+                        text = text.replace(variant, '-')
+                    return text
+                
+                video_name = normalize_dashes(results['video_info']['filename'])
+                pattern_name = normalize_dashes(results['video_info']['pattern'].replace('_', ' ').title())
+                
+                story.append(Paragraph(f"<b>Video:</b> {video_name}", unicode_normal_style))
+                story.append(Paragraph(f"<b>Pattern:</b> {pattern_name}", unicode_normal_style))
                 story.append(Spacer(1, 20))
                 
                 # Add rubric assessment with GPT-5 generated content
@@ -1957,10 +2025,13 @@ def display_assessment_results(rubric_engine: RubricEngine):
                         else:
                             competency = "Remediate"
                         
-                        # Add rubric point to PDF
-                        story.append(Paragraph(f"<b>{point_num}. {title}</b>", styles['Normal']))
-                        story.append(Paragraph(comment, styles['Normal']))
-                        story.append(Paragraph(f"<b>Score: {ai_score}/5 - {competency}</b>", styles['Normal']))
+                        # Normalize dash variants for consistent display
+                        title_safe = normalize_dashes(title)
+                        comment_safe = normalize_dashes(comment)
+                        
+                        story.append(Paragraph(f"<b>{point_num}. {title_safe}</b>", unicode_normal_style))
+                        story.append(Paragraph(comment_safe, unicode_normal_style))
+                        story.append(Paragraph(f"<b>Score: {ai_score}/5 - {competency}</b>", unicode_normal_style))
                         story.append(Spacer(1, 10))
                 
                 # Add AI-generated average score and summative assessment
@@ -1969,7 +2040,7 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     
                     avg_style = ParagraphStyle(
                         'AvgScore',
-                        parent=styles['Normal'],
+                        parent=unicode_normal_style,
                         fontSize=12,
                         spaceAfter=12,
                         alignment=1,  # Center alignment
@@ -1983,15 +2054,16 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     if summative_assessment:
                         summative_style = ParagraphStyle(
                             'Summative',
-                            parent=styles['Normal'],
+                            parent=unicode_normal_style,
                             fontSize=11,
                             spaceAfter=12,
                             backColor=colors.HexColor('#e8f5e8')
                         )
-                        story.append(Paragraph("<b>Summative Assessment:</b>", styles['Normal']))
-                        story.append(Paragraph(summative_assessment, summative_style))
+                        story.append(Paragraph("<b>Summative Assessment:</b>", unicode_normal_style))
+                        summative_safe = normalize_dashes(summative_assessment)
+                        story.append(Paragraph(summative_safe, summative_style))
                 else:
-                    story.append(Paragraph("<b>Assessment scores not available</b>", styles['Normal']))
+                    story.append(Paragraph("<b>Assessment scores not available</b>", unicode_normal_style))
                 
                 # Build the PDF
                 doc.build(story)
