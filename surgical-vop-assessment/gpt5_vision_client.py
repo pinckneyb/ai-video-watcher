@@ -63,9 +63,9 @@ class GPT5VisionClient:
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": surgical_prompt}
+                    {"type": "input_text", "text": surgical_prompt}
                 ] + [
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{frame_data}", "detail": "high"}}
+                    {"type": "input_image", "image_url": f"data:image/jpeg;base64,{frame_data}"}
                     for frame_data in base64_frames
                 ]
             }
@@ -365,8 +365,8 @@ class GPT5VisionClient:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": assessment_prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_str}", "detail": "high"}}
+                        {"type": "input_text", "text": assessment_prompt},
+                        {"type": "input_image", "image_url": f"data:image/jpeg;base64,{img_str}"}
                     ]
                 }
             ]
