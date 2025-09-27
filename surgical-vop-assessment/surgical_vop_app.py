@@ -543,7 +543,7 @@ def main():
         # Analysis settings
         st.subheader("⚙️ Analysis Settings")
         fps = st.slider("Analysis FPS", 1.0, 5.0, 1.0, 0.5)
-        batch_size = st.slider("Batch Size", 5, 15, 15, 1, help="Number of frames processed together in each batch")
+        batch_size = st.slider("Batch Size", 5, 15, 7, 1, help="Number of frames processed together in each batch")
         
         # GPT-5 Model Settings with Pass-specific Configuration
         st.subheader("🤖 GPT-5 Model Settings")
@@ -652,7 +652,7 @@ def main():
         max_concurrent_batches = st.slider(
             "Concurrent Batches", 
             1, 150, 
-            100,  # Default high performance setting
+            50,  # Default balanced performance setting
             step=1,
             help="Higher values = faster processing (requires OpenAI Tier 4+). Use 100-150 for maximum speed."
         )
