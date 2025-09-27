@@ -1748,14 +1748,7 @@ def display_assessment_results(rubric_engine: RubricEngine):
         # Clean up the text and add proper spacing
         formatted_narrative = narrative.replace('\n\n', '\n\n---\n\n')
         
-        with st.expander("📋 Comprehensive VOP Assessment Report", expanded=True):
-            st.markdown(
-                f"""<div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; 
-                border-left: 4px solid #007bff; line-height: 1.6; font-family: 'Arial', sans-serif;">
-                {formatted_narrative}
-                </div>""", 
-                unsafe_allow_html=True
-            )
+# Removed blank "Comprehensive VOP Assessment Report" section per user request
     else:
         st.warning("⚠️ Enhanced narrative not available - showing raw analysis")
         with st.expander("Raw Frame Analysis", expanded=False):
