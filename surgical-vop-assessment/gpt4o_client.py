@@ -79,8 +79,7 @@ class GPT4oClient:
             response = self.client.responses.create(
                 model="gpt-4o",
                 input=messages,
-                max_output_tokens=2000,
-                reasoning={"effort": "low"}
+                max_output_tokens=2000
             )
             
             # Parse response using Responses API format
@@ -160,8 +159,7 @@ Analyze these frames with much higher detail, focusing on subtle movements and e
             response = self.client.responses.create(
                 model="gpt-4o",
                 input=messages,
-                max_output_tokens=2500,
-                reasoning={"effort": "low"}
+                max_output_tokens=2500
             )
             
             narrative_text = response.output_text
@@ -217,8 +215,7 @@ Output format: [Condensed State Summary]"""
             response = self.client.responses.create(
                 model="gpt-4o",
                 input=condensation_prompt.format(transcript_text=transcript_text),
-                max_output_tokens=300,
-                reasoning={"effort": "low"}
+                max_output_tokens=300
             )
             
             condensed_state = response.output_text
