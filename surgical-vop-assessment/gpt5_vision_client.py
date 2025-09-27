@@ -91,8 +91,8 @@ class GPT5VisionClient:
                 response = self.client.responses.create(
                     model=model,
                     input=messages,
-                    max_completion_tokens=4000,
-                    reasoning_effort=reasoning_level,
+                    max_output_tokens=4000,
+                    reasoning={'effort': reasoning_level},
                     verbosity=verbosity_level
                 )
                 
@@ -264,8 +264,8 @@ class GPT5VisionClient:
                     response = self.client.responses.create(
                         model=model,
                         input=messages,
-                        max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
-                        reasoning_effort=reasoning_level,
+                        max_output_tokens=12000,  # Doubled from 6000 to capture more detail
+                        reasoning={'effort': reasoning_level},
                         verbosity=verbosity_level
                     )
                     # Success - break out of retry loop
@@ -400,8 +400,8 @@ class GPT5VisionClient:
                     response = self.client.responses.create(
                         model=model,
                         input=messages,
-                        max_completion_tokens=10000,  # Increased to handle longer narrative
-                        reasoning_effort=reasoning_level,
+                        max_output_tokens=10000,  # Increased to handle longer narrative
+                        reasoning={'effort': reasoning_level},
                         verbosity=verbosity_level
                     )
                     # Success - break out of retry loop
@@ -495,14 +495,14 @@ class GPT5VisionClient:
         ]
         
         try:
-            response = self.client.chat.completions.create(
+            response = self.client.responses.create(
                 model="gpt-5",
-                messages=messages,
-                max_completion_tokens=10000,  # Increased to handle longer narrative
-                reasoning_effort="high"  # Increased for better assessment quality
+                input=messages,
+                max_output_tokens=10000,  # Increased to handle longer narrative
+                reasoning={'effort': 'high'}  # Increased for better assessment quality
             )
             
-            return self._parse_flow_response(response.choices[0].message.content, rubric_engine)
+            return self._parse_flow_response(response.output_text, rubric_engine)
             
         except Exception as e:
             print(f"Error in GPT-5 flow analysis: {e}")
@@ -1173,15 +1173,15 @@ Provide your complete assessment:"""
             narrative_prompt = self._build_video_narrative_prompt(descriptions_text)
             
             try:
-                response = self.client.chat.completions.create(
+                response = self.client.responses.create(
                     model=model,
-                    messages=[{"role": "user", "content": narrative_prompt}],
-                    max_completion_tokens=8000,  # Reduced for chunks
-                    reasoning_effort=reasoning_level,
+                    input=narrative_prompt,
+                    max_output_tokens=8000,  # Reduced for chunks
+                    reasoning={'effort': reasoning_level},
                     verbosity=verbosity_level
                 )
                 
-                chunk_narrative = response.choices[0].message.content
+                chunk_narrative = response.output_text
                 chunk_narratives.append(chunk_narrative)
                 print(f"✅ CHUNK {i//chunk_size + 1} SUCCESS: {len(chunk_narrative)} chars")
                 
@@ -1206,15 +1206,15 @@ Provide your complete assessment:"""
 
 Create a single flowing narrative that captures all key surgical observations."""
             
-            response = self.client.chat.completions.create(
+            response = self.client.responses.create(
                 model=model,
-                messages=[{"role": "user", "content": final_prompt}],
-                max_completion_tokens=12000,
-                reasoning_effort=reasoning_level,
+                input=final_prompt,
+                max_output_tokens=12000,
+                reasoning={'effort': reasoning_level},
                 verbosity=verbosity_level
             )
             
-            self.video_narrative = response.choices[0].message.content
+            self.video_narrative = response.output_text
             print(f"✅ ADAPTIVE CHUNKING SUCCESS: Combined into {len(self.video_narrative):,} char narrative")
             
         except Exception as final_error:

@@ -542,7 +542,7 @@ class SurgicalVOPReportGenerator:
                 test_response = client.chat.completions.create(
                     model='gpt-4o',
                     messages=[{'role': 'user', 'content': 'test'}],
-                    max_completion_tokens=1
+                    max_output_tokens=1
                 )
                 api_key_valid = True
             except Exception as e:
@@ -695,8 +695,8 @@ SCORE:"""
                         ]
                     }
                 ],
-                max_completion_tokens=10,
-                reasoning_effort="low"
+                max_output_tokens=10,
+                reasoning={"effort": "low"}
             )
             
             score_text = response.choices[0].message.content.strip()
@@ -1043,8 +1043,8 @@ Your response:"""
             response = client.chat.completions.create(
                 model="gpt-5",
                 messages=messages,
-                max_completion_tokens=10,
-                reasoning_effort="low"
+                max_output_tokens=10,
+                reasoning={"effort": "low"}
             )
             
             ai_response = response.choices[0].message.content.strip().upper()
@@ -1142,8 +1142,8 @@ Frame number:"""
             response = client.chat.completions.create(
                 model="gpt-5",  # Use GPT-5 for superior semantic understanding
                 messages=messages,
-                max_completion_tokens=50,
-                reasoning_effort="high"
+                max_output_tokens=50,
+                reasoning={"effort": "high"}
                 # Note: GPT-5 only supports default temperature=1
             )
             

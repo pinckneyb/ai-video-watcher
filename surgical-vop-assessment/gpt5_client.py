@@ -75,16 +75,16 @@ class GPT5Client:
                 }
             ]
             
-            # Make API call
-            response = self.client.chat.completions.create(
+            # Make API call using Responses API
+            response = self.client.responses.create(
                 model="gpt-5",
-                messages=messages,
-                max_completion_tokens=2000,
-                reasoning_effort="low"
+                input=messages,
+                max_output_tokens=2000,
+                reasoning={"effort": "low"}
             )
             
             # Parse response
-            narrative_text = response.choices[0].message.content
+            narrative_text = response.output_text
             
             # Ensure narrative text is properly encoded
             if isinstance(narrative_text, str):
@@ -242,15 +242,15 @@ Analyze these frames with much higher detail, focusing on subtle movements and e
                 }
             ]
             
-            # Make API call
-            response = self.client.chat.completions.create(
+            # Make API call using Responses API
+            response = self.client.responses.create(
                 model="gpt-5",
-                messages=messages,
-                max_completion_tokens=2500,
-                reasoning_effort="low"
+                input=messages,
+                max_output_tokens=2500,
+                reasoning={"effort": "low"}
             )
             
-            narrative_text = response.choices[0].message.content
+            narrative_text = response.output_text
             
             # Ensure narrative text is properly encoded
             if isinstance(narrative_text, str):
@@ -299,20 +299,15 @@ Transcript to condense:
 
 Output format: [Condensed State Summary]"""
             
-            # Make API call for condensation
-            response = self.client.chat.completions.create(
+            # Make API call for condensation using Responses API
+            response = self.client.responses.create(
                 model="gpt-5",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": condensation_prompt.format(transcript_text=transcript_text)
-                    }
-                ],
-                max_completion_tokens=300,
-                reasoning_effort="low"
+                input=condensation_prompt.format(transcript_text=transcript_text),
+                max_output_tokens=300,
+                reasoning={"effort": "low"}
             )
             
-            condensed_state = response.choices[0].message.content
+            condensed_state = response.output_text
             
             # Ensure condensed state is properly encoded
             if isinstance(condensed_state, str):

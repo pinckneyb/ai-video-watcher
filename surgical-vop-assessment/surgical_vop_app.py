@@ -268,19 +268,14 @@ MANDATORY SCORING:
         
         # Make API call to GPT-5 with better error handling (EXACT COPY from app.py)
         try:
-            response = gpt5_client.client.chat.completions.create(
+            response = gpt5_client.client.responses.create(
                 model="gpt-5",  # Use GPT-5 for enhanced narrative
-                messages=[
-                    {
-                        "role": "user",
-                        "content": enhancement_prompt
-                    }
-                ],
-                max_completion_tokens=8000,
-                reasoning_effort="low"
+                input=enhancement_prompt,
+                max_output_tokens=8000,
+                reasoning={"effort": "low"}
             )
             
-            enhanced_narrative = response.choices[0].message.content
+            enhanced_narrative = response.output_text
             
             # Ensure proper encoding (EXACT COPY from app.py)
             if isinstance(enhanced_narrative, str):
