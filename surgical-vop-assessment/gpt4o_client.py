@@ -75,16 +75,16 @@ class GPT4oClient:
                 }
             ]
             
-            # Make API call
-            response = self.client.chat.completions.create(
+            # Make API call using Responses API
+            response = self.client.responses.create(
                 model="gpt-4o",
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.3
+                input=messages,
+                max_completion_tokens=2000,
+                reasoning_effort="low"
             )
             
-            # Parse response
-            narrative_text = response.choices[0].message.content
+            # Parse response using Responses API format
+            narrative_text = response.output_text
             
             # Ensure narrative text is properly encoded
             if isinstance(narrative_text, str):
@@ -156,15 +156,15 @@ Analyze these frames with much higher detail, focusing on subtle movements and e
                 }
             ]
             
-            # Make API call
-            response = self.client.chat.completions.create(
+            # Make API call using Responses API
+            response = self.client.responses.create(
                 model="gpt-4o",
-                messages=messages,
-                max_tokens=2500,
-                temperature=0.2
+                input=messages,
+                max_completion_tokens=2500,
+                reasoning_effort="low"
             )
             
-            narrative_text = response.choices[0].message.content
+            narrative_text = response.output_text
             
             # Ensure narrative text is properly encoded
             if isinstance(narrative_text, str):
@@ -213,20 +213,15 @@ Transcript to condense:
 
 Output format: [Condensed State Summary]"""
             
-            # Make API call for condensation
-            response = self.client.chat.completions.create(
+            # Make API call for condensation using Responses API
+            response = self.client.responses.create(
                 model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": condensation_prompt.format(transcript_text=transcript_text)
-                    }
-                ],
-                max_tokens=300,
-                temperature=0.1
+                input=condensation_prompt.format(transcript_text=transcript_text),
+                max_completion_tokens=300,
+                reasoning_effort="low"
             )
             
-            condensed_state = response.choices[0].message.content
+            condensed_state = response.output_text
             
             # Ensure condensed state is properly encoded
             if isinstance(condensed_state, str):
