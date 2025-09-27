@@ -693,108 +693,7 @@ def main():
     if 'batch_manager' not in st.session_state:
         st.session_state.batch_manager = BatchManager()
     
-    # Batch History section  
-    st.subheader("📚 Batch History")
-    batches = st.session_state.batch_manager.list_batches()
-    
-    if batches:
-        # Show latest batch recovery if available
-        latest_batch_id = st.session_state.batch_manager.get_latest_batch_id()
-        if latest_batch_id and st.button("🔄 Resume Latest Batch"):
-            st.session_state.selected_batch = latest_batch_id
-            st.rerun()
-        
-        # Batch selector
-        batch_options = []
-        for batch in batches[:10]:  # Show last 10 batches
-            batch_options.append(f"{batch['batch_id']} ({batch['video_count']} videos, {batch['status']})")
-        
-        selected_batch_display = st.selectbox("Select Previous Batch:", ["None"] + batch_options)
-        
-        if selected_batch_display != "None":
-            # Extract batch_id from display string
-            selected_batch_id = selected_batch_display.split(' (')[0]
-            batch_manifest = st.session_state.batch_manager.get_batch_manifest(selected_batch_id)
-            
-            if batch_manifest:
-                st.markdown(f"### 📊 Batch Details: {selected_batch_id}")
-                
-                # Batch summary
-                total_items = len(batch_manifest["items"])
-                completed_items = sum(1 for item in batch_manifest["items"] if item["status"] == "completed")
-                failed_items = sum(1 for item in batch_manifest["items"] if item["status"] == "failed")
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Total Videos", total_items)
-                with col2:
-                    st.metric("Completed", completed_items)
-                with col3:
-                    st.metric("Failed", failed_items)
-                
-                # Download entire batch as ZIP
-                if completed_items > 0:
-                    zip_path = st.session_state.batch_manager.create_batch_zip(selected_batch_id)
-                    if zip_path and os.path.exists(zip_path):
-                        with open(zip_path, "rb") as f:
-                            st.download_button(
-                                label=f"📦 Download Complete Batch ZIP ({completed_items} files)",
-                                data=f.read(),
-                                file_name=f"{selected_batch_id}.zip",
-                                mime="application/zip",
-                                type="primary"
-                            )
-                
-                # Individual file downloads
-                if batch_manifest["items"]:
-                    st.markdown("#### 📁 Individual Files")
-                    
-                    for item in batch_manifest["items"]:
-                        if item["status"] == "completed":
-                            col1, col2, col3 = st.columns([2, 1, 1])
-                            
-                            with col1:
-                                score = item.get("score", "N/A")
-                                st.write(f"**{item['input_name']}** - {item['detected_pattern']} - Score: {score}")
-                            
-                            with col2:
-                                # Handle both PDF and HTML files for backward compatibility
-                                pdf_path = item.get("pdf_path")
-                                html_path = item.get("html_path")
-                                
-                                if pdf_path and os.path.exists(pdf_path):
-                                    with open(pdf_path, "rb") as f:
-                                        st.download_button(
-                                            label="📄 PDF",
-                                            data=f.read(),
-                                            file_name=os.path.basename(pdf_path),
-                                            mime="application/pdf",
-                                            key=f"pdf_{selected_batch_id}_{item['input_name']}"
-                                        )
-                                elif html_path and os.path.exists(html_path):
-                                    with open(html_path, "rb") as f:
-                                        st.download_button(
-                                            label="🌐 HTML",
-                                            data=f.read(),
-                                            file_name=os.path.basename(html_path),
-                                            mime="text/html",
-                                            key=f"html_{selected_batch_id}_{item['input_name']}"
-                                        )
-                            
-                            with col3:
-                                if item["narrative_path"] and os.path.exists(item["narrative_path"]):
-                                    with open(item["narrative_path"], "rb") as f:
-                                        st.download_button(
-                                            label="📄 TXT",
-                                            data=f.read(),
-                                            file_name=os.path.basename(item["narrative_path"]),
-                                            mime="text/plain",
-                                            key=f"txt_{selected_batch_id}_{item['input_name']}"
-                                        )
-                        elif item["status"] == "failed":
-                            st.error(f"❌ {item['input_name']} - Failed: {item.get('error', 'Unknown error')}")
-    else:
-        st.info("No previous batches found. Run your first batch assessment to see results here.")
+# Removed all Batch History functionality per user request
     
     st.divider()
     
@@ -967,7 +866,7 @@ def main():
                                             help="Contains all HTML reports, TXT files, and summary CSV. Safe to download - won't reset the app!"
                                         )
                             
-                            st.info("💡 **All results are safely stored!** Check the 'Batch History' section above to access your files anytime, even after app restarts.")
+                            st.info("💡 **All results are safely stored!** Download your files to save them locally.")
                         
                 with col_stop:
                     if st.button("🛑 STOP Batch", type="secondary", help="Stop batch processing"):
