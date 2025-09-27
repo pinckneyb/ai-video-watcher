@@ -93,7 +93,6 @@ class GPT5VisionClient:
                     input=messages,
                     max_output_tokens=4000,
                     reasoning={'effort': reasoning_level},
-                    verbosity=verbosity_level
                 )
                 
                 # Success - break out of retry loop
@@ -266,7 +265,6 @@ class GPT5VisionClient:
                         input=messages,
                         max_output_tokens=12000,  # Doubled from 6000 to capture more detail
                         reasoning={'effort': reasoning_level},
-                        verbosity=verbosity_level
                     )
                     # Success - break out of retry loop
                     break
@@ -402,7 +400,6 @@ class GPT5VisionClient:
                         input=messages,
                         max_output_tokens=10000,  # Increased to handle longer narrative
                         reasoning={'effort': reasoning_level},
-                        verbosity=verbosity_level
                     )
                     # Success - break out of retry loop
                     break
@@ -1178,7 +1175,6 @@ Provide your complete assessment:"""
                     input=narrative_prompt,
                     max_output_tokens=8000,  # Reduced for chunks
                     reasoning={'effort': reasoning_level},
-                    verbosity=verbosity_level
                 )
                 
                 chunk_narrative = response.output_text
@@ -1211,7 +1207,6 @@ Create a single flowing narrative that captures all key surgical observations.""
                 input=final_prompt,
                 max_output_tokens=12000,
                 reasoning={'effort': reasoning_level},
-                verbosity=verbosity_level
             )
             
             self.video_narrative = response.output_text

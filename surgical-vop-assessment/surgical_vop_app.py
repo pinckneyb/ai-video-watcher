@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Import our modules from the main app
 from video_processor import VideoProcessor, FrameBatchProcessor
-from gpt4o_client import GPT4oClient
+# GPT4o client removed - using GPT5VisionClient only
 from gpt5_vision_client import GPT5VisionClient
 from utils import (
     parse_timestamp, format_timestamp, validate_time_range,
@@ -212,8 +212,8 @@ def create_surgical_vop_narrative(raw_transcript: str, events: List[Dict], api_k
             for p in assessment_points
         ])
         
-        # Create a GPT-5 client for narrative enhancement (EXACT COPY from app.py)
-        gpt5_client = GPT4oClient(api_key=api_key)
+        # Create a GPT-5 client for narrative enhancement
+        gpt5_client = GPT5VisionClient(api_key=api_key)
         
         # Use the EXACT SAME structure as the working app.py but for surgical assessment
         personality_instructions = """PERSONALITY: You are writing as an AI Surgeon Video Reviewer - direct, clinical, no-nonsense. Use surgical terminology and evaluative language. Structure your narrative around surgical assessment principles. Be objective, authoritative, and focus on technique evaluation."""
