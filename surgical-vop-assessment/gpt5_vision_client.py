@@ -88,9 +88,9 @@ class GPT5VisionClient:
                 print(f"DEBUG: Base64 data length: {len(base64_frames[0]) if base64_frames else 'None'}")
                 print(f"📊 PASS 1 BATCH {self.error_stats['pass1_total_batches']}: Processing {len(frames)} frames")
                 
-                response = self.client.chat.completions.create(
+                response = self.client.responses.create(
                     model=model,
-                    messages=messages,
+                    input=messages,
                     max_completion_tokens=4000,
                     reasoning_effort=reasoning_level,
                     verbosity=verbosity_level
@@ -124,7 +124,7 @@ class GPT5VisionClient:
         
         try:
             
-            frame_analysis = response.choices[0].message.content
+            frame_analysis = response.output_text
             print(f"DEBUG: GPT-5 response length: {len(frame_analysis)}")
             print(f"DEBUG: GPT-5 response preview: {frame_analysis[:200]}...")
             
@@ -261,9 +261,9 @@ class GPT5VisionClient:
             for attempt in range(max_retries):
                 try:
                     print(f"API call attempt {attempt + 1}/{max_retries}")
-                    response = self.client.chat.completions.create(
+                    response = self.client.responses.create(
                         model=model,
-                        messages=messages,
+                        input=messages,
                         max_completion_tokens=12000,  # Doubled from 6000 to capture more detail
                         reasoning_effort=reasoning_level,
                         verbosity=verbosity_level
@@ -299,7 +299,7 @@ class GPT5VisionClient:
                         # Non-retryable error or max retries reached
                         raise retry_error
             
-            self.video_narrative = response.choices[0].message.content
+            self.video_narrative = response.output_text
             narrative_length = len(self.video_narrative)
             
             # Track Pass 2 success and output statistics
@@ -397,9 +397,9 @@ class GPT5VisionClient:
             for attempt in range(max_retries):
                 try:
                     print(f"🔄 Pass 3 API call attempt {attempt + 1}/{max_retries}")
-                    response = self.client.chat.completions.create(
+                    response = self.client.responses.create(
                         model=model,
-                        messages=messages,
+                        input=messages,
                         max_completion_tokens=10000,  # Increased to handle longer narrative
                         reasoning_effort=reasoning_level,
                         verbosity=verbosity_level
@@ -430,7 +430,7 @@ class GPT5VisionClient:
                         # Non-retryable error or max retries reached
                         raise retry_error
             
-            assessment_response = response.choices[0].message.content
+            assessment_response = response.output_text
             response_length = len(assessment_response)
             
             # Track Pass 3 success and output statistics
