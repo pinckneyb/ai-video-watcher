@@ -81,6 +81,9 @@ class VideoProcessor:
     def _get_video_properties(self):
         """Extract video properties using OpenCV."""
         try:
+            if not self.video_path:
+                raise ValueError("No video path available")
+            
             cap = cv2.VideoCapture(self.video_path)
             if cap.isOpened():
                 self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -145,41 +148,56 @@ class VideoProcessor:
         max_failures = 10  # Allow some failures but not endless loop
         
         while current_time < end_time and consecutive_failures < max_failures:
-            # Try frame-based positioning as alternative to time-based
-            frame_number = int(current_time * video_fps)
-            
-            # Method 1: Time-based
-            cap.set(cv2.CAP_PROP_POS_MSEC, current_time * 1000)
-            ret, frame = cap.read()
-            
-            if not ret and frame_number < total_frames:
-                # Method 2: Frame-based
-                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            try:
+                # Try frame-based positioning as alternative to time-based
+                frame_number = int(current_time * video_fps)
+                
+                # Method 1: Time-based
+                cap.set(cv2.CAP_PROP_POS_MSEC, current_time * 1000)
                 ret, frame = cap.read()
-            
-            if ret and frame is not None:
-                # Convert BGR to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 
-                # Create frame metadata
-                frame_data = {
-                    'frame_id': len(frames),
-                    'timestamp': current_time,
-                    'timestamp_formatted': self._format_timestamp(current_time),
-                    'frame': frame_rgb,
-                    'frame_pil': Image.fromarray(frame_rgb)
-                }
+                if not ret and frame_number < total_frames:
+                    # Method 2: Frame-based
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+                    ret, frame = cap.read()
                 
-                frames.append(frame_data)
-                consecutive_failures = 0  # Reset failure counter
-            else:
+                if ret and frame is not None:
+                    # Convert BGR to RGB
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Create frame metadata
+                    frame_data = {
+                        'frame_id': len(frames),
+                        'timestamp': current_time,
+                        'timestamp_formatted': self._format_timestamp(current_time),
+                        'frame': frame_rgb,
+                        'frame_pil': Image.fromarray(frame_rgb)
+                    }
+                    
+                    frames.append(frame_data)
+                    consecutive_failures = 0  # Reset failure counter
+                else:
+                    consecutive_failures += 1
+                    if consecutive_failures <= 3:  # Only log first few failures
+                        print(f"Failed to read frame at time {current_time} (failure {consecutive_failures})")
+                
+                current_time += frame_interval
+                
+            except Exception as e:
+                print(f"Error extracting frame at {current_time}: {e}")
                 consecutive_failures += 1
-                print(f"Failed to read frame at time {current_time} (failure {consecutive_failures})")
-            
-            current_time += frame_interval
+                current_time += frame_interval
         
         cap.release()
-        print(f"Extracted {len(frames)} frames using OpenCV")
+        
+        if consecutive_failures >= max_failures:
+            print(f"WARNING: Stopped extraction due to {max_failures} consecutive failures")
+        
+        print(f"Extracted {len(frames)} frames using OpenCV (requested {int((end_time - start_time) * fps)} frames)")
+        
+        if len(frames) == 0:
+            raise ValueError("No frames could be extracted from video. Video may be corrupted or in unsupported format.")
+        
         return frames
     
     
