@@ -6,9 +6,19 @@ This is a Surgical Verification of Proficiency (VOP) Assessment System that anal
 
 The system processes uploaded surgical videos through a two-stage AI pipeline: GPT-4o Vision for frame-by-frame analysis and GPT-5 for comprehensive narrative synthesis. It automatically detects suturing patterns (simple interrupted, subcuticular, vertical mattress) and generates professional PDF reports with detailed rubric assessments and comparative imagery.
 
+## Recent Changes
+
+**September 29, 2025** - Fixed critical frame extraction regression
+- Restored FFmpeg-based frame extraction (primary method) after recent switch to OpenCV-only caused freezing issues
+- Implemented streaming JPEG extraction via subprocess for much faster performance
+- OpenCV retained as fallback for compatibility
+- Frame extraction now uses `ffmpeg -ss {start} -i {input} -to {duration} -vf fps={fps} -f image2pipe -vcodec mjpeg` for efficient streaming
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+- **AI Model Preference**: gpt-5-mini as default (other GPT-5 variants available in UI)
+- **Performance Settings**: Batch size 7 frames, 50 concurrent batches, 1.0 FPS analysis
 
 ## System Architecture
 
