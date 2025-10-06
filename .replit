@@ -37,4 +37,4 @@ externalPort = 80
 [deployment]
 deploymentTarget = "vm"
 run = ["python", "-m", "streamlit", "run", "surgical-vop-assessment/surgical_vop_app.py", "--server.port=5000", "--server.address=0.0.0.0", "--server.headless=true"]
-build = ["pip", "install", "--no-deps", "streamlit", "opencv-python-headless", "pillow", "numpy", "requests", "python-dotenv", "openai", "reportlab", "matplotlib", "fpdf2"]
+build = ["pip", "install", "-r", "surgical-vop-assessment/requirements-minimal.txt"]
