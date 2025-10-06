@@ -74,7 +74,10 @@ class SuturePatternDetector:
 class RubricEngine:
     """Handles rubric loading and scoring logic."""
     
-    def __init__(self, rubric_path: str = "surgical-vop-assessment/unified_rubric.JSON"):
+    def __init__(self, rubric_path: Optional[str] = None):
+        if rubric_path is None:
+            script_dir = Path(__file__).parent
+            rubric_path = str(script_dir / "unified_rubric.JSON")
         self.rubric_data = self._load_rubric(rubric_path)
         self.scale = self.rubric_data["global_policies"]["scale"]
         self.baseline_score = self.rubric_data["global_policies"]["baseline_score_if_unclear"]
@@ -125,6 +128,7 @@ class SurgicalAssessmentProfile:
     def _load_narrative_guides(self) -> Dict[str, str]:
         """Load the ideal narrative examples for each pattern."""
         guides = {}
+        script_dir = Path(__file__).parent
         patterns = {
             "simple_interrupted": "simple_interrupted_narrative.txt",
             "vertical_mattress": "vertical_mattress_narrative.txt", 
@@ -132,11 +136,12 @@ class SurgicalAssessmentProfile:
         }
         
         for pattern_id, filename in patterns.items():
+            filepath = script_dir / filename
             try:
                 # Try multiple encodings to handle any encoding issues
                 for encoding in ['utf-8', 'utf-8-sig', 'latin1', 'cp1252']:
                     try:
-                        with open(filename, 'r', encoding=encoding) as f:
+                        with open(filepath, 'r', encoding=encoding) as f:
                             guides[pattern_id] = f.read()
                         break
                     except UnicodeDecodeError:
