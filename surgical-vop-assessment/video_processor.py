@@ -10,7 +10,6 @@ import tempfile
 import requests
 from PIL import Image
 import io
-import subprocess
 
 class VideoProcessor:
     """Handles video processing, frame extraction, and metadata management."""
@@ -105,7 +104,7 @@ class VideoProcessor:
     def extract_frames(self, start_time: float = 0.0, end_time: Optional[float] = None,
                       custom_fps: Optional[float] = None) -> List[dict]:
         """
-        Extract frames from video with metadata using FFmpeg (primary) or OpenCV (fallback).
+        Extract frames from video with metadata using OpenCV.
         
         Args:
             start_time: Start time in seconds
@@ -129,16 +128,7 @@ class VideoProcessor:
         
         print(f"Extracting frames: start={start_time}, end={end_time}, fps={fps}, duration={self.duration}")
         
-        # Try FFmpeg first (much faster), fall back to OpenCV if FFmpeg fails
-        try:
-            frames = self._extract_frames_ffmpeg(start_time, end_time, fps)
-            if frames:
-                print(f"Extracted {len(frames)} frames using FFmpeg (fast extraction)")
-                return frames
-        except Exception as e:
-            print(f"FFmpeg extraction failed: {e}, falling back to OpenCV")
-        
-        # Fallback to OpenCV for frame extraction
+        # Extract frames using OpenCV
         frames = []
         cap = cv2.VideoCapture(self.video_path)
         
@@ -207,124 +197,6 @@ class VideoProcessor:
         
         if len(frames) == 0:
             raise ValueError("No frames could be extracted from video. Video may be corrupted or in unsupported format.")
-        
-        return frames
-    
-    
-    def _extract_frames_ffmpeg(self, start_time: float, end_time: float, fps: float) -> List[dict]:
-        """
-        Extract frames using FFmpeg subprocess (faster than OpenCV seeking).
-        
-        Args:
-            start_time: Start time in seconds
-            end_time: End time in seconds  
-            fps: Frames per second to extract
-            
-        Returns:
-            List of frame metadata dictionaries
-        """
-        import shutil
-        
-        # Check if FFmpeg is available
-        if not shutil.which("ffmpeg"):
-            raise RuntimeError("FFmpeg not found in PATH")
-        
-        # Build FFmpeg command for streaming JPEG frames
-        # -ss before -i for fast seeking to start position
-        # -to limits extraction duration
-        # -vf fps= sets sampling rate
-        # -f image2pipe -vcodec mjpeg outputs JPEG frames to stdout
-        cmd = [
-            'ffmpeg',
-            '-ss', str(start_time),
-            '-i', self.video_path,
-            '-to', str(end_time - start_time),  # Duration from start
-            '-vf', f'fps={fps}',
-            '-vsync', 'vfr',
-            '-f', 'image2pipe',
-            '-vcodec', 'mjpeg',
-            '-q:v', '3',  # Quality (2-5 is good, lower = better)
-            '-'
-        ]
-        
-        frames = []
-        try:
-            # Run FFmpeg and capture stdout
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=10**8
-            )
-            
-            # Read JPEG frames from stdout
-            # JPEG starts with FFD8 and ends with FFD9
-            jpeg_start = b'\xff\xd8'
-            jpeg_end = b'\xff\xd9'
-            
-            buffer = b''
-            frame_count = 0
-            current_time = start_time
-            time_increment = 1.0 / fps
-            
-            while True:
-                chunk = process.stdout.read(4096)
-                if not chunk:
-                    break
-                    
-                buffer += chunk
-                
-                # Find complete JPEG frames in buffer
-                while True:
-                    start_idx = buffer.find(jpeg_start)
-                    if start_idx == -1:
-                        break
-                    
-                    end_idx = buffer.find(jpeg_end, start_idx + 2)
-                    if end_idx == -1:
-                        # Incomplete frame, keep in buffer
-                        break
-                    
-                    # Extract complete JPEG frame
-                    jpeg_data = buffer[start_idx:end_idx + 2]
-                    buffer = buffer[end_idx + 2:]
-                    
-                    try:
-                        # Convert JPEG bytes to PIL Image
-                        img = Image.open(io.BytesIO(jpeg_data))
-                        img_rgb = img.convert('RGB')
-                        
-                        # Create frame metadata
-                        frame_data = {
-                            'frame_id': frame_count,
-                            'timestamp': current_time,
-                            'timestamp_formatted': self._format_timestamp(current_time),
-                            'frame': np.array(img_rgb),
-                            'frame_pil': img_rgb
-                        }
-                        
-                        frames.append(frame_data)
-                        frame_count += 1
-                        current_time += time_increment
-                        
-                    except Exception as e:
-                        print(f"Error decoding JPEG frame {frame_count}: {e}")
-                        continue
-            
-            # Wait for process to complete
-            return_code = process.wait(timeout=30)
-            
-            if return_code != 0:
-                stderr_output = process.stderr.read().decode('utf-8', errors='ignore')
-                raise RuntimeError(f"FFmpeg failed with code {return_code}: {stderr_output}")
-            
-        except subprocess.TimeoutExpired:
-            process.kill()
-            raise RuntimeError("FFmpeg extraction timed out")
-        except Exception as e:
-            if process.poll() is None:
-                process.kill()
-            raise
         
         return frames
     

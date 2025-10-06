@@ -8,11 +8,15 @@ The system processes uploaded surgical videos through a two-stage AI pipeline: G
 
 ## Recent Changes
 
-**September 29, 2025** - Fixed critical frame extraction regression
-- Restored FFmpeg-based frame extraction (primary method) after recent switch to OpenCV-only caused freezing issues
-- Implemented streaming JPEG extraction via subprocess for much faster performance
-- OpenCV retained as fallback for compatibility
-- Frame extraction now uses `ffmpeg -ss {start} -i {input} -to {duration} -vf fps={fps} -f image2pipe -vcodec mjpeg` for efficient streaming
+**October 06, 2025** - Removed FFmpeg dependency for deployment compatibility
+- Switched entirely to OpenCV for all video processing operations
+- Removed FFmpeg system packages and all subprocess-based frame extraction
+- Simplified deployment by relying solely on Python-based video processing
+
+**September 29, 2025** - Fixed critical deployment issues
+- Updated OpenAI requirement from 1.0.0 to >=1.99.2 to support GPT-5 Responses API
+- Fixed hardcoded file paths to use relative paths with `Path(__file__).parent` for deployment compatibility
+- Resolved rubric and narrative guide loading issues
 
 ## User Preferences
 
@@ -24,7 +28,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Application Structure
 - **Main Application**: Streamlit-based web interface (`surgical_vop_app.py`) with video upload, processing controls, and report generation
-- **Video Processing Pipeline**: FFmpeg-based frame extraction with OpenCV fallback (`video_processor.py`)
+- **Video Processing Pipeline**: OpenCV-based frame extraction and video handling (`video_processor.py`)
 - **AI Analysis Engine**: Two-stage processing using OpenAI's GPT models (`gpt4o_client.py`, `gpt5_vision_client.py`)
 - **Report Generation**: Professional PDF creation with embedded images and structured assessments (`surgical_report_generator.py`)
 
@@ -61,8 +65,7 @@ The system employs a sophisticated two-pass analysis approach:
 - **API Tier Requirements**: OpenAI Tier 4+ recommended for optimal concurrent processing performance
 
 ### Video Processing
-- **FFmpeg**: Primary video processing library for frame extraction and format conversion
-- **OpenCV**: Fallback video processing and computer vision operations
+- **OpenCV**: Primary video processing library for frame extraction, format conversion, and computer vision operations
 - **PIL/Pillow**: Image manipulation and format conversion
 
 ### Web Framework and UI
