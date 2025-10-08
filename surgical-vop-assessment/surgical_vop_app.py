@@ -1971,21 +1971,31 @@ def display_assessment_results(rubric_engine: RubricEngine):
                     story.append(Paragraph("<b>Assessment scores not available</b>", unicode_normal_style))
                 
                 # Build the PDF
-                doc.build(story)
-                
-                st.success(f"✅ PDF report generated: {os.path.basename(pdf_filename)}")
-                
-                # Offer download
-                with open(pdf_filename, "rb") as pdf_file:
-                    st.download_button(
-                        label="📄 Download PDF Report",
-                        data=pdf_file.read(),
-                        file_name=os.path.basename(pdf_filename),
-                        mime="application/pdf"
-                    )
+                try:
+                    doc.build(story)
+                    print("✅ PDF built successfully")
+                    
+                    st.success(f"✅ PDF report generated: {os.path.basename(pdf_filename)}")
+                    
+                    # Offer download
+                    with open(pdf_filename, "rb") as pdf_file:
+                        st.download_button(
+                            label="📄 Download PDF Report",
+                            data=pdf_file.read(),
+                            file_name=os.path.basename(pdf_filename),
+                            mime="application/pdf"
+                        )
+                except Exception as pdf_error:
+                    print(f"❌ PDF build failed: {pdf_error}")
+                    import traceback
+                    traceback.print_exc()
+                    st.error(f"PDF generation failed: {pdf_error}")
+                    st.info("Assessment completed but PDF creation encountered an error. You can still download the TXT report.")
                     
             except Exception as e:
                 st.error(f"Error generating PDF report: {e}")
+                import traceback
+                traceback.print_exc()
 
 if __name__ == "__main__":
     main()
